@@ -8,7 +8,7 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: SpriteLitHDRP_Background
-  m_Shader: {fileID: 4800000, guid: 57bcce373d080d743b99b1b51d9f9a1d, type: 3}
+  m_Shader: {fileID: 4800000, guid: b7862e203be0d2548afb3f94e7029e6d, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords:

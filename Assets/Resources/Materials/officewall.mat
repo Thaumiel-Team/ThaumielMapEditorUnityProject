@@ -8,7 +8,7 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: officewall
-  m_Shader: {fileID: 4800000, guid: 2aecc9f7b853a3d4a96f670d3524b4b9, type: 3}
+  m_Shader: {fileID: 4800000, guid: 6eedb67de5fc46e42813d9f498708dd0, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords:
@@ -36,7 +36,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
       _BaseColorMap:
-        m_Texture: {fileID: 2800000, guid: ccc55cf413e7d4b4497847e69237218e, type: 3}
+        m_Texture: {fileID: 2800000, guid: 0efff1181e2dc7f4eae9e08845af8124, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
       _BentNormalMap:
@@ -72,7 +72,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
       _MainTex:
-        m_Texture: {fileID: 2800000, guid: ccc55cf413e7d4b4497847e69237218e, type: 3}
+        m_Texture: {fileID: 2800000, guid: 0efff1181e2dc7f4eae9e08845af8124, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
       _MaskMap:
@@ -80,7 +80,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
       _NormalMap:
-        m_Texture: {fileID: 2800000, guid: 1d98cd5bb2acae24583d502136fdfcb3, type: 3}
+        m_Texture: {fileID: 2800000, guid: 375c5e1fdf0accc48a81c286e3acde3b, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
       _NormalMapOS:

@@ -8,7 +8,7 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: Prop_Forklift
-  m_Shader: {fileID: 4800000, guid: 2aecc9f7b853a3d4a96f670d3524b4b9, type: 3}
+  m_Shader: {fileID: 4800000, guid: 6eedb67de5fc46e42813d9f498708dd0, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords:
@@ -37,7 +37,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
       _BaseColorMap:
-        m_Texture: {fileID: 2800000, guid: ec37f0a5b85823e4792c76b6fe7dfe71, type: 3}
+        m_Texture: {fileID: 2800000, guid: ee9467fb5c6767a4aa8785770669dc68, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
       _BentNormalMap:
@@ -73,15 +73,15 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
       _MainTex:
-        m_Texture: {fileID: 2800000, guid: ec37f0a5b85823e4792c76b6fe7dfe71, type: 3}
+        m_Texture: {fileID: 2800000, guid: ee9467fb5c6767a4aa8785770669dc68, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
       _MaskMap:
-        m_Texture: {fileID: 2800000, guid: c5031b9f49e89494381cdb23126e2ed7, type: 3}
+        m_Texture: {fileID: 2800000, guid: 8c078ffe58ecc2b46b72a9e4f934f32e, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
       _NormalMap:
-        m_Texture: {fileID: 2800000, guid: e27741222ef2f7f4a9348e5c4b47a324, type: 3}
+        m_Texture: {fileID: 2800000, guid: aeb43d57a1598e747b15b56257f72790, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
       _NormalMapOS:

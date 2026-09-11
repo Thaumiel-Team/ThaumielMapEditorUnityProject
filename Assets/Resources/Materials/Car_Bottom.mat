@@ -8,7 +8,7 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: Car_Bottom
-  m_Shader: {fileID: 4800000, guid: 2aecc9f7b853a3d4a96f670d3524b4b9, type: 3}
+  m_Shader: {fileID: 4800000, guid: 6eedb67de5fc46e42813d9f498708dd0, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords:
@@ -39,7 +39,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
       _BaseColorMap:
-        m_Texture: {fileID: 2800000, guid: ab1e49861a194004eac8d32578dca5cc, type: 3}
+        m_Texture: {fileID: 2800000, guid: fade99b27bd9c6345bf8fa32f4b42abf, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
       _BentNormalMap:
@@ -75,15 +75,15 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
       _MainTex:
-        m_Texture: {fileID: 2800000, guid: ab1e49861a194004eac8d32578dca5cc, type: 3}
+        m_Texture: {fileID: 2800000, guid: fade99b27bd9c6345bf8fa32f4b42abf, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
       _MaskMap:
-        m_Texture: {fileID: 2800000, guid: dac13c09cca925f4b8c6b1aa4e52f576, type: 3}
+        m_Texture: {fileID: 2800000, guid: 64bbff8ec37408342863e4ce73ee259d, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
       _NormalMap:
-        m_Texture: {fileID: 2800000, guid: 32a45096e89a16840ae168e64ab740e0, type: 3}
+        m_Texture: {fileID: 2800000, guid: 522105ad44a6cf049ae2d9d9ec6ab8e7, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
       _NormalMapOS:
@@ -91,7 +91,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
       _SpecularColorMap:
-        m_Texture: {fileID: 2800000, guid: d8ea2473be81fd34ab1b2651215be32e, type: 3}
+        m_Texture: {fileID: 2800000, guid: 647512b1c1f32f4408d9d5499d3349e6, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
       _SubsurfaceMaskMap:

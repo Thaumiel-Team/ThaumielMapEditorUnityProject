@@ -8,7 +8,7 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: Bubblo
-  m_Shader: {fileID: 4800000, guid: 2aecc9f7b853a3d4a96f670d3524b4b9, type: 3}
+  m_Shader: {fileID: 4800000, guid: 6eedb67de5fc46e42813d9f498708dd0, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords:
@@ -37,7 +37,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
       _BaseColorMap:
-        m_Texture: {fileID: 2800000, guid: bdc340db1156b9943a0e98955872470b, type: 3}
+        m_Texture: {fileID: 2800000, guid: 1b400c10c8a7da041b64b6a11fa7163b, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
       _BentNormalMap:
@@ -73,15 +73,15 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
       _MainTex:
-        m_Texture: {fileID: 2800000, guid: bdc340db1156b9943a0e98955872470b, type: 3}
+        m_Texture: {fileID: 2800000, guid: 1b400c10c8a7da041b64b6a11fa7163b, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
       _MaskMap:
-        m_Texture: {fileID: 2800000, guid: 7d6c70f417cca194791533562b1bdd32, type: 3}
+        m_Texture: {fileID: 2800000, guid: 51b6432b6c556bd4b9566f057b9011e9, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
       _NormalMap:
-        m_Texture: {fileID: 2800000, guid: 88076719b6635234d88f42d287c7c366, type: 3}
+        m_Texture: {fileID: 2800000, guid: e8aa2f89a67158848849d729d3de4af7, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
       _NormalMapOS:

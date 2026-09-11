@@ -8,7 +8,7 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: EZDoor_Glass
-  m_Shader: {fileID: 4800000, guid: 2aecc9f7b853a3d4a96f670d3524b4b9, type: 3}
+  m_Shader: {fileID: 4800000, guid: 6eedb67de5fc46e42813d9f498708dd0, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords:
@@ -38,7 +38,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
       _BaseColorMap:
-        m_Texture: {fileID: 2800000, guid: d223e3ca7089ef849b392a3079c85053, type: 3}
+        m_Texture: {fileID: 2800000, guid: 4fb5f1f653767784bb5d56bd41036ffc, type: 3}
         m_Scale: {x: 0.86, y: 0.38}
         m_Offset: {x: 0.18, y: -0.01}
       _BentNormalMap:
@@ -74,7 +74,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
       _MainTex:
-        m_Texture: {fileID: 2800000, guid: d223e3ca7089ef849b392a3079c85053, type: 3}
+        m_Texture: {fileID: 2800000, guid: 4fb5f1f653767784bb5d56bd41036ffc, type: 3}
         m_Scale: {x: 0.86, y: 0.38}
         m_Offset: {x: 0.18, y: -0.01}
       _MaskMap:

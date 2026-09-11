@@ -8,7 +8,7 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: TouchButtonClosed
-  m_Shader: {fileID: 4800000, guid: 55fd550642ab2884ea4bc4e8fd8a1ea9, type: 3}
+  m_Shader: {fileID: 4800000, guid: 36a5b76716b4eb24bab69fcd19972ded, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords:
@@ -37,11 +37,11 @@ Material:
     serializedVersion: 3
     m_TexEnvs:
       _BaseColorMap:
-        m_Texture: {fileID: 2800000, guid: ac94b9755d0e3f9489bcc0e20ad2d856, type: 3}
+        m_Texture: {fileID: 2800000, guid: dcc963cbe751aca4e8eb06d3b1bf0fd9, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
       _EmissionMap:
-        m_Texture: {fileID: 2800000, guid: 748f1a2b0cfcd644f8fe9210d10b6692, type: 3}
+        m_Texture: {fileID: 2800000, guid: c0d449b9abf73f14183ebf095e847ea2, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
       _HDRPLit_9ccede5c759f47328be7a7de0be3904b_DetailMap_913208011_Texture2D:
@@ -49,11 +49,11 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
       _MaskMap:
-        m_Texture: {fileID: 2800000, guid: a5c50e4c758207640acb26db838defc2, type: 3}
+        m_Texture: {fileID: 2800000, guid: 15c1ad9580b9e524094d1b88f7122c13, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
       _NormalMap:
-        m_Texture: {fileID: 2800000, guid: 728b75c89f6319e4985b7fd57d9fea0d, type: 3}
+        m_Texture: {fileID: 2800000, guid: 08a44ba15631565499a96052bbb54c8c, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
       unity_Lightmaps:

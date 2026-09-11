@@ -8,7 +8,7 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: EmbersParticle
-  m_Shader: {fileID: 4800000, guid: 440abb1e8a7901f489258f7a979db400, type: 3}
+  m_Shader: {fileID: 4800000, guid: ced3b51f40db05d49bb2c3ded351398a, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords:

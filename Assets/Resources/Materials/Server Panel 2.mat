@@ -8,7 +8,7 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: Server Panel 2
-  m_Shader: {fileID: 4800000, guid: 2aecc9f7b853a3d4a96f670d3524b4b9, type: 3}
+  m_Shader: {fileID: 4800000, guid: 6eedb67de5fc46e42813d9f498708dd0, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords:
@@ -38,7 +38,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
       _BaseColorMap:
-        m_Texture: {fileID: 2800000, guid: 450d736cd0a532f459249861119850f5, type: 3}
+        m_Texture: {fileID: 2800000, guid: 4e8cb58c7ef95ce4d98a4a2414b151a9, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
       _BentNormalMap:
@@ -58,7 +58,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
       _EmissiveColorMap:
-        m_Texture: {fileID: 2800000, guid: 12a4c25c654341943af2b1d7098b6095, type: 3}
+        m_Texture: {fileID: 2800000, guid: 544b1178cd9060646bb5901e1f497052, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
       _HeightMap:
@@ -74,15 +74,15 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
       _MainTex:
-        m_Texture: {fileID: 2800000, guid: 450d736cd0a532f459249861119850f5, type: 3}
+        m_Texture: {fileID: 2800000, guid: 4e8cb58c7ef95ce4d98a4a2414b151a9, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
       _MaskMap:
-        m_Texture: {fileID: 2800000, guid: ae4d000ee863d0f46a08bb531bd0bb53, type: 3}
+        m_Texture: {fileID: 2800000, guid: 35562eed5738de740af8d2f9ac961fb1, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
       _NormalMap:
-        m_Texture: {fileID: 2800000, guid: 50fe8d564a635994d99d27d86ae99227, type: 3}
+        m_Texture: {fileID: 2800000, guid: c6045fc98087ed941b7b32d423668c59, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
       _NormalMapOS:

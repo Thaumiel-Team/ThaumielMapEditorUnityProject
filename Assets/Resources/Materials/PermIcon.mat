@@ -8,7 +8,7 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: PermIcon
-  m_Shader: {fileID: 4800000, guid: 2aecc9f7b853a3d4a96f670d3524b4b9, type: 3}
+  m_Shader: {fileID: 4800000, guid: 6eedb67de5fc46e42813d9f498708dd0, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords:
@@ -39,7 +39,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
       _BaseColorMap:
-        m_Texture: {fileID: 2800000, guid: 1251b5740cf0f7c44ab76c945fd8238a, type: 3}
+        m_Texture: {fileID: 2800000, guid: f74dd2598297ed646b5cec949eb259be, type: 3}
         m_Scale: {x: 0.5, y: 0.5}
         m_Offset: {x: 0, y: 0.5}
       _BentNormalMap:
@@ -59,7 +59,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
       _EmissiveColorMap:
-        m_Texture: {fileID: 2800000, guid: 459bf793d9dab4449a09a625ce25c944, type: 3}
+        m_Texture: {fileID: 2800000, guid: ca4f26f50236d8a45b6e9c64f2e626f4, type: 3}
         m_Scale: {x: 0.5, y: 0.5}
         m_Offset: {x: 0, y: 0.5}
       _HeightMap:
@@ -75,7 +75,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
       _MainTex:
-        m_Texture: {fileID: 2800000, guid: 1251b5740cf0f7c44ab76c945fd8238a, type: 3}
+        m_Texture: {fileID: 2800000, guid: f74dd2598297ed646b5cec949eb259be, type: 3}
         m_Scale: {x: 0.5, y: 0.5}
         m_Offset: {x: 0, y: 0.5}
       _MaskMap:

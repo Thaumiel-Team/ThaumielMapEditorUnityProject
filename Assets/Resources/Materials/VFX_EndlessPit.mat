@@ -8,7 +8,7 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: VFX_EndlessPit
-  m_Shader: {fileID: 4800000, guid: 83000a5cf0094164f896fb9bcd192047, type: 3}
+  m_Shader: {fileID: 4800000, guid: 27d0239246b3c3c4aa6f674de172e729, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords:

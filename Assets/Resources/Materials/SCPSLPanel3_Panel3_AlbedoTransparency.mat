@@ -8,7 +8,7 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: SCPSLPanel3_Panel3_AlbedoTransparency
-  m_Shader: {fileID: 4800000, guid: 2aecc9f7b853a3d4a96f670d3524b4b9, type: 3}
+  m_Shader: {fileID: 4800000, guid: 6eedb67de5fc46e42813d9f498708dd0, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords:
@@ -37,7 +37,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
       _BaseColorMap:
-        m_Texture: {fileID: 2800000, guid: d5d40d91930f6034cad2e33267d5f683, type: 3}
+        m_Texture: {fileID: 2800000, guid: 7520a4e58112b904b94a0079580ddf47, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
       _BentNormalMap:
@@ -73,15 +73,15 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
       _MainTex:
-        m_Texture: {fileID: 2800000, guid: d5d40d91930f6034cad2e33267d5f683, type: 3}
+        m_Texture: {fileID: 2800000, guid: 7520a4e58112b904b94a0079580ddf47, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
       _MaskMap:
-        m_Texture: {fileID: 2800000, guid: bda7ac20629ba7e458bba7c418d7358b, type: 3}
+        m_Texture: {fileID: 2800000, guid: 09690e79e44381d43a0eaf183a9b0c45, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
       _NormalMap:
-        m_Texture: {fileID: 2800000, guid: 53f48dee73e42f940b0c096f656d4a62, type: 3}
+        m_Texture: {fileID: 2800000, guid: cc06365360837024a959325c26c8c088, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
       _NormalMapOS:

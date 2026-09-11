@@ -8,7 +8,7 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: LiberationSans SDF Material
-  m_Shader: {fileID: 4800000, guid: aceaf53fe25d7d24a9824eec300d94fd, type: 3}
+  m_Shader: {fileID: 4800000, guid: ebf9610f455a4ac4cb1598e982e169d6, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
@@ -24,7 +24,7 @@ Material:
     serializedVersion: 3
     m_TexEnvs:
       _MainTex:
-        m_Texture: {fileID: 2800000, guid: 9a41a1558c9effa43a9fe680ea2798fc, type: 3}
+        m_Texture: {fileID: 2800000, guid: 0ba8cd8e32fd7474290fa6953947dc62, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     m_Ints: {}

@@ -8,7 +8,7 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: BlastDoor_BlastDoor Frame_Albedo
-  m_Shader: {fileID: 4800000, guid: 2aecc9f7b853a3d4a96f670d3524b4b9, type: 3}
+  m_Shader: {fileID: 4800000, guid: 6eedb67de5fc46e42813d9f498708dd0, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords:
@@ -41,7 +41,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
       _BaseColorMap:
-        m_Texture: {fileID: 2800000, guid: c7e00f3ed1d97a4478fb397308525c07, type: 3}
+        m_Texture: {fileID: 2800000, guid: cf66cb52b7c4fed4c95a812345ee7f3b, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
       _BentNormalMap:
@@ -65,7 +65,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
       _HeightMap:
-        m_Texture: {fileID: 2800000, guid: a22254e6bc8270448ae6122c816f9349, type: 3}
+        m_Texture: {fileID: 2800000, guid: 86baf061c82aeb847961bfb5db477ad1, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
       _IridescenceMaskMap:
@@ -77,15 +77,15 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
       _MainTex:
-        m_Texture: {fileID: 2800000, guid: c7e00f3ed1d97a4478fb397308525c07, type: 3}
+        m_Texture: {fileID: 2800000, guid: cf66cb52b7c4fed4c95a812345ee7f3b, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
       _MaskMap:
-        m_Texture: {fileID: 2800000, guid: eb7a37263652f8a46964c1121cd72ad0, type: 3}
+        m_Texture: {fileID: 2800000, guid: 2729a28654467d1409e37ada0278720d, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
       _NormalMap:
-        m_Texture: {fileID: 2800000, guid: 7530e6ebf5d725a469fec6796e559b97, type: 3}
+        m_Texture: {fileID: 2800000, guid: ada92b87dc11fe54db6054ee30fc9c19, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
       _NormalMapOS:

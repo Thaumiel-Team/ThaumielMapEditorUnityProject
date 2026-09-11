@@ -8,7 +8,7 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: mp7Holster_guard
-  m_Shader: {fileID: 4800000, guid: 8eae9fbcf3e81084892943e9ef58a5f7, type: 3}
+  m_Shader: {fileID: 4800000, guid: f7138c8aac0aa7f42ab0d85ce9f1dd9e, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords:
@@ -36,7 +36,7 @@ Material:
     serializedVersion: 3
     m_TexEnvs:
       _BaseColorMap:
-        m_Texture: {fileID: 2800000, guid: 71cfc6b6ead7e9d49a2801cd56e8ed03, type: 3}
+        m_Texture: {fileID: 2800000, guid: 29d355073b2b30c4b8c760434400a4d8, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
       _EmissionMap:
@@ -48,11 +48,11 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
       _MaskMap:
-        m_Texture: {fileID: 2800000, guid: d08556c3590ddd04baf3cb24b78320cd, type: 3}
+        m_Texture: {fileID: 2800000, guid: 7f9225e03d7555740b1793355aa80b46, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
       _NormalMap:
-        m_Texture: {fileID: 2800000, guid: e7491ca8e3a020141a1df5c2a06ad4fb, type: 3}
+        m_Texture: {fileID: 2800000, guid: 3aeeffff0e91f8346af3bb02882e1db9, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
       unity_Lightmaps:

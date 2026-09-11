@@ -8,7 +8,7 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: SmokeLightParticle
-  m_Shader: {fileID: 4800000, guid: 42c87c3a02c989941a917ebbd8c86b7a, type: 3}
+  m_Shader: {fileID: 4800000, guid: 6c5c15f727bce144291d84b9deb13377, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords:
@@ -33,7 +33,7 @@ Material:
     serializedVersion: 3
     m_TexEnvs:
       Texture2D_23DD87FD:
-        m_Texture: {fileID: 2800000, guid: 783263f00aac75448872da16b3696d20, type: 3}
+        m_Texture: {fileID: 2800000, guid: 84c359e831830e74aa47adb4070f2671, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
       Texture2D_D1349F11:

@@ -8,7 +8,7 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: Reel
-  m_Shader: {fileID: 4800000, guid: 2aecc9f7b853a3d4a96f670d3524b4b9, type: 3}
+  m_Shader: {fileID: 4800000, guid: 6eedb67de5fc46e42813d9f498708dd0, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords:
@@ -37,7 +37,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
       _BaseColorMap:
-        m_Texture: {fileID: 2800000, guid: 4e1d1f5ec3b7d6945ba07c7c9a35b53a, type: 3}
+        m_Texture: {fileID: 2800000, guid: 97a1af47cd9af0d4fbb48630edf0ea71, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
       _BentNormalMap:
@@ -73,15 +73,15 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
       _MainTex:
-        m_Texture: {fileID: 2800000, guid: 4e1d1f5ec3b7d6945ba07c7c9a35b53a, type: 3}
+        m_Texture: {fileID: 2800000, guid: 97a1af47cd9af0d4fbb48630edf0ea71, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
       _MaskMap:
-        m_Texture: {fileID: 2800000, guid: c9e722328080adf4e9b7cad73bf9588a, type: 3}
+        m_Texture: {fileID: 2800000, guid: f00fd449933a47745a4fce89fa9fd502, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
       _NormalMap:
-        m_Texture: {fileID: 2800000, guid: 7459a753acc76f945bac7bf2a8b6cbac, type: 3}
+        m_Texture: {fileID: 2800000, guid: e5599448716d23e4f8438f1c8dbb1dd8, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
       _NormalMapOS:

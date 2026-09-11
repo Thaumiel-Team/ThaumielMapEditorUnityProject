@@ -8,7 +8,7 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: Researcher1__Pan_Janusz_Eyewear_diffuse
-  m_Shader: {fileID: 4800000, guid: 8eae9fbcf3e81084892943e9ef58a5f7, type: 3}
+  m_Shader: {fileID: 4800000, guid: f7138c8aac0aa7f42ab0d85ce9f1dd9e, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords:
@@ -36,7 +36,7 @@ Material:
     serializedVersion: 3
     m_TexEnvs:
       _BaseColorMap:
-        m_Texture: {fileID: 2800000, guid: 6c85e42423b8e9f419ba7153b73b12fe, type: 3}
+        m_Texture: {fileID: 2800000, guid: db562b46376fa65469fc46cb1548f519, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
       _EmissionMap:

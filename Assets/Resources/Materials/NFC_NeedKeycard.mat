@@ -8,7 +8,7 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: NFC_NeedKeycard
-  m_Shader: {fileID: 4800000, guid: 55fd550642ab2884ea4bc4e8fd8a1ea9, type: 3}
+  m_Shader: {fileID: 4800000, guid: 36a5b76716b4eb24bab69fcd19972ded, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords:
@@ -38,11 +38,11 @@ Material:
     serializedVersion: 3
     m_TexEnvs:
       _BaseColorMap:
-        m_Texture: {fileID: 2800000, guid: f4e0847b3675a8c4c82b72aabf869c39, type: 3}
+        m_Texture: {fileID: 2800000, guid: 7562bf4e46c12454a8923e3cab0f5de5, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
       _EmissionMap:
-        m_Texture: {fileID: 2800000, guid: 71a957956827101488eadba89963bdf5, type: 3}
+        m_Texture: {fileID: 2800000, guid: c673f97cf916af54e9b6d7fda006b2c2, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
       _HDRPLit_9ccede5c759f47328be7a7de0be3904b_DetailMap_913208011_Texture2D:
@@ -50,11 +50,11 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
       _MaskMap:
-        m_Texture: {fileID: 2800000, guid: 477235b92777f81488b3ed7b9d5ef029, type: 3}
+        m_Texture: {fileID: 2800000, guid: 74a4f1df535ffbf488228055047075ed, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
       _NormalMap:
-        m_Texture: {fileID: 2800000, guid: 562055d9a5db51944ae38d6d3f62b391, type: 3}
+        m_Texture: {fileID: 2800000, guid: c59fd24dde5752f46b183296a2e58852, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
       unity_Lightmaps:

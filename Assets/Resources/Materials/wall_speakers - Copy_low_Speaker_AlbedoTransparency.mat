@@ -8,7 +8,7 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: wall_speakers - Copy_low_Speaker_AlbedoTransparency
-  m_Shader: {fileID: 4800000, guid: 2aecc9f7b853a3d4a96f670d3524b4b9, type: 3}
+  m_Shader: {fileID: 4800000, guid: 6eedb67de5fc46e42813d9f498708dd0, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords:
@@ -37,7 +37,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
       _BaseColorMap:
-        m_Texture: {fileID: 2800000, guid: bd6f93de9befabf4087815e3127810f2, type: 3}
+        m_Texture: {fileID: 2800000, guid: 555e9c693f55b074193360feb35639eb, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
       _BentNormalMap:
@@ -73,15 +73,15 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
       _MainTex:
-        m_Texture: {fileID: 2800000, guid: bd6f93de9befabf4087815e3127810f2, type: 3}
+        m_Texture: {fileID: 2800000, guid: 555e9c693f55b074193360feb35639eb, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
       _MaskMap:
-        m_Texture: {fileID: 2800000, guid: ebfaf9de4951e38479680ec3c0bb3ce2, type: 3}
+        m_Texture: {fileID: 2800000, guid: f4ce6b25a1affb54cb739c106c619bb7, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
       _NormalMap:
-        m_Texture: {fileID: 2800000, guid: 8681667f2e07c4b4c82a36de866e1f06, type: 3}
+        m_Texture: {fileID: 2800000, guid: 740d78c0473c7e644bdb79501d68ecf8, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
       _NormalMapOS:

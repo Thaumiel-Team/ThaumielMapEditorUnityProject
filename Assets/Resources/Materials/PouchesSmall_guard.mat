@@ -8,7 +8,7 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: PouchesSmall_guard
-  m_Shader: {fileID: 4800000, guid: 8eae9fbcf3e81084892943e9ef58a5f7, type: 3}
+  m_Shader: {fileID: 4800000, guid: f7138c8aac0aa7f42ab0d85ce9f1dd9e, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords:
@@ -36,7 +36,7 @@ Material:
     serializedVersion: 3
     m_TexEnvs:
       _BaseColorMap:
-        m_Texture: {fileID: 2800000, guid: 6a8df938a1586ff408d49ee6db40dfed, type: 3}
+        m_Texture: {fileID: 2800000, guid: 8ef57d1789916594799b8a6310cba203, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
       _EmissionMap:
@@ -48,11 +48,11 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
       _MaskMap:
-        m_Texture: {fileID: 2800000, guid: 9a0ee8b470cd03c4fb7cbfb8017bf91f, type: 3}
+        m_Texture: {fileID: 2800000, guid: d7a1dd6112b2a094385603f559fe679f, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
       _NormalMap:
-        m_Texture: {fileID: 2800000, guid: 098fba6b507e7ad49a027d9bde7f5a18, type: 3}
+        m_Texture: {fileID: 2800000, guid: b5300ada6034fa24f8524be91ef1900f, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
       unity_Lightmaps:

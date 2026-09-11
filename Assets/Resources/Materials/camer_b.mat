@@ -8,7 +8,7 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: camer_b
-  m_Shader: {fileID: 4800000, guid: 2aecc9f7b853a3d4a96f670d3524b4b9, type: 3}
+  m_Shader: {fileID: 4800000, guid: 6eedb67de5fc46e42813d9f498708dd0, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords:
@@ -40,7 +40,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
       _BaseColorMap:
-        m_Texture: {fileID: 2800000, guid: 4fbca4c4793c0a241b0eab5ac7c23c9c, type: 3}
+        m_Texture: {fileID: 2800000, guid: f678aad3e4248444783a60d00f0c7972, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
       _BentNormalMap:
@@ -64,7 +64,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
       _HeightMap:
-        m_Texture: {fileID: 2800000, guid: 72d59aaab6d16774692c7d775fa97dd2, type: 3}
+        m_Texture: {fileID: 2800000, guid: 0892890898f373f4aa293bfdb6066b04, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
       _IridescenceMaskMap:
@@ -76,15 +76,15 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
       _MainTex:
-        m_Texture: {fileID: 2800000, guid: 4fbca4c4793c0a241b0eab5ac7c23c9c, type: 3}
+        m_Texture: {fileID: 2800000, guid: f678aad3e4248444783a60d00f0c7972, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
       _MaskMap:
-        m_Texture: {fileID: 2800000, guid: 83ffa35b39772b54c9b39f0aad09ed48, type: 3}
+        m_Texture: {fileID: 2800000, guid: a6ae904603a37bb4ea9dad59667dff3e, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
       _NormalMap:
-        m_Texture: {fileID: 2800000, guid: fccec69898d78714da92315b7f8c9373, type: 3}
+        m_Texture: {fileID: 2800000, guid: f5a7465c035ad2d468ef84b8e9462f1b, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
       _NormalMapOS:

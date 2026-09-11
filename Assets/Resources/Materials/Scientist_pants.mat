@@ -8,7 +8,7 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: Scientist_pants
-  m_Shader: {fileID: 4800000, guid: 8eae9fbcf3e81084892943e9ef58a5f7, type: 3}
+  m_Shader: {fileID: 4800000, guid: f7138c8aac0aa7f42ab0d85ce9f1dd9e, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords:
@@ -36,7 +36,7 @@ Material:
     serializedVersion: 3
     m_TexEnvs:
       _BaseColorMap:
-        m_Texture: {fileID: 2800000, guid: 277c467837249b0459e35ed91aa6ddc7, type: 3}
+        m_Texture: {fileID: 2800000, guid: 1c2c8670ba21e2844bd67189b4e612d8, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
       _EmissionMap:
@@ -48,11 +48,11 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
       _MaskMap:
-        m_Texture: {fileID: 2800000, guid: 9fd2b2a01d2e5dc4bbef7d73cba86158, type: 3}
+        m_Texture: {fileID: 2800000, guid: e44496f17afd633449febc364f5c41e8, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
       _NormalMap:
-        m_Texture: {fileID: 2800000, guid: 3c8b97d2cdba9b34abd340c2ba5c2670, type: 3}
+        m_Texture: {fileID: 2800000, guid: 7cc31e8a4af8b3347b8e964f5b3dadba, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
       unity_Lightmaps:
