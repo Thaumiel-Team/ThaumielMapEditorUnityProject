@@ -1,6 +1,6 @@
 fileFormatVersion: 2
-guid: c3644b21680aac94cb8e864796f92aad
-timeCreated: 1764678783
+guid: bcf43ddfe214a2449a7348305e346343
+timeCreated: 1787823653
 licenseType: Free
 TextureImporter:
   serializedVersion: 13
@@ -29,7 +29,7 @@ TextureImporter:
   vTOnly: 0
   ignoreMipmapLimit: 0
   grayScaleToAlpha: 0
-  generateCubemap: 5
+  generateCubemap: 6
   cubemapConvolution: 0
   seamlessCubemap: 0
   textureFormat: 17
