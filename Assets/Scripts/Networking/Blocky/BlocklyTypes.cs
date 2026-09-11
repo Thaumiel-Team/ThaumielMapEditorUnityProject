@@ -40,10 +40,10 @@ namespace Assets.Scripts.Networking.Blocky
         /// JavaScript generator body string.
         ///
         /// Available variables:
-        ///   block      – the Blockly block instance
-        ///   Blockly    – the Blockly global
+        ///   block – the Blockly block instance
+        ///   Blockly – the Blockly global
         ///   cs_val(block, inputName, fallback) – returns the C# code string for a value input
-        ///   cs_stmts(block, inputName)         – returns concatenated C# for a statement input
+        ///   cs_stmts(block, inputName) – returns concatenated C# for a statement input
         ///
         /// Statement block – return a string ending in \n:
         ///   return 'MyFunc(' + cs_val(block,"ARG","0") + ');\n';

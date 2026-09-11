@@ -13,7 +13,7 @@ namespace Assets.Scripts
 
         private static void OnEditorUpdate()
         {
-            if (UnityEngine.Random.Range(0, 100000) == 1)
+            if (Random.Range(0, 100000) == 1)
             {
                 Debug.Log(":3");
             }

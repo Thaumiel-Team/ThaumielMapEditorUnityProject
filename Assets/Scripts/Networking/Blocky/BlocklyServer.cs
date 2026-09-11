@@ -146,17 +146,14 @@ namespace Assets.Scripts.Networking.Blocky
                     _client?.Close();
                     _client = new WsConnection(tcp, OnRawMessage, OnConnectionClosed);
                     _client.Start();
-                    Enqueue(() =>
-                    {
-                        Debug.Log("[BlocklyServer] Browser connected.");
-                        OnClientConnected?.Invoke();
-                    });
+                    Debug.Log("[BlocklyServer] Browser connected.");
+                    Enqueue(() => OnClientConnected?.Invoke());
                 }
                 catch (SocketException) when (!_running) { break; }
                 catch (Exception ex)
                 {
                     if (_running)
-                        Enqueue(() => Debug.LogWarning($"[BlocklyServer] Accept error: {ex.Message}"));
+                        Debug.LogWarning($"[BlocklyServer] Accept error: {ex.Message}");
                 }
             }
         }
@@ -173,16 +170,13 @@ namespace Assets.Scripts.Networking.Blocky
                 switch (type)
                 {
                     case "connected":
-                        Enqueue(() => Debug.Log("[BlocklyServer] Handshake received from browser."));
+                        Debug.Log("[BlocklyServer] Handshake received from browser.");
                         break;
 
                     case "code_export":
                         CodeExportPayload payload = _des.Deserialize<CodeExportPayload>(yaml);
-                        Enqueue(() =>
-                        {
-                            Debug.Log($"[BlocklyServer] Code export ({payload.Language}).");
-                            OnCodeExport?.Invoke(payload, ActiveTargetEvent);
-                        });
+                        Debug.Log($"[BlocklyServer] Code export ({payload.Language}).");
+                        Enqueue(() => OnCodeExport?.Invoke(payload, ActiveTargetEvent));
                         break;
 
                     case "xml_export":
@@ -196,22 +190,22 @@ namespace Assets.Scripts.Networking.Blocky
 
                     case "block_registered":
                         dict.TryGetValue("id", out var bId);
-                        Enqueue(() => Debug.Log($"[BlocklyServer] Block registered: {bId}"));
+                        Debug.Log($"[BlocklyServer] Block registered: {bId}");
                         break;
 
                     case "category_registered":
                         dict.TryGetValue("name", out var cName);
-                        Enqueue(() => Debug.Log($"[BlocklyServer] Category registered: {cName}"));
+                        Debug.Log($"[BlocklyServer] Category registered: {cName}");
                         break;
 
                     default:
-                        Enqueue(() => Debug.Log($"[BlocklyServer] Unknown msg type: {type}"));
+                        Debug.Log($"[BlocklyServer] Unknown msg type: {type}");
                         break;
                 }
             }
             catch (Exception ex)
             {
-                Enqueue(() => Debug.LogWarning($"[BlocklyServer] YAML parse error: {ex.Message}"));
+                Debug.LogWarning($"[BlocklyServer] YAML parse error: {ex.Message}");
             }
         }
 

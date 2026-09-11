@@ -15,22 +15,27 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/js-yaml/4.1.0/js-yaml.min.js"></script>
     <style>
         :root {
-            --bg: #16161a;
-            --surface: #1f1f26;
-            --surface2: #2a2a33;
-            --surface3: #35353f;
-            --border: #3e3e4d;
-            --text: #c8c8d8;
-            --dim: #6b6b82;
+            --bg: #0e1016;
+            --bg2: #12151d;
+            --surface: #161925;
+            --surface2: #1d2230;
+            --surface3: #282f42;
+            --border: #2a3142;
+            --border2: #3a4360;
+            --text: #d6dae9;
+            --dim: #7c859f;
             --accent: #4dabf7;
             --acc2: #74c0fc;
-            --green: #63e06a;
-            --red: #ff6b6b;
+            --green: #51e07a;
+            --red: #ff6b81;
             --amber: #ffd43b;
             --orange: #ff9c3a;
             --mono: 'Share Tech Mono', monospace;
             --sans: 'Rajdhani', sans-serif;
-            --r: 4px;
+            --r: 6px;
+            --r2: 10px;
+            --shadow: 0 10px 30px rgba(0, 0, 0, .45);
+            --glow: 0 0 0 1px rgba(77, 171, 247, .35), 0 0 16px rgba(77, 171, 247, .22);
         }
 
         * {
@@ -46,158 +51,209 @@
         }
 
         body {
-            background: var(--bg);
+            background:
+                radial-gradient(1100px 520px at 15% -10%, rgba(77, 171, 247, .07), transparent 60%),
+                radial-gradient(900px 480px at 105% 115%, rgba(255, 107, 129, .06), transparent 60%),
+                radial-gradient(700px 400px at 80% -20%, rgba(255, 156, 58, .04), transparent 55%),
+                var(--bg);
             color: var(--text);
             font-family: var(--sans);
             display: flex;
             flex-direction: column;
-            height: 100vh
+            height: 100vh;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        ::selection {
+            background: rgba(77, 171, 247, .30);
         }
 
         header {
-            background: var(--surface);
+            background: linear-gradient(180deg, #1c2130, var(--surface));
             border-bottom: 1px solid var(--border);
-            padding: 7px 14px;
+            padding: 8px 16px;
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 14px;
             flex-shrink: 0;
             z-index: 10;
+            box-shadow: 0 8px 26px rgba(0, 0, 0, .38);
         }
 
         .logo {
-            font-size: 17px;
+            font-size: 18px;
             font-weight: 700;
-            letter-spacing: 3px;
+            letter-spacing: 3.5px;
             color: var(--red);
             text-transform: uppercase;
             white-space: nowrap;
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 8px;
+            text-shadow: 0 0 18px rgba(255, 107, 129, .45);
         }
 
         .logo-sep {
-            color: var(--border);
+            color: var(--border2);
             font-weight: 300
         }
 
         .logo-sub {
             color: var(--dim);
             font-size: 11px;
-            font-weight: 400;
-            letter-spacing: 1px
+            font-weight: 500;
+            letter-spacing: 1.5px;
+            padding-left: 10px;
+            margin-left: 4px;
+            border-left: 1px solid var(--border);
         }
 
         .hbar {
             flex: 1;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
             min-width: 0
         }
 
         input.ws-url {
-            background: var(--bg);
+            background: var(--bg2);
             border: 1px solid var(--border);
             color: var(--text);
             font-family: var(--mono);
             font-size: 12px;
-            padding: 5px 10px;
+            padding: 6px 11px;
             border-radius: var(--r);
             width: 240px;
-            transition: border-color .15s;
+            transition: border-color .18s ease, box-shadow .18s ease;
+        }
+
+        input.ws-url::placeholder {
+            color: var(--dim);
+            opacity: .7;
+        }
+
+        input.ws-url:hover {
+            border-color: var(--border2);
         }
 
         input.ws-url:focus {
             outline: none;
-            border-color: var(--accent)
+            border-color: var(--accent);
+            box-shadow: var(--glow);
         }
 
         .btn {
             font-family: var(--sans);
             font-weight: 700;
             font-size: 12px;
-            letter-spacing: 1.2px;
-            padding: 5px 13px;
+            letter-spacing: 1.4px;
+            padding: 6px 14px;
             border-radius: var(--r);
             border: 1px solid var(--border);
             cursor: pointer;
             text-transform: uppercase;
-            transition: all .15s;
-            background: var(--surface2);
+            transition: all .18s ease;
+            background: linear-gradient(180deg, var(--surface3), var(--surface2));
             color: var(--text);
             white-space: nowrap;
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, .04);
         }
 
         .btn:hover {
-            background: var(--surface3);
+            background: linear-gradient(180deg, #2e3648, #262c3d);
+            border-color: var(--acc2);
+            color: var(--acc2);
+            box-shadow: var(--glow);
+            transform: translateY(-1px);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+            box-shadow: none;
+        }
+
+        .btn:focus-visible {
+            outline: none;
             border-color: var(--accent);
-            color: var(--accent)
+            box-shadow: var(--glow);
         }
 
         .btn-connect {
             border-color: var(--accent);
-            color: var(--accent)
+            color: var(--accent);
+            background: linear-gradient(180deg, rgba(77, 171, 247, .14), rgba(77, 171, 247, .05));
         }
 
         .btn-connect:hover {
             background: var(--accent);
-            color: #000
+            border-color: var(--accent);
+            color: #000;
+            box-shadow: 0 0 18px rgba(77, 171, 247, .4);
         }
 
         .btn-disc {
             border-color: var(--red);
             color: var(--red);
-            display: none
+            display: none;
+            background: linear-gradient(180deg, rgba(255, 107, 129, .12), rgba(255, 107, 129, .04));
         }
 
         .btn-disc:hover {
             background: var(--red);
-            color: #000
+            border-color: var(--red);
+            color: #000;
+            box-shadow: 0 0 18px rgba(255, 107, 129, .4);
         }
 
         .btn-export {
-            background: linear-gradient(135deg, #1a6fa0, #1490d0);
+            background: linear-gradient(135deg, #1666a0, #1293d8);
             color: #fff;
             border-color: var(--accent);
             font-size: 13px;
-            padding: 6px 18px;
-            letter-spacing: 1.5px;
+            padding: 7px 20px;
+            letter-spacing: 1.6px;
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, .22), 0 4px 16px rgba(18, 147, 216, .3);
         }
 
         .btn-export:hover {
-            background: linear-gradient(135deg, #1490d0, #40b4f0);
-            color: #fff
+            background: linear-gradient(135deg, #1293d8, #3ab6ef);
+            border-color: var(--acc2);
+            color: #fff;
+            box-shadow: 0 0 22px rgba(77, 171, 247, .45);
+            transform: translateY(-1px);
         }
 
         .dot {
-            width: 8px;
-            height: 8px;
+            width: 9px;
+            height: 9px;
             border-radius: 50%;
             background: var(--dim);
             flex-shrink: 0;
-            transition: background .3s
+            transition: background .3s, box-shadow .3s
         }
 
         .dot.connected {
             background: var(--green);
-            box-shadow: 0 0 7px var(--green)
+            box-shadow: 0 0 0 3px rgba(81, 224, 122, .16), 0 0 14px var(--green)
         }
 
         .dot.connecting {
             background: var(--amber);
-            animation: pulse 1s infinite
+            animation: pulse 1s infinite;
+            box-shadow: 0 0 0 3px rgba(255, 212, 59, .12), 0 0 12px var(--amber)
         }
 
         .dot.error {
-            background: var(--red)
+            background: var(--red);
+            box-shadow: 0 0 10px var(--red)
         }
 
         .status-lbl {
             font-family: var(--mono);
             font-size: 11px;
-            color: var(--dim)
+            color: var(--dim);
+            letter-spacing: .5px;
         }
 
         @keyframes pulse {
@@ -208,7 +264,7 @@
             }
 
             50% {
-                opacity: .3
+                opacity: .35
             }
         }
 
@@ -221,7 +277,8 @@
 
         #blocklyDiv {
             flex: 1;
-            min-width: 0
+            min-width: 0;
+            border-right: 1px solid var(--border);
         }
 
         .blockly-badge {
@@ -240,12 +297,13 @@
         .blockly-badge img {
             height: 36px;
             display: block;
+            filter: drop-shadow(0 2px 8px rgba(0, 0, 0, .6));
         }
 
         .sidebar {
-            width: 310px;
+            width: 322px;
             flex-shrink: 0;
-            background: var(--surface);
+            background: linear-gradient(180deg, var(--surface), var(--bg2));
             border-left: 1px solid var(--border);
             display: flex;
             flex-direction: column;
@@ -253,13 +311,13 @@
         }
 
         .sb-hd {
-            font-size: 9px;
+            font-size: 10px;
             font-weight: 700;
-            letter-spacing: 2.5px;
+            letter-spacing: 3px;
             text-transform: uppercase;
-            color: var(--dim);
-            padding: 7px 11px;
-            background: var(--surface2);
+            color: var(--acc2);
+            padding: 9px 12px;
+            background: linear-gradient(180deg, var(--surface2), rgba(29, 34, 48, .4));
             border-bottom: 1px solid var(--border);
             display: flex;
             align-items: center;
@@ -268,9 +326,10 @@
         }
 
         .sb-hd .btn {
-            padding: 1px 7px;
+            padding: 2px 8px;
             font-size: 9px;
-            letter-spacing: 1px
+            letter-spacing: 1px;
+            border-radius: 4px;
         }
 
         .code-wrap {
@@ -278,68 +337,77 @@
             min-height: 0;
             overflow-y: auto;
             display: flex;
-            flex-direction: column
+            flex-direction: column;
+            background:
+                linear-gradient(180deg, rgba(0, 0, 0, .22), rgba(0, 0, 0, .42)),
+                var(--bg2);
         }
 
         .code-wrap pre {
             flex: 1;
             font-family: var(--mono);
             font-size: 11px;
-            color: #9ab5d4;
-            padding: 10px;
+            color: #a7bfe0;
+            padding: 12px;
             white-space: pre-wrap;
             word-break: break-all;
-            line-height: 1.55;
+            line-height: 1.6;
         }
 
         .code-tools {
             display: flex;
-            gap: 6px;
-            padding: 7px 10px;
+            gap: 7px;
+            padding: 8px 11px;
             background: var(--surface2);
             border-top: 1px solid var(--border);
             flex-shrink: 0;
         }
 
         .code-tools select {
-            background: var(--bg);
+            background: var(--bg2);
             color: var(--text);
             border: 1px solid var(--border);
             font-size: 11px;
-            padding: 3px 6px;
+            padding: 4px 7px;
             border-radius: var(--r);
             font-family: var(--mono);
             cursor: pointer;
+            transition: border-color .15s;
+        }
+
+        .code-tools select:hover {
+            border-color: var(--accent);
         }
 
         .code-tools .btn {
-            padding: 3px 10px;
-            font-size: 10px
+            padding: 4px 11px;
+            font-size: 10px;
         }
 
         .exp-row {
-            padding: 8px 10px;
+            padding: 9px 11px;
             display: flex;
             gap: 7px;
             flex-shrink: 0;
-            background: var(--surface);
+            background: linear-gradient(180deg, var(--surface), var(--surface2));
             border-top: 1px solid var(--border);
         }
 
         .exp-row .btn {
             flex: 1;
-            font-size: 11px;
-            padding: 5px 6px
+            font-size: 10.5px;
+            padding: 6px 4px;
+            letter-spacing: .5px;
         }
 
         .auto-row {
-            padding: 5px 11px;
+            padding: 7px 12px;
             font-family: var(--mono);
             font-size: 10px;
             color: var(--dim);
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 7px;
             background: var(--surface2);
             border-top: 1px solid var(--border);
             flex-shrink: 0;
@@ -347,22 +415,26 @@
 
         .auto-row input[type=checkbox] {
             accent-color: var(--accent);
-            cursor: pointer
+            cursor: pointer;
+            width: 14px;
+            height: 14px;
         }
 
         .log-wrap {
-            height: 175px;
+            height: 180px;
             overflow-y: auto;
-            flex-shrink: 0
+            flex-shrink: 0;
+            background: rgba(0, 0, 0, .18);
         }
 
         .log-entry {
             font-family: var(--mono);
             font-size: 10.5px;
-            padding: 2px 8px;
+            padding: 2px 10px;
             display: flex;
-            gap: 6px;
+            gap: 8px;
             border-bottom: 1px solid rgba(255, 255, 255, .025);
+            border-left: 3px solid transparent;
         }
 
         .log-entry .t {
@@ -371,19 +443,24 @@
         }
 
         .log-entry.send {
-            color: var(--accent)
+            color: var(--accent);
+            border-left-color: rgba(77, 171, 247, .7);
         }
 
         .log-entry.recv {
-            color: var(--green)
+            color: var(--green);
+            border-left-color: rgba(81, 224, 122, .7);
         }
 
         .log-entry.error {
-            color: var(--red)
+            color: var(--red);
+            border-left-color: rgba(255, 107, 129, .7);
+            background: rgba(255, 107, 129, .06);
         }
 
         .log-entry.info {
-            color: var(--dim)
+            color: var(--dim);
+            border-left-color: rgba(255, 255, 255, .08);
         }
 
         .proto {
@@ -395,6 +472,8 @@
             max-height: 130px;
             overflow-y: auto;
             flex-shrink: 0;
+            border-top: 1px solid var(--border);
+            background: rgba(0, 0, 0, .18);
         }
 
         .proto .k {
@@ -406,13 +485,13 @@
         }
 
         .proto .c {
-            color: #444;
+            color: #4a4f5e;
             font-size: 9px
         }
 
         ::-webkit-scrollbar {
-            width: 5px;
-            height: 5px
+            width: 8px;
+            height: 8px
         }
 
         ::-webkit-scrollbar-track {
@@ -420,12 +499,15 @@
         }
 
         ::-webkit-scrollbar-thumb {
-            background: var(--border);
-            border-radius: 3px
+            background: linear-gradient(180deg, #333b52, #262c3d);
+            border-radius: 4px;
+            border: 2px solid transparent;
+            background-clip: padding-box;
         }
 
         ::-webkit-scrollbar-thumb:hover {
-            background: var(--dim)
+            background: linear-gradient(180deg, var(--accent), #262c3d);
+            background-clip: padding-box;
         }
     </style>
 </head>
@@ -1032,18 +1114,10 @@
             return obj;
         }
 
-        /**
-         * Return the workspace as a raw JS array of block objects.
-         * Used for both the YAML preview and the always-present
-         * "blocks" field in every code_export message.
-         */
         function workspaceToBlocks() {
             return workspace.getTopBlocks(true).map(blockToObj).filter(Boolean);
         }
 
-        /**
-         * Serialize the workspace block tree to a YAML string for the preview panel.
-         */
         function workspaceToYAML() {
             return toYAML(workspaceToBlocks());
         }
@@ -1062,13 +1136,13 @@
             },
             categoryStyles: {},
             componentStyles: {
-                workspaceBackgroundColour: '#16161a',
-                toolboxBackgroundColour: '#1f1f26',
-                toolboxForegroundColour: '#c8c8d8',
-                flyoutBackgroundColour: '#21212a',
-                flyoutForegroundColour: '#c8c8d8',
+                workspaceBackgroundColour: '#0e1016',
+                toolboxBackgroundColour: '#141722',
+                toolboxForegroundColour: '#d6dae9',
+                flyoutBackgroundColour: '#181c28',
+                flyoutForegroundColour: '#d6dae9',
                 flyoutOpacity: 0.97,
-                scrollbarColour: '#3e3e4d',
+                scrollbarColour: '#2a3142',
                 scrollbarOpacity: 0.8,
             }
         });
@@ -1429,20 +1503,6 @@
             wsSend({ type: 'block_registered', id, category: catName });
         }
 
-        /**
-         * Register a dynamic category from Unity (YAML payload).
-         *
-         * Fields:
-         *   name  {string} — display name (required)
-         *   color {number|string} — hue 0–360 or hex color
-         *   icon  {string} — emoji shown before the name
-         *
-         * Example YAML:
-         *   type: register_category
-         *   name: MyPlugin
-         *   color: 45
-         *   icon: "⚡"
-         */
         function registerCategory(msg) {
             const name = msg.name;
             if (!name) {

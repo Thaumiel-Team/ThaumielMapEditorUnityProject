@@ -2,6 +2,7 @@ using System.Diagnostics;
 using System.IO;
 using Assets.Scripts;
 using UnityEditor;
+using UnityEngine;
 using Debug = UnityEngine.Debug;
 
 [InitializeOnLoad]
@@ -11,7 +12,7 @@ public class SchematicManager : EditorWindow
     public static void Compile()
     {
         Debug.ClearDeveloperConsole();
-        Builder[] builders = FindObjectsByType<Builder>();
+        Builder[] builders = FindObjectsByType<Builder>(FindObjectsSortMode.InstanceID);
         if (builders.Length > 0)
         {
             foreach (Builder schematic in builders)

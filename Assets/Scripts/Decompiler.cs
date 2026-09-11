@@ -14,9 +14,11 @@ namespace Assets.Scripts
 {
     public static class Decompiler
     {
+        public static event Action<YamlSchematic> OnSchematicDecompiled;
+
         public static BuilderPrefabRegistry _registry;
 
-        private static Dictionary<int, Transform> _instanceMap = new();
+        private static readonly Dictionary<int, Transform> _instanceMap = new();
 
         public static void DecompileData(BuilderPrefabRegistry registry)
         {
@@ -136,6 +138,24 @@ namespace Assets.Scripts
                                 doorlink.Properties = tool.Properties;
                                 doorlink.Decompile();
                                 break;
+
+                            case ToolType.ColliderTrigger:
+                                ColliderTrigger collider = block.AddComponent<ColliderTrigger>();
+                                collider.Properties = tool.Properties;
+                                collider.Decompile();
+                                break;
+
+                            case ToolType.InteractableTrigger:
+                                InteractableTrigger interactable = block.AddComponent<InteractableTrigger>();
+                                interactable.Properties = tool.Properties;
+                                interactable.Decompile();
+                                break;
+
+                            case ToolType.BlockyRuntime:
+                                BlockyRuntime blocky = block.AddComponent<BlockyRuntime>();
+                                blocky.Properties = tool.Properties;
+                                blocky.Decompile();
+                                break;
                         }
                     }
                 }
@@ -143,6 +163,7 @@ namespace Assets.Scripts
 
             Selection.activeGameObject = root;
             Debug.Log($"Decompiled schematic '{schematic.FileName}' with {schematic.Objects.Count} objects.");
+            OnSchematicDecompiled?.Invoke(schematic);
         }
 
         public static void LoadRegistry()

@@ -99,4 +99,4 @@ InitTestScene*.unity*
 /[Aa]ssets/[Ii]nit[Tt]est[Ss]cene*.unity*
 config.json
 config.json.meta
-SampleScene.unity
+Assets/Scenes/SampleScene.unity

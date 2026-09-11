@@ -10,6 +10,7 @@ namespace Assets.Scripts.Networking.Blocky
         private static readonly List<DefBase> _defs = new()
         {
             new ObjectDefs(),
+            new DoorDefs(),
             new PrimitiveDefs(),
             new WaypointDefs(),
             new TextToyDefs(),
@@ -17,7 +18,12 @@ namespace Assets.Scripts.Networking.Blocky
             new PlayerDefs(),
             new TimingDefs(),
             new EnumDefs(),
-            new LogicDefs()
+            new LogicDefs(),
+            new StringDefs(),
+            new MathDefs(),
+            new CollectionDefs(),
+            new DateTimeDefs(),
+            new ConvertDefs()
         };
 
         static BlocklyDefinitionRegistry()
