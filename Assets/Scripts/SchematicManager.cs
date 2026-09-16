@@ -8,6 +8,10 @@ using Debug = UnityEngine.Debug;
 [InitializeOnLoad]
 public class SchematicManager : EditorWindow
 {
+    static SchematicManager()
+    {
+    }
+
     [MenuItem("SchematicManager/Compile %#d")]
     public static void Compile()
     {
@@ -40,15 +44,6 @@ public class SchematicManager : EditorWindow
     [MenuItem("SchematicManager/Decompile Schematic %#e")]
     public static void Decompile()
     {
-        string[] guids = AssetDatabase.FindAssets("t:BuilderPrefabRegistry");
-        if (guids.Length == 0)
-        {
-            Debug.LogError("No BuilderPrefabRegistry found. Create one via Thaumiel/Decompiler.");
-            return;
-        }
-
-        string path = AssetDatabase.GUIDToAssetPath(guids[0]);
-        BuilderPrefabRegistry registry = AssetDatabase.LoadAssetAtPath<BuilderPrefabRegistry>(path);
-        Decompiler.DecompileData(registry);
+        Decompiler.DecompileData();
     }
 }

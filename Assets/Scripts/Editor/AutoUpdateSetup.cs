@@ -9,7 +9,7 @@ using System;
 
 public class AutoUpdateSetup
 {
-    private const string RepoUrl = "https://github.com/Mr-Baguetter/ThaumielMapEditorUnityProject.git";
+    private const string RepoUrl = "https://github.com/Thaumiel-Team/ThaumielMapEditorUnityProject.git";
     private const string RemoteName = "origin";
     private const string BranchName = "master";
 
@@ -319,7 +319,8 @@ public class AutoUpdateSetup
         await Task.Run(() => proc.WaitForExit());
         EditorUtility.ClearProgressBar();
 
-        if (File.Exists(installerPath)) File.Delete(installerPath);
+        if (File.Exists(installerPath))
+            File.Delete(installerPath);
 
         if (proc.ExitCode == 0)
         {

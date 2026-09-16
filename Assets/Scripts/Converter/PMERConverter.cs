@@ -17,6 +17,8 @@ namespace Assets.Scripts.Converter
     [InitializeOnLoad]
     public class PMERConverter : EditorWindow
     {
+        public static event Action<PMERSchematic, YamlSchematic> OnSchematicConverted;
+        
         public enum PMERBlockType
         {
             Empty = 0,
@@ -41,26 +43,126 @@ namespace Assets.Scripts.Converter
         [MenuItem("Thaumiel/Tools/PMER Converter")]
         public static void Open()
         {
-            _instanceMap.Clear();
-            string[] guids = AssetDatabase.FindAssets("t:BuilderPrefabRegistry");
-            if (guids.Length > 0)
-            {
-                string path = AssetDatabase.GUIDToAssetPath(guids[0]);
-                Decompiler._registry = AssetDatabase.LoadAssetAtPath<BuilderPrefabRegistry>(path);
-            }
-
             string jsonPath = EditorUtility.OpenFilePanel("Select Schematic", "", "json");
             if (string.IsNullOrEmpty(jsonPath))
                 return;
 
+            GameObject root = ConvertAndSpawn(jsonPath);
+            if (root != null)
+                Selection.activeGameObject = root;
+        }
+
+        [MenuItem("Thaumiel/Tools/PMER Converter (Batch)")]
+        public static void OpenBatch()
+        {
+            string folder = EditorUtility.OpenFolderPanel("Select Folder With Schematics", "", "");
+            if (string.IsNullOrEmpty(folder))
+                return;
+
+            string[] files;
+            try
+            {
+                files = Directory.GetFiles(folder, "*.json", SearchOption.AllDirectories);
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"Failed to list schematics in '{folder}': {ex.Message}");
+                EditorUtility.DisplayDialog("PMER Converter (Batch)", $"Failed to list schematics in:\n{folder}\n\n{ex.Message}", "OK");
+                return;
+            }
+
+            if (files.Length == 0)
+            {
+                EditorUtility.DisplayDialog("PMER Converter (Batch)", $"No .json schematics found in:\n{folder}", "OK");
+                return;
+            }
+
+            List<GameObject> roots = ConvertMultiple(files);
+
+            if (roots.Count > 0)
+                Selection.objects = roots.ToArray();
+        }
+
+        public static List<GameObject> ConvertMultiple(IEnumerable<string> jsonPaths)
+        {
+            List<string> paths = jsonPaths?.Where(p => !string.IsNullOrEmpty(p)).ToList() ?? new();
+            List<GameObject> roots = new(paths.Count);
+            List<string> failed = new();
+
+            if (paths.Count == 0)
+                return roots;
+
+            int group = Undo.GetCurrentGroup();
+            Undo.SetCurrentGroupName("Batch Convert PMER Schematics");
+            Undo.IncrementCurrentGroup();
+
+            try
+            {
+                for (int i = 0; i < paths.Count; i++)
+                {
+                    string jsonPath = paths[i];
+                    try
+                    {
+                        EditorUtility.DisplayProgressBar("PMER Converter (Batch)", $"{Path.GetFileName(jsonPath)} ({i + 1}/{paths.Count})", (float)i / paths.Count);
+
+                        GameObject root = ConvertAndSpawn(jsonPath);
+                        if (root != null)
+                        {
+                            roots.Add(root);
+                        }
+                        else
+                            failed.Add(jsonPath);
+                    }
+                    catch (Exception ex)
+                    {
+                        failed.Add(jsonPath);
+                        Debug.LogError($"Failed to convert '{jsonPath}': {ex}");
+                    }
+                }
+            }
+            finally
+            {
+                EditorUtility.ClearProgressBar();
+                Undo.CollapseUndoOperations(group);
+            }
+
+            Debug.Log($"PMER Converter (Batch): converted {roots.Count}/{paths.Count} schematics.{(failed.Count > 0 ? $" Failed: {string.Join(", ", failed.Select(Path.GetFileName))}" : string.Empty)}");
+
+            if (failed.Count > 0)
+                EditorUtility.DisplayDialog("PMER Converter (Batch)", $"Converted {roots.Count}/{paths.Count} schematics.\n\nFailed:\n{string.Join("\n", failed)}", "OK");
+
+            return roots;
+        }
+
+        public static GameObject ConvertAndSpawn(string jsonPath)
+        {
+            if (string.IsNullOrEmpty(jsonPath))
+                return null;
+
+            if (!File.Exists(jsonPath))
+            {
+                Debug.LogError($"Schematic file not found: '{jsonPath}'.");
+                return null;
+            }
+
+            _instanceMap.Clear();
+
             string json = File.ReadAllText(jsonPath);
             PMERSchematic pmer = JsonConvert.DeserializeObject<PMERSchematic>(json, settings);
+            if (pmer?.Blocks == null)
+            {
+                Debug.LogError($"Failed to parse PMER schematic: '{jsonPath}'.");
+                return null;
+            }
+
             YamlSchematic tmeschematic = ConvertSchematic(pmer, Path.GetFileNameWithoutExtension(jsonPath));
+            OnSchematicConverted?.Invoke(pmer, tmeschematic);
 
             GameObject root = new(tmeschematic.FileName);
             root.transform.rotation = Quaternion.Euler(tmeschematic.Rotation);
             root.transform.localScale = tmeschematic.Scale;
             root.AddComponent<Builder>();
+            Undo.RegisterCreatedObjectUndo(root, $"Convert {tmeschematic.FileName}");
 
             for (int i = 0; i < tmeschematic.Objects.Count; i++)
             {
@@ -98,7 +200,7 @@ namespace Assets.Scripts.Converter
                 Undo.RegisterCreatedObjectUndo(instance, $"Convert {obj.Name}");
             }
 
-            Selection.activeGameObject = root;
+            return root;
         }
 
         /// <summary>
@@ -293,10 +395,7 @@ namespace Assets.Scripts.Converter
             if (input.Contains(':'))
             {
                 string[] parts = input.Split(':');
-                if (parts.Length >= 3
-                    && TryParseFloatString(parts[0], out float r)
-                    && TryParseFloatString(parts[1], out float g)
-                    && TryParseFloatString(parts[2], out float b))
+                if (parts.Length >= 3 && TryParseFloatString(parts[0], out float r) && TryParseFloatString(parts[1], out float g) && TryParseFloatString(parts[2], out float b))
                 {
                     float a = 1f;
                     if (parts.Length >= 4 && !TryParseFloatString(parts[3], out a))

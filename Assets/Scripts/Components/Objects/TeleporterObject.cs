@@ -16,7 +16,7 @@ namespace Assets.Scripts.Components.Objects
         [Tooltip("The teleporter that this object will send players to.")]
         public List<TeleporterObject> Targets = new();
 
-        internal List<Guid> TargetIds = new();
+        public List<Guid> TargetIds = new();
 
         private List<string> RawIds = new();
 

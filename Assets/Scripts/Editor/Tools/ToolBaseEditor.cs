@@ -38,7 +38,7 @@ namespace Assets.Scripts.Editor.Tools
             FieldInfo[] fields = target.GetType().GetFields(BindingFlags.Public | BindingFlags.Instance);
             ToolBase tool = (ToolBase)target;
 
-foreach (FieldInfo field in fields)
+            foreach (FieldInfo field in fields)
             {
                 if (field.FieldType != typeof(InteractableClasses) && field.FieldType != typeof(ColliderClasses) && field.FieldType != typeof(CodeExportPayload))
                     continue;
@@ -94,9 +94,8 @@ foreach (FieldInfo field in fields)
             for (int i = 0; i < entries.Count; i++)
             {
                 CodeExportPayload e = entries[i];
-                string lang = string.IsNullOrEmpty(e.Language) ? "Unknown" : e.Language;
                 string time = string.IsNullOrEmpty(e.Timestamp) ? "" : $"  [{e.Timestamp[..Math.Min(19, e.Timestamp.Length)]}]";
-                labels[i] = $"{i + 1}. {lang}{time}";
+                labels[i] = $"{i + 1}. {time}";
             }
             return labels;
         }

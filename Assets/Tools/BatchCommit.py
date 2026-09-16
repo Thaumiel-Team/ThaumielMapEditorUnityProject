@@ -2,14 +2,14 @@
 Usage examples
 
 Commit everything in the repo, 500 files per commit, pushing after each commit
-    python batch_commit.py --repo /path/to/repo
+    python BatchCommit.py --repo /path/to/repo
 
 Custom batch size, dry run first to see the plan, then commit without pushing
-    python batch_commit.py --repo /path/to/repo --batch-size 200 --dry-run
-    python batch_commit.py --repo /path/to/repo --batch-size 200 --push no
+    python BatchCommit.py --repo /path/to/repo --batch-size 200 --dry-run
+    python BatchCommit.py --repo /path/to/repo --batch-size 200 --push no
 
 Custom commit message prefix
-    python batch_commit.py --repo /path/to/repo -m "Import legacy assets"
+    python BatchCommit.py --repo /path/to/repo -m "Import legacy assets"
 """
 
 import argparse

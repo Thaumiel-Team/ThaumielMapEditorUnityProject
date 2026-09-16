@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 public class RemoveMissingScripts : EditorWindow
 {
-    private List<GameObject> _prefabs = new();
+    private readonly List<GameObject> _prefabs = new();
     private Vector2 _scrollPos;
 
     [MenuItem("Thaumiel/Tools/Remove Missing Scripts")]

@@ -16,7 +16,6 @@ using Debug = UnityEngine.Debug;
 
 namespace Assets.Scripts
 {
-#pragma warning disable CS0618
     [ExecuteInEditMode]
     public class Builder : MonoBehaviour
     {
@@ -37,7 +36,7 @@ namespace Assets.Scripts
             Color.white
         };
 
-        private static readonly Color CullingAreaColor = new Color(1f, 0.5f, 0f);
+        private static readonly Color CullingAreaColor = new(1f, 0.5f, 0f);
 
         [SerializeField]
         internal ServerSide server;

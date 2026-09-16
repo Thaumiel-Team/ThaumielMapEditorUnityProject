@@ -20,7 +20,7 @@ namespace Assets.Scripts.Components.Objects
         public override void Compile(Transform root)
         {
             base.Compile(root);
-            base.Properties = new()
+            Properties = new()
             {
                 ["AllowedRoles"] = AllowedRoles,
                 ["AllowInteractions"] = AllowInteractions
@@ -31,7 +31,7 @@ namespace Assets.Scripts.Components.Objects
         {
             base.Decompile(root);
             AllowedRoles = Properties.TryGetValue("AllowedRoles", out object rolesobj) ? YamlHelpers.ParseEnumList<RoleTypeId>(rolesobj) : default;
-            AllowInteractions = Properties.TryGetValue("AllowInteractions", out object allowobj) ? Convert.ToBoolean(allowobj) : true;
+            AllowInteractions = !Properties.TryGetValue("AllowInteractions", out object allowobj) || Convert.ToBoolean(allowobj);
         }
     }
 }

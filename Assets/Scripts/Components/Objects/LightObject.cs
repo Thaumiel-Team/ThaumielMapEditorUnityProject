@@ -80,8 +80,7 @@ namespace Assets.Scripts.Components.Objects
                     _light.innerSpotAngle = InnerSpotAngle;
                     break;
 
-                case LightType.Rectangle:
-                case LightType.Disc:
+                case LightType.Rectangle or LightType.Disc:
                     _light.areaSize = new Vector2(Range, Range);
                     break;
             }
@@ -111,7 +110,7 @@ namespace Assets.Scripts.Components.Objects
 
             Intensity = Properties.TryGetValue("LightIntensity", out object intensity) ? Convert.ToSingle(intensity) : 1f;
             Range = Properties.TryGetValue("LightRange", out object range) ? Convert.ToSingle(range) : 10f;
-            Color = Properties.TryGetValue("LightColor", out object color) ? YamlHelpers.ParseColor(color) : UnityEngine.Color.white;
+            Color = Properties.TryGetValue("LightColor", out object color) ? YamlHelpers.ParseColor(color) : Color.white;
             ShadowType = Properties.TryGetValue("ShadowType", out object shadowType) ? YamlHelpers.ParseEnum<LightShadows>(shadowType) : LightShadows.None;
             ShadowStrength = Properties.TryGetValue("ShadowStrength", out object shadowStrength) ? Convert.ToSingle(shadowStrength) : 1f;
             LightType = Properties.TryGetValue("LightType", out object lightType) ? YamlHelpers.ParseEnum<LightType>(lightType) : LightType.Point;

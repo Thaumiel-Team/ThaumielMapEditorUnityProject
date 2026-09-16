@@ -15,12 +15,13 @@ namespace Assets.Scripts
         }
 
         private Config current;
+        private Vector2 _scroll;
 
         [MenuItem("SchematicManager/Builder Config")]
         public static void ShowWindow()
         {
             ConfigEditorWindow window = GetWindow<ConfigEditorWindow>("Builder Config");
-            window.minSize = new Vector2(400, 250);
+            window.minSize = new Vector2(420, 350);
             window.Show();
         }
 
@@ -32,7 +33,9 @@ namespace Assets.Scripts
         private void OnGUI()
         {
             current ??= ConfigBuilder.LoadConfig();
+            current.PluginConfigs ??= new();
 
+            _scroll = EditorGUILayout.BeginScrollView(_scroll);
             GUILayout.Space(10);
             GUILayout.Label("Builder Configuration", EditorStyles.boldLabel);
             EditorGUILayout.HelpBox("Configure export settings and post-build actions for the Schematic Builder.", MessageType.Info);
@@ -67,6 +70,8 @@ namespace Assets.Scripts
             
             EditorGUILayout.EndVertical();
             GUILayout.Space(10);
+            DrawPluginConfigs();
+            GUILayout.Space(10);
             GUILayout.Label("Legacy Tools", EditorStyles.boldLabel);            
             EditorGUILayout.BeginVertical("box");
             GUIContent convertLabel = new("Import PMER Settings", "Converts and applies an old PMER JSON configuration file to the new builder.");
@@ -77,6 +82,7 @@ namespace Assets.Scripts
             if (EditorGUI.EndChangeCheck())
                 ConfigBuilder.SaveConfig(current);
 
+            EditorGUILayout.EndScrollView();
             GUILayout.FlexibleSpace();            
             GUI.backgroundColor = new Color(0.8f, 1f, 0.8f);
             if (GUILayout.Button("Save Config", GUILayout.Height(30)))
@@ -87,6 +93,38 @@ namespace Assets.Scripts
 
             GUI.backgroundColor = Color.white;
             GUILayout.Space(10);
+        }
+
+        private void DrawPluginConfigs()
+        {
+            GUILayout.Label("Plugin Configs", EditorStyles.boldLabel);
+            EditorGUILayout.HelpBox("Custom settings registered by plugins.", MessageType.Info);
+
+            if (current.PluginConfigs.Count == 0)
+            {
+                EditorGUILayout.HelpBox("No plugins have registered custom configs.", MessageType.None);
+                return;
+            }
+
+            foreach (PluginConfig section in current.PluginConfigs)
+            {
+                EditorGUILayout.BeginVertical("box");
+                EditorGUILayout.LabelField("Plugin", section.PluginName ?? string.Empty);
+
+                if (section.Config != null)
+                {
+                    foreach (PluginConfigValue entry in section.Config)
+                    {
+                        if (entry == null)
+                            continue;
+
+                        entry.Value = EditorGUILayout.TextField(entry.Name ?? string.Empty, entry.Value ?? string.Empty);
+                    }
+                }
+
+                EditorGUILayout.EndVertical();
+                GUILayout.Space(5);
+            }
         }
 
         private void ConvertPMERSettings()

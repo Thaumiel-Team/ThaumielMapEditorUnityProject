@@ -3,14 +3,16 @@ using UnityEngine;
 using System.Collections.Generic;
 using Assets.Scripts.Components.Objects;
 using Assets.Scripts.Components;
+using Assets.Scripts.Collab.Editor;
 
-namespace Assets.Scripts
+namespace Assets.Scripts.Editor
 {
-#pragma warning disable CS0618
     [InitializeOnLoad]
     public class AutoAddEmpty
     {
-        private static HashSet<int> existingObjects = new();
+        private static readonly HashSet<int> existingObjects = new();
+        private static bool _busy;
+        private static bool _rescanScheduled;
 
         static AutoAddEmpty()
         {
@@ -25,10 +27,34 @@ namespace Assets.Scripts
 
         private static void OnHierarchyChanged()
         {
+            if (_busy)
+                return;
+
+            if (CollabApplier.IsApplying)
+                return;
+
+            _busy = true;
+            try
+            {
+                RunPass();
+            }
+            finally
+            {
+                _busy = false;
+            }
+        }
+        
+        private static void RunPass()
+        {
             GameObject[] allObjects = Object.FindObjectsByType<GameObject>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+            List<EmptyGameObject> toRemove = null;
+            bool added = false;
 
             foreach (GameObject go in allObjects)
             {
+                if (go == null)
+                    continue;
+
                 if (go.TryGetComponent<EmptyGameObject>(out var empty))
                 {
                     Component[] components = go.GetComponents<Component>();
@@ -36,7 +62,13 @@ namespace Assets.Scripts
 
                     foreach (Component c in components)
                     {
+                        if (c == null)
+                            continue;
+
                         if (c is Transform || c is EmptyGameObject)
+                            continue;
+
+                        if (c is Collab.CollabId)
                             continue;
 
                         hasOtherComponent = true;
@@ -45,8 +77,8 @@ namespace Assets.Scripts
 
                     if (hasOtherComponent)
                     {
-                        Object.DestroyImmediate(empty);
-                        Debug.Log($"Removed EmptyGameObject from {go.name} because another component was added.");
+                        toRemove ??= new List<EmptyGameObject>();
+                        toRemove.Add(empty);
                         continue;
                     }
                 }
@@ -57,9 +89,35 @@ namespace Assets.Scripts
                     if (go.GetComponent<ObjectBase>() == null && go.GetComponent<Builder>() == null && go.GetComponentInParent<ObjectBase>() == null && go.GetComponent<ServerSide>() == null && go.name.Contains("GameObject"))
                     {
                         go.AddComponent<EmptyGameObject>();
+                        added = true;
                         Debug.Log($"Automatically added EmptyGameObject to {go.name}");
                     }
                 }
+            }
+
+            if (toRemove != null && toRemove.Count > 0)
+            {
+                EditorApplication.delayCall += () =>
+                {
+                    foreach (EmptyGameObject e in toRemove)
+                    {
+                        if (e == null)
+                            continue;
+
+                        Object.DestroyImmediate(e);
+                        Debug.Log($"Removed EmptyGameObject from {e.gameObject.name} because another component was added.");
+                    }
+                };
+            }
+            else if (added && !_rescanScheduled)
+            {
+                _rescanScheduled = true;
+                EditorApplication.delayCall += () =>
+                {
+                    _rescanScheduled = false;
+                    if (!_busy)
+                        OnHierarchyChanged();
+                };
             }
         }
     }
