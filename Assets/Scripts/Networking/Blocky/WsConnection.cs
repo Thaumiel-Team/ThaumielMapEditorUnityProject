@@ -85,8 +85,6 @@ namespace Assets.Scripts.Networking.Blocky
                         Close();
                         break;
                     }
-
-                    Thread.Sleep(100); 
                 }
                 else
                 {
@@ -262,10 +260,14 @@ namespace Assets.Scripts.Networking.Blocky
             {
                 header = new byte[10];
                 header[1] = 127;
-                for (int i = 0; i < 8; i++)
-                {
-                    header[9 - i] = (byte)((len >> (8 * i)) & 0xFF);
-                }
+                header[2] = 0;
+                header[3] = 0;
+                header[4] = 0;
+                header[5] = 0;
+                header[6] = (byte)((len >> 24) & 0xFF);
+                header[7] = (byte)((len >> 16) & 0xFF);
+                header[8] = (byte)((len >> 8) & 0xFF);
+                header[9] = (byte)(len & 0xFF);
             }
 
             header[0] = (byte)(0x80 | opcode); // FIN=1

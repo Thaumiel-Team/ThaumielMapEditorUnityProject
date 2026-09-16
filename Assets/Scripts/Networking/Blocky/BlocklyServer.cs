@@ -49,6 +49,10 @@ namespace Assets.Scripts.Networking.Blocky
         private static readonly Queue<Action> _mainQueue = new();
         private static readonly object _queueLock = new();
 
+        private static bool _batching;
+        private static readonly List<Dictionary<string, object>> _batchedCategories = new();
+        private static readonly List<Dictionary<string, object>> _batchedBlocks = new();
+
         static BlocklyServer()
         {
             EditorApplication.update += EditorUpdate;
@@ -192,6 +196,11 @@ namespace Assets.Scripts.Networking.Blocky
                         Debug.Log($"[BlocklyServer] Block registered: {bId}");
                         break;
 
+                    case "blocks_registered":
+                        dict.TryGetValue("count", out var blkCount);
+                        Debug.Log($"[BlocklyServer] Block batch registered: {blkCount} blocks.");
+                        break;
+
                     case "category_registered":
                         dict.TryGetValue("name", out var cName);
                         Debug.Log($"[BlocklyServer] Category registered: {cName}");
@@ -223,13 +232,20 @@ namespace Assets.Scripts.Networking.Blocky
         /// <param name="icon">Emoji shown before the category name.</param>
         public static void RegisterCategory(string name, object color = null, string icon = "🔌")
         {
-            Send(new Dictionary<string, object>
+            Dictionary<string, object> dict = new()
             {
                 ["type"] = "register_category",
                 ["name"] = name,
                 ["color"] = color ?? 200,
                 ["icon"] = icon
-            });
+            };
+
+            if (_batching)
+            {
+                _batchedCategories.Add(dict);
+            }
+            else
+                Send(dict);
         }
 
         /// <summary>
@@ -261,7 +277,37 @@ namespace Assets.Scripts.Networking.Blocky
             if (block.HelpUrl != null)
                 dict["helpUrl"] = block.HelpUrl;
 
-            Send(dict);
+            if (_batching)
+            {
+                _batchedBlocks.Add(dict);
+            }
+            else
+                Send(dict);
+        }
+
+        public static void BeginBatch()
+        {
+            _batching = true;
+            _batchedCategories.Clear();
+            _batchedBlocks.Clear();
+        }
+
+        public static void EndBatch()
+        {
+            _batching = false;
+
+            if (_batchedCategories.Count == 0 && _batchedBlocks.Count == 0)
+                return;
+
+            Send(new Dictionary<string, object>
+            {
+                ["type"] = "register_batch",
+                ["categories"] = _batchedCategories,
+                ["blocks"] = _batchedBlocks
+            });
+
+            _batchedCategories.Clear();
+            _batchedBlocks.Clear();
         }
 
         /// <summary>
@@ -275,6 +321,15 @@ namespace Assets.Scripts.Networking.Blocky
         /// </summary>
         public static void LoadXml(string xml) =>
             Send(new Dictionary<string, object> { ["type"] = "load_xml", ["xml"] = xml });
+
+        public static void LoadXml(string xml, string eventBlockType) =>
+            Send(new Dictionary<string, object> { ["type"] = "load_xml", ["xml"] = xml, ["event"] = eventBlockType ?? "" });
+
+        public static void LoadEvent(string eventBlockType) =>
+            Send(new Dictionary<string, object> { ["type"] = "load_event", ["event"] = eventBlockType });
+
+        public static void EnsureEvent(string eventBlockType) =>
+            Send(new Dictionary<string, object> { ["type"] = "ensure_event", ["event"] = eventBlockType });
 
         /// <summary>
         /// Wipe the browser workspace.

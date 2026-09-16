@@ -97,6 +97,7 @@ InitTestScene*.unity*
 
 # Auto-generated scenes by play mode tests
 /[Aa]ssets/[Ii]nit[Tt]est[Ss]cene*.unity*
-config.json
+
+*.json
 config.json.meta
 Assets/Scenes/SampleScene.unity

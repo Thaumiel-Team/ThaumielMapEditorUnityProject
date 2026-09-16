@@ -272,22 +272,25 @@
             display: flex;
             flex: 1;
             min-height: 0;
-            overflow: hidden
+            overflow: hidden;
+            position: relative;
         }
 
         #blocklyDiv {
             flex: 1;
             min-width: 0;
             border-right: 1px solid var(--border);
+            position: relative;
         }
 
         .blockly-badge {
-            position: fixed;
-            bottom: 20px;
-            left: 20px;
-            z-index: 1000;
+            position: absolute;
+            bottom: 12px;
+            left: calc(var(--toolbox-w, 48px) + 12px);
+            z-index: 50;
             opacity: 0.6;
-            transition: opacity 0.2s ease-in-out;
+            transition: opacity 0.2s ease-in-out, left 0.18s ease;
+            line-height: 0;
         }
 
         .blockly-badge:hover {
@@ -295,9 +298,16 @@
         }
 
         .blockly-badge img {
-            height: 36px;
+            height: clamp(20px, calc(3.2vmin + 8px), 32px);
+            width: auto;
+            max-width: min(150px, 22vw);
             display: block;
             filter: drop-shadow(0 2px 8px rgba(0, 0, 0, .6));
+        }
+
+        .blockly-badge.compact img {
+            height: 20px;
+            max-width: 96px;
         }
 
         .sidebar {
@@ -524,12 +534,13 @@
         </div>
         <button class="btn btn-export" onclick="exportCode()">Export to Unity</button>
     </header>
-    <a href="https://g.co/dev/blockly" target="_blank" rel="noopener noreferrer" class="blockly-badge">
-        <img src="https://developers.google.com/static/blockly/images/logos/built-with-blockly-badge-black.png"
-            alt="Built with Blockly">
-    </a>
-    <div class="main">
+    <div class="main" id="blocklyMain">
         <div id="blocklyDiv"></div>
+        <a href="https://g.co/dev/blockly" target="_blank" rel="noopener noreferrer" class="blockly-badge"
+            id="blocklyBadge">
+            <img src="https://developers.google.com/static/blockly/images/logos/built-with-blockly-badge-black.png"
+                alt="Built with Blockly">
+        </a>
 
         <div class="sidebar">
             <div class="sb-hd">
@@ -1148,6 +1159,39 @@
             sounds: false,
         });
 
+        const badgeEl = document.getElementById('blocklyBadge');
+        const blocklyDivEl = document.getElementById('blocklyDiv');
+        const blocklyMainEl = document.getElementById('blocklyMain');
+        function syncBadgeToToolbox() {
+            if (!badgeEl || !blocklyDivEl || !blocklyMainEl) return;
+            const toolboxEl = blocklyDivEl.querySelector('.blocklyToolboxDiv');
+            const w = toolboxEl ? toolboxEl.getBoundingClientRect().width : 48;
+            blocklyMainEl.style.setProperty('--toolbox-w', `${Math.ceil(w)}px`);
+            badgeEl.classList.toggle('compact', blocklyDivEl.clientWidth < 560);
+            let flyoutOpen = false;
+            try {
+                const flyout = workspace && workspace.getFlyout && workspace.getFlyout();
+                if (flyout && typeof flyout.isVisible === 'function') flyoutOpen = flyout.isVisible();
+            } catch (e) { }
+            badgeEl.style.opacity = flyoutOpen ? '0' : '';
+            badgeEl.style.pointerEvents = flyoutOpen ? 'none' : '';
+        }
+        if (window.ResizeObserver && blocklyDivEl) {
+            const badgeRO = new ResizeObserver(syncBadgeToToolbox);
+            badgeRO.observe(blocklyDivEl);
+            const toolboxEl = blocklyDivEl.querySelector('.blocklyToolboxDiv');
+            if (toolboxEl) badgeRO.observe(toolboxEl);
+            new MutationObserver(() => {
+                const tb = blocklyDivEl.querySelector('.blocklyToolboxDiv');
+                if (tb) badgeRO.observe(tb);
+                syncBadgeToToolbox();
+            }).observe(blocklyDivEl, { childList: true, subtree: true });
+        }
+        window.addEventListener('resize', syncBadgeToToolbox);
+        requestAnimationFrame(syncBadgeToToolbox);
+        setTimeout(syncBadgeToToolbox, 100);
+        setTimeout(syncBadgeToToolbox, 500);
+
         let connectionLinesGroup = null;
 
         function getBlockBounds(block) {
@@ -1243,6 +1287,12 @@
 
         workspace.addChangeListener((event) => {
             updateCode();
+
+            if (event.isUiEvent) {
+                syncBadgeToToolbox();
+            }
+
+            enforceEventLock(event);
 
             if (event.type === Blockly.Events.BLOCK_MOVE || event.type === Blockly.Events.BLOCK_CREATE || event.type === Blockly.Events.BLOCK_DELETE || event.type === Blockly.Events.BLOCK_CHANGE) {
                 updateFunctionLines();
@@ -1379,20 +1429,121 @@
 
         const dynCats = {};
 
+        const EVENT_BLOCK_TYPES = [
+            'spawned_event',
+            'destroyed_event',
+            'trigger_enter_event',
+            'trigger_exit_event',
+            'interaction_event',
+            'interaction_denied_event'
+        ];
+
+        let lockedEvent = null;
+        let suppressEnforcer = false;
+
+        function isEventBlockType(type) {
+            return EVENT_BLOCK_TYPES.indexOf(type) !== -1;
+        }
+
+        function setEventLock(eventType) {
+            lockedEvent = isEventBlockType(eventType) ? eventType : null;
+            refreshToolbox();
+            if (lockedEvent) {
+                addLog('info', `Workspace locked to event: ${lockedEvent}`);
+            }
+        }
+
+        function addEventBlock(eventType) {
+            suppressEnforcer = true;
+            try {
+                const block = workspace.newBlock(eventType);
+                block.initSvg();
+                block.render();
+                block.moveBy(40, 40);
+                return block;
+            } finally {
+                suppressEnforcer = false;
+            }
+        }
+
+        function setupLockedEvent(eventType) {
+            if (!isEventBlockType(eventType)) {
+                addLog('error', 'load_event: unknown event "' + eventType + '"');
+                return;
+            }
+            workspace.clear();
+            addEventBlock(eventType);
+            setEventLock(eventType);
+            addLog('info', `Workspace prepared for event: ${eventType}`);
+        }
+
+        function ensureEventBlock(eventType) {
+            if (!isEventBlockType(eventType)) {
+                addLog('error', 'ensure_event: unknown event "' + eventType + '"');
+                return;
+            }
+            const exists = workspace.getTopBlocks(false).some(b => b.type === eventType);
+            if (!exists) {
+                addEventBlock(eventType);
+                addLog('info', `Event added to workspace: ${eventType}`);
+            } else {
+                addLog('info', `Event already present: ${eventType}`);
+            }
+        }
+
+        function enforceEventLock(event) {
+            if (!lockedEvent || suppressEnforcer) {
+                return;
+            }
+            if (event.type !== Blockly.Events.BLOCK_CREATE || !event.blockId) {
+                return;
+            }
+            let block = null;
+            try {
+                block = workspace.getBlockById(event.blockId);
+            } catch (e) { }
+            if (!block || block.type === lockedEvent || !isEventBlockType(block.type)) {
+                return;
+            }
+            try {
+                block.dispose();
+            } catch (e) { }
+            addLog('info', `Removed ${block.type}: workspace is locked to ${lockedEvent}`);
+            updateCode();
+        }
+
         function handleMsg(msg) {
             switch (msg.type) {
                 case 'register_block': registerBlock(msg); break;
                 case 'register_category': registerCategory(msg); break;
+                case 'register_batch': registerBatch(msg); break;
                 case 'request_export': exportCode(); break;
-                case 'load_xml':
-                    if (msg.xml) {
-                        workspace.clear();
-                        Blockly.Xml.domToWorkspace(Blockly.Xml.textToDom(msg.xml), workspace);
-                        addLog('info', 'Workspace loaded from XML');
+                case 'load_event':
+                    if (msg.event) {
+                        setupLockedEvent(msg.event);
                     }
+                    break;
+                case 'ensure_event':
+                    if (msg.event) {
+                        ensureEventBlock(msg.event);
+                    }
+                    break;
+                case 'load_xml':
+                    suppressEnforcer = true;
+                    try {
+                        if (msg.xml) {
+                            workspace.clear();
+                            Blockly.Xml.domToWorkspace(Blockly.Xml.textToDom(msg.xml), workspace);
+                            addLog('info', 'Workspace loaded from XML');
+                        }
+                    } finally {
+                        suppressEnforcer = false;
+                    }
+                    setEventLock(msg.event || null);
                     break;
                 case 'clear_workspace':
                     workspace.clear();
+                    setEventLock(null);
                     addLog('info', 'Workspace cleared');
                     break;
                 case 'ping':
@@ -1401,6 +1552,25 @@
                 default:
                     addLog('info', 'Unknown msg type: ' + msg.type);
             }
+        }
+
+        /**
+         * Register a batch of categories/blocks sent from Unity as a single
+         * message. Refreshes the toolbox once and sends a single ack instead
+         * of one refresh + ack per block.
+         */
+        function registerBatch(msg) {
+            const cats = msg.categories || [];
+            const blocks = msg.blocks || [];
+            for (const c of cats) {
+                registerCategory(c, true);
+            }
+            for (const b of blocks) {
+                registerBlock(b, true);
+            }
+            refreshToolbox();
+            addLog('info', `Block batch registered: ${blocks.length} blocks, ${cats.length} categories`);
+            wsSend({ type: 'blocks_registered', count: blocks.length });
         }
 
         /**
@@ -1433,7 +1603,7 @@
          *   color: 45
          *   generator: "return 'Jump(' + cs_val(block, 'FORCE', '0') + ');\n';"
          */
-        function registerBlock(msg) {
+        function registerBlock(msg, silent) {
             const id = msg.id;
             if (!id) {
                 addLog('error', 'register_block: missing id');
@@ -1485,26 +1655,36 @@
 
             const catName = msg.category || 'Unity Plugins';
             if (!dynCats[catName]) {
-                registerCategory({ name: catName, color: msg.color ?? 200 });
+                registerCategory({ name: catName, color: msg.color ?? 200 }, silent);
             }
-            dynCats[catName].blocks.push(id);
+            if (dynCats[catName].blocks.indexOf(id) === -1) {
+                dynCats[catName].blocks.push(id);
+            }
+            if (silent) {
+                return;
+            }
             refreshToolbox();
 
             addLog('info', `Block registered: [${id}] → "${catName}"`);
             wsSend({ type: 'block_registered', id, category: catName });
         }
 
-        function registerCategory(msg) {
+        function registerCategory(msg, silent) {
             const name = msg.name;
             if (!name) {
                 addLog('error', 'register_category: missing name');
                 return;
             }
             if (dynCats[name]) {
-                addLog('info', `Category "${name}" already exists`);
+                if (!silent) {
+                    addLog('info', `Category "${name}" already exists`);
+                }
                 return;
             }
             dynCats[name] = { color: msg.color ?? msg.colour ?? 200, icon: msg.icon || '', blocks: [] };
+            if (silent) {
+                return;
+            }
             refreshToolbox();
             addLog('info', `Category registered: "${name}"`);
             wsSend({ type: 'category_registered', name });
@@ -1512,6 +1692,21 @@
 
         function refreshToolbox() {
             const base = document.getElementById('toolbox').cloneNode(true);
+            if (lockedEvent) {
+                const cats = base.getElementsByTagName('category');
+                for (let i = 0; i < cats.length; i++) {
+                    if (cats[i].getAttribute('name') !== 'Events') {
+                        continue;
+                    }
+                    const kids = Array.from(cats[i].childNodes);
+                    for (const kid of kids) {
+                        if (kid.nodeType === 1 && kid.tagName.toLowerCase() === 'block'
+                            && kid.getAttribute('type') !== lockedEvent) {
+                            cats[i].removeChild(kid);
+                        }
+                    }
+                }
+            }
             for (const [name, cat] of Object.entries(dynCats)) {
                 if (cat.blocks.length === 0) {
                     continue;

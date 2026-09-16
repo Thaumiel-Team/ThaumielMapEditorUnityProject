@@ -16,7 +16,8 @@ namespace Assets.Scripts.Networking.Blocky.Definitions
             MaxDistance,
             Loop,
             Id,
-            Path
+            Path,
+            IsPlaying
         }
 
         public override void Register()

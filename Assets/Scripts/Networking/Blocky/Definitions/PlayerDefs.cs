@@ -100,6 +100,7 @@ namespace Assets.Scripts.Networking.Blocky.Definitions
             RegisterGroup();
             RegisterMessages();
             RegisterLists();
+            RegisterEffects();
         }
 
         private void RegisterGetProperty()
@@ -474,6 +475,42 @@ namespace Assets.Scripts.Networking.Blocky.Definitions
                 Message = "Player List",
                 Connections = new List<BlockConnectionType> { BlockConnectionType.Output },
                 Args = null
+            });
+        }
+
+        private void RegisterEffects()
+        {
+            BlocklyServer.RegisterBlock(new BlockDefinition
+            {
+                Id = "give_player_effect",
+                Category = "Player",
+                Color = "#df6717",
+                Tooltip = "Gives the player a status effect.",
+                Message = "Give Player: %1  Effect: %2  Intensity: %3  Duration: %4  Add Duration: %5",
+                Connections = new List<BlockConnectionType> { BlockConnectionType.Previous, BlockConnectionType.Next },
+                Args = new List<Dictionary<string, object>>
+                {
+                    BlockArg.Value("Player"),
+                    BlockArg.Dropdown("effect", EnumOptions<PlayerEffects>()),
+                    BlockArg.NumberField("intensity", 1, 1, 255),
+                    BlockArg.NumberField("duration", 5, 0),
+                    BlockArg.Checkbox("addDuration", false)
+                }
+            });
+
+            BlocklyServer.RegisterBlock(new BlockDefinition
+            {
+                Id = "remove_player_effect",
+                Category = "Player",
+                Color = "#df6717",
+                Tooltip = "Removes a status effect from the player.",
+                Message = "Remove Effect: %2 from Player: %1",
+                Connections = new List<BlockConnectionType> { BlockConnectionType.Previous, BlockConnectionType.Next },
+                Args = new List<Dictionary<string, object>>
+                {
+                    BlockArg.Value("Player"),
+                    BlockArg.Dropdown("effect", EnumOptions<PlayerEffects>())
+                }
             });
         }
     }

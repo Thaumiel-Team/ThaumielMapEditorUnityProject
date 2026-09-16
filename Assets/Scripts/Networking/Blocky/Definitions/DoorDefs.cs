@@ -17,6 +17,7 @@ namespace Assets.Scripts.Networking.Blocky.Definitions
             Position,
             Rotation,
             Scale,
+            ExactState,
         }
 
         public override void Register()
@@ -30,6 +31,9 @@ namespace Assets.Scripts.Networking.Blocky.Definitions
             RegisterCloseDoor();
             RegisterLockDoor();
             RegisterUnlockDoor();
+            RegisterDoorIsOpen();
+            RegisterDoorIsClosed();
+            RegisterDoorIsOpening();
             RegisterGetProperty();
         }
 
@@ -169,6 +173,57 @@ namespace Assets.Scripts.Networking.Blocky.Definitions
                 Tooltip = "Unlocks this door, allowing it to be opened.",
                 Message = "Unlock Door: %1",
                 Connections = new List<BlockConnectionType> { BlockConnectionType.Previous, BlockConnectionType.Next },
+                Args = new List<Dictionary<string, object>>
+                {
+                    BlockArg.Value("Door")
+                }
+            });
+        }
+
+        private void RegisterDoorIsOpen()
+        {
+            BlocklyServer.RegisterBlock(new BlockDefinition
+            {
+                Id = "door_is_open",
+                Category = "Door",
+                Color = "#f14f2a",
+                Tooltip = "Returns true if the door is currently open.",
+                Message = "Is Door Open: %1",
+                Connections = new List<BlockConnectionType> { BlockConnectionType.Output },
+                Args = new List<Dictionary<string, object>>
+                {
+                    BlockArg.Value("Door")
+                }
+            });
+        }
+
+        private void RegisterDoorIsClosed()
+        {
+            BlocklyServer.RegisterBlock(new BlockDefinition
+            {
+                Id = "door_is_closed",
+                Category = "Door",
+                Color = "#f14f2a",
+                Tooltip = "Returns true if the door is currently closed (not open).",
+                Message = "Is Door Closed: %1",
+                Connections = new List<BlockConnectionType> { BlockConnectionType.Output },
+                Args = new List<Dictionary<string, object>>
+                {
+                    BlockArg.Value("Door")
+                }
+            });
+        }
+
+        private void RegisterDoorIsOpening()
+        {
+            BlocklyServer.RegisterBlock(new BlockDefinition
+            {
+                Id = "door_is_opening",
+                Category = "Door",
+                Color = "#f14f2a",
+                Tooltip = "Returns true while the door is animating between open and closed (opening or closing).",
+                Message = "Is Door Opening: %1",
+                Connections = new List<BlockConnectionType> { BlockConnectionType.Output },
                 Args = new List<Dictionary<string, object>>
                 {
                     BlockArg.Value("Door")

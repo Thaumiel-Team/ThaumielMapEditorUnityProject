@@ -33,9 +33,17 @@ namespace Assets.Scripts.Networking.Blocky
 
         private static void RegisterAll()
         {
-            foreach (DefBase def in _defs)
+            BlocklyServer.BeginBatch();
+            try
             {
-                def.Register();
+                foreach (DefBase def in _defs)
+                {
+                    def.Register();
+                }
+            }
+            finally
+            {
+                BlocklyServer.EndBatch();
             }
         }
     }
