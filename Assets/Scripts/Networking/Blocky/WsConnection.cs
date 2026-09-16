@@ -230,7 +230,7 @@ namespace Assets.Scripts.Networking.Blocky
 
         private void SendPong(byte[] payload)
         {
-            byte[] frame = BuildFrame(0xA, payload);  // opcode 0xA = pong
+            byte[] frame = BuildFrame(0xA, payload); // opcode 0xA = pong
             try
             {
                 lock (_stream)
@@ -268,7 +268,7 @@ namespace Assets.Scripts.Networking.Blocky
                 }
             }
 
-            header[0] = (byte)(0x80 | opcode);  // FIN=1
+            header[0] = (byte)(0x80 | opcode); // FIN=1
 
             byte[] frame = new byte[header.Length + len];
             Array.Copy(header, 0, frame, 0, header.Length);

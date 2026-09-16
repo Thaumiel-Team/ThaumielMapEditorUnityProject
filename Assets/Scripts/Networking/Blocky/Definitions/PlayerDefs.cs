@@ -99,6 +99,7 @@ namespace Assets.Scripts.Networking.Blocky.Definitions
             RegisterHealth();
             RegisterGroup();
             RegisterMessages();
+            RegisterLists();
         }
 
         private void RegisterGetProperty()
@@ -168,7 +169,7 @@ namespace Assets.Scripts.Networking.Blocky.Definitions
                 Connections = new List<BlockConnectionType> { BlockConnectionType.Output },
                 Args = new List<Dictionary<string, object>>
                 {
-                    BlockArg.NumberField("Player Id")
+                    BlockArg.NumberField("PLAYER_ID")
                 }
             });
 
@@ -182,7 +183,7 @@ namespace Assets.Scripts.Networking.Blocky.Definitions
                 Connections = new List<BlockConnectionType> { BlockConnectionType.Output },
                 Args = new List<Dictionary<string, object>>
                 {
-                    BlockArg.TextField("Player User Id")
+                    BlockArg.TextField("USER_ID")
                 }
             });
 
@@ -193,8 +194,11 @@ namespace Assets.Scripts.Networking.Blocky.Definitions
                 Color = "#df6717",
                 Tooltip = "Gets a player by their collider.",
                 Connections = new List<BlockConnectionType> { BlockConnectionType.Output },
-                Message = "Get Player by Collider",
-                Args = null
+                Message = "Get Player by Collider: %1",
+                Args = new List<Dictionary<string, object>>
+                {
+                    BlockArg.Value("Collider")
+                }
             });
         }
 
@@ -211,8 +215,8 @@ namespace Assets.Scripts.Networking.Blocky.Definitions
                 Args = new List<Dictionary<string, object>>
                 {
                     BlockArg.Value("Player"),
-                    BlockArg.Dropdown("New Role", EnumOptions<RoleTypeId>()),
-                    BlockArg.Checkbox("Keep Position", true)
+                    BlockArg.Dropdown("ROLE", EnumOptions<RoleTypeId>()),
+                    BlockArg.Checkbox("KEEP_POSITION", true)
                 }
             });
         }
@@ -230,14 +234,14 @@ namespace Assets.Scripts.Networking.Blocky.Definitions
                 Args = new List<Dictionary<string, object>>
                 {
                     BlockArg.Value("Player"),
-                    BlockArg.Dropdown("New Item", EnumOptions<ItemType>()),
-                    BlockArg.Checkbox("Drop if full", true)
+                    BlockArg.Dropdown("ITEM", EnumOptions<ItemType>()),
+                    BlockArg.Checkbox("DROP_IF_FULL", true)
                 }
             });
 
             BlocklyServer.RegisterBlock(new BlockDefinition
             {
-                Id = "give_player_item",
+                Id = "give_player_items",
                 Category = "Player",
                 Color = "#df6717",
                 Tooltip = "Gives the player multiple items.",
@@ -246,9 +250,9 @@ namespace Assets.Scripts.Networking.Blocky.Definitions
                 Args = new List<Dictionary<string, object>>
                 {
                     BlockArg.Value("Player"),
-                    BlockArg.Dropdown("New Item", EnumOptions<ItemType>()),
-                    BlockArg.NumberField("Amount", 1),
-                    BlockArg.Checkbox("Drop if full", true)
+                    BlockArg.Dropdown("ITEM", EnumOptions<ItemType>()),
+                    BlockArg.NumberField("COUNT", 1),
+                    BlockArg.Checkbox("DROP_IF_FULL", true)
                 }
             });
 
@@ -263,7 +267,7 @@ namespace Assets.Scripts.Networking.Blocky.Definitions
                 Args = new List<Dictionary<string, object>>
                 {
                     BlockArg.Value("Player"),
-                    BlockArg.Dropdown("Removed Item", EnumOptions<ItemType>()),
+                    BlockArg.Dropdown("ITEM", EnumOptions<ItemType>()),
                 }
             });
         }
@@ -281,7 +285,7 @@ namespace Assets.Scripts.Networking.Blocky.Definitions
                 Args = new List<Dictionary<string, object>>
                 {
                     BlockArg.Value("Player"),
-                    BlockArg.NumberField("Health"),
+                    BlockArg.NumberField("HEALTH"),
                 }
             });
 
@@ -296,7 +300,7 @@ namespace Assets.Scripts.Networking.Blocky.Definitions
                 Args = new List<Dictionary<string, object>>
                 {
                     BlockArg.Value("Player"),
-                    BlockArg.NumberField("Max Health"),
+                    BlockArg.NumberField("MAX_HEALTH"),
                 }
             });
 
@@ -311,7 +315,7 @@ namespace Assets.Scripts.Networking.Blocky.Definitions
                 Args = new List<Dictionary<string, object>>
                 {
                     BlockArg.Value("Player"),
-                    BlockArg.NumberField("Artificial Health"),
+                    BlockArg.NumberField("ARTIFICIAL_HEALTH"),
                 }
             });
 
@@ -326,7 +330,7 @@ namespace Assets.Scripts.Networking.Blocky.Definitions
                 Args = new List<Dictionary<string, object>>
                 {
                     BlockArg.Value("Player"),
-                    BlockArg.NumberField("Max Artificial Health"),
+                    BlockArg.NumberField("MAX_ARTIFICIAL_HEALTH"),
                 }
             });
 
@@ -341,7 +345,7 @@ namespace Assets.Scripts.Networking.Blocky.Definitions
                 Args = new List<Dictionary<string, object>>
                 {
                     BlockArg.Value("Player"),
-                    BlockArg.NumberField("Hume shield"),
+                    BlockArg.NumberField("HUME_SHIELD"),
                 }
             });
 
@@ -356,7 +360,7 @@ namespace Assets.Scripts.Networking.Blocky.Definitions
                 Args = new List<Dictionary<string, object>>
                 {
                     BlockArg.Value("Player"),
-                    BlockArg.NumberField("Max Hume Shield"),
+                    BlockArg.NumberField("MAX_HUME_SHIELD"),
                 }
             });
 
@@ -371,7 +375,7 @@ namespace Assets.Scripts.Networking.Blocky.Definitions
                 Args = new List<Dictionary<string, object>>
                 {
                     BlockArg.Value("Player"),
-                    BlockArg.NumberField("Hume Shield Regen Rate"),
+                    BlockArg.NumberField("HUME_SHIELD_REGEN_RATE"),
                 }
             });
 
@@ -386,7 +390,7 @@ namespace Assets.Scripts.Networking.Blocky.Definitions
                 Args = new List<Dictionary<string, object>>
                 {
                     BlockArg.Value("Player"),
-                    BlockArg.NumberField("Hume Shield Regen Cooldown"),
+                    BlockArg.NumberField("HUME_SHIELD_REGEN_COOLDOWN"),
                 }
             });
         }
@@ -404,7 +408,7 @@ namespace Assets.Scripts.Networking.Blocky.Definitions
                 Args = new List<Dictionary<string, object>>
                 {
                     BlockArg.Value("Player"),
-                    BlockArg.TextField("Group Name")
+                    BlockArg.TextField("GROUP_NAME")
                 }
             });
 
@@ -419,7 +423,7 @@ namespace Assets.Scripts.Networking.Blocky.Definitions
                 Args = new List<Dictionary<string, object>>
                 {
                     BlockArg.Value("Player"),
-                    BlockArg.TextField("Group Color")
+                    BlockArg.TextField("GROUP_COLOR")
                 }
             });
         }
@@ -437,8 +441,8 @@ namespace Assets.Scripts.Networking.Blocky.Definitions
                 Args = new List<Dictionary<string, object>>
                 {
                     BlockArg.Value("Player"),
-                    BlockArg.TextField("Broadcast Message"),
-                    BlockArg.NumberField("Duration", 5)
+                    BlockArg.TextField("MESSAGE"),
+                    BlockArg.NumberField("DURATION", 5)
                 }
             });
 
@@ -453,8 +457,8 @@ namespace Assets.Scripts.Networking.Blocky.Definitions
                 Args = new List<Dictionary<string, object>>
                 {
                     BlockArg.Value("Player"),
-                    BlockArg.TextField("Hint Message"),
-                    BlockArg.NumberField("Duration", 5)
+                    BlockArg.TextField("MESSAGE"),
+                    BlockArg.NumberField("DURATION", 5)
                 }
             });
         }
@@ -468,7 +472,7 @@ namespace Assets.Scripts.Networking.Blocky.Definitions
                 Color = "#df6717",
                 Tooltip = "List of all players currently on the server.",
                 Message = "Player List",
-                Connections = new List<BlockConnectionType> { BlockConnectionType.Output, BlockConnectionType.Input },
+                Connections = new List<BlockConnectionType> { BlockConnectionType.Output },
                 Args = null
             });
         }

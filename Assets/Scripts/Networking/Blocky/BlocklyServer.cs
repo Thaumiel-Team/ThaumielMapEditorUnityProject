@@ -175,7 +175,6 @@ namespace Assets.Scripts.Networking.Blocky
 
                     case "code_export":
                         CodeExportPayload payload = _des.Deserialize<CodeExportPayload>(yaml);
-                        Debug.Log($"[BlocklyServer] Code export ({payload.Language}).");
                         Enqueue(() => OnCodeExport?.Invoke(payload, ActiveTargetEvent));
                         break;
 

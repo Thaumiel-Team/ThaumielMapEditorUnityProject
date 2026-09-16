@@ -363,7 +363,7 @@
             flex-shrink: 0;
         }
 
-        .code-tools select {
+        .code-tools .lang-badge {
             background: var(--bg2);
             color: var(--text);
             border: 1px solid var(--border);
@@ -371,12 +371,6 @@
             padding: 4px 7px;
             border-radius: var(--r);
             font-family: var(--mono);
-            cursor: pointer;
-            transition: border-color .15s;
-        }
-
-        .code-tools select:hover {
-            border-color: var(--accent);
         }
 
         .code-tools .btn {
@@ -545,10 +539,7 @@
                 <pre id="codeOut">// Add blocks to generate code…</pre>
             </div>
             <div class="code-tools">
-                <select id="langSel" onchange="updateCode()">
-                    <option value="yaml">YAML</option>
-                    <option value="csharp">C#</option>
-                </select>
+                <span class="lang-badge">YAML</span>
                 <button class="btn" onclick="copyCode()">Copy</button>
                 <button class="btn" onclick="exportCode()">Send</button>
             </div>
@@ -1288,7 +1279,7 @@
         }
 
         function updateCode() {
-            const lang = document.getElementById('langSel').value;
+            const lang = 'yaml';
             let code;
             try {
                 code = getCodeForLang(lang);
@@ -1374,7 +1365,7 @@
         }
 
         function exportCode() {
-            const lang = document.getElementById('langSel').value;
+            const lang = 'yaml';
             const code = getCodeForLang(lang);
             const xml = Blockly.Xml.domToText(Blockly.Xml.workspaceToDom(workspace));
             const blocks = workspaceToBlocks();

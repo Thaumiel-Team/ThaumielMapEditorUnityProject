@@ -44,10 +44,11 @@ namespace Assets.Scripts.Networking.Blocky.Definitions
                 Category = "Speaker",
                 Color = "#B71C1C",
                 Tooltip = "Gets a property of the speaker.",
-                Message = "Get %1 of Speaker",
+                Message = "Get %2 of Speaker: %1",
                 Connections = new List<BlockConnectionType> { BlockConnectionType.Output },
                 Args = new List<Dictionary<string, object>>
                 {
+                    BlockArg.Value("Speaker"),
                     BlockArg.Dropdown("Property", EnumOptions<Properties>())
                 }
             });
@@ -78,10 +79,11 @@ namespace Assets.Scripts.Networking.Blocky.Definitions
                 Category = "Speaker",
                 Color = "#B71C1C",
                 Tooltip = "Set the volume of the speaker as a percentage from 0 to 100.",
-                Message = "Set Volume → %1",
+                Message = "Set Volume of Speaker: %1 → %2",
                 Connections = new List<BlockConnectionType> { BlockConnectionType.Previous, BlockConnectionType.Next },
                 Args = new List<Dictionary<string, object>>
                 {
+                    BlockArg.Value("Speaker"),
                     BlockArg.NumberField("volume", 100.0, 0.0, 100.0)
                 }
             });
@@ -95,10 +97,11 @@ namespace Assets.Scripts.Networking.Blocky.Definitions
                 Category = "Speaker",
                 Color = "#B71C1C",
                 Tooltip = "Toggle whether the speaker uses spatial audio. When enabled, volume and panning are affected by the listener's position.",
-                Message = "Set Spatial → %1",
+                Message = "Set Spatial of Speaker: %1 → %2",
                 Connections = new List<BlockConnectionType> { BlockConnectionType.Previous, BlockConnectionType.Next },
                 Args = new List<Dictionary<string, object>>
                 {
+                    BlockArg.Value("Speaker"),
                     BlockArg.Checkbox("isSpatial", false)
                 }
             });
@@ -112,10 +115,11 @@ namespace Assets.Scripts.Networking.Blocky.Definitions
                 Category = "Speaker",
                 Color = "#B71C1C",
                 Tooltip = "Set the minimum distance at which spatial audio begins to attenuate. Within this range audio plays at full volume.",
-                Message = "Set Min Distance → %1",
+                Message = "Set Min Distance of Speaker: %1 → %2",
                 Connections = new List<BlockConnectionType> { BlockConnectionType.Previous, BlockConnectionType.Next },
                 Args = new List<Dictionary<string, object>>
                 {
+                    BlockArg.Value("Speaker"),
                     BlockArg.NumberField("minDistance", 1.0)
                 }
             });
@@ -129,10 +133,11 @@ namespace Assets.Scripts.Networking.Blocky.Definitions
                 Category = "Speaker",
                 Color = "#B71C1C",
                 Tooltip = "Set the maximum distance at which the speaker can be heard. Beyond this range audio is inaudible.",
-                Message = "Set Max Distance → %1",
+                Message = "Set Max Distance of Speaker: %1 → %2",
                 Connections = new List<BlockConnectionType> { BlockConnectionType.Previous, BlockConnectionType.Next },
                 Args = new List<Dictionary<string, object>>
                 {
+                    BlockArg.Value("Speaker"),
                     BlockArg.NumberField("maxDistance", 10.0)
                 }
             });
@@ -146,10 +151,11 @@ namespace Assets.Scripts.Networking.Blocky.Definitions
                 Category = "Speaker",
                 Color = "#B71C1C",
                 Tooltip = "Toggle whether the speaker loops its audio playback.",
-                Message = "Set Loop → %1",
+                Message = "Set Loop of Speaker: %1 → %2",
                 Connections = new List<BlockConnectionType> { BlockConnectionType.Previous, BlockConnectionType.Next },
                 Args = new List<Dictionary<string, object>>
                 {
+                    BlockArg.Value("Speaker"),
                     BlockArg.Checkbox("loop", false)
                 }
             });
@@ -163,10 +169,11 @@ namespace Assets.Scripts.Networking.Blocky.Definitions
                 Category = "Speaker",
                 Color = "#B71C1C",
                 Tooltip = "Set the file path of the audio file this speaker will play. Used as the default path when Play is called with no argument.",
-                Message = "Set Path → %1",
+                Message = "Set Path of Speaker: %1 → %2",
                 Connections = new List<BlockConnectionType> { BlockConnectionType.Previous, BlockConnectionType.Next },
                 Args = new List<Dictionary<string, object>>
                 {
+                    BlockArg.Value("Speaker"),
                     BlockArg.TextField("path", "")
                 }
             });
@@ -180,10 +187,11 @@ namespace Assets.Scripts.Networking.Blocky.Definitions
                 Category = "Speaker",
                 Color = "#B71C1C",
                 Tooltip = "Begin audio playback. If a filepath is provided it overrides the speaker's default Path.",
-                Message = "Play  File: %1",
+                Message = "Play Speaker: %1  File: %2",
                 Connections = new List<BlockConnectionType> { BlockConnectionType.Previous, BlockConnectionType.Next },
                 Args = new List<Dictionary<string, object>>
                 {
+                    BlockArg.Value("Speaker"),
                     BlockArg.TextField("filepath", "")
                 }
             });
@@ -197,9 +205,12 @@ namespace Assets.Scripts.Networking.Blocky.Definitions
                 Category = "Speaker",
                 Color = "#B71C1C",
                 Tooltip = "Pause audio playback on this speaker.",
-                Message = "Pause",
+                Message = "Pause Speaker: %1",
                 Connections = new List<BlockConnectionType> { BlockConnectionType.Previous, BlockConnectionType.Next },
-                Args = new List<Dictionary<string, object>>()
+                Args = new List<Dictionary<string, object>>
+                {
+                    BlockArg.Value("Speaker")
+                }
             });
         }
 
@@ -211,9 +222,12 @@ namespace Assets.Scripts.Networking.Blocky.Definitions
                 Category = "Speaker",
                 Color = "#B71C1C",
                 Tooltip = "Resume audio playback on this speaker if it was previously paused.",
-                Message = "Resume",
+                Message = "Resume Speaker: %1",
                 Connections = new List<BlockConnectionType> { BlockConnectionType.Previous, BlockConnectionType.Next },
-                Args = new List<Dictionary<string, object>>()
+                Args = new List<Dictionary<string, object>>
+                {
+                    BlockArg.Value("Speaker")
+                }
             });
         }
     }

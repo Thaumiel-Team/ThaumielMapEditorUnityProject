@@ -33,7 +33,7 @@ namespace Assets.Scripts.Networking.Blocky
                 _hooked = true;
                 BlocklyServer.OnClientConnected += () => AddLog("info", "Browser connected");
                 BlocklyServer.OnClientDisconnected += () => AddLog("info", "Browser disconnected");
-                BlocklyServer.OnCodeExport += (p, s) => AddLog("recv", $"code_export ({p.Language}, {p.Code?.Length ?? 0} chars)");
+                BlocklyServer.OnCodeExport += (p, s) => AddLog("recv", $"code_export ({p.Code?.Length ?? 0} chars)");
                 BlocklyServer.OnXmlExport += _ => AddLog("recv", "xml_export received");
             }
 

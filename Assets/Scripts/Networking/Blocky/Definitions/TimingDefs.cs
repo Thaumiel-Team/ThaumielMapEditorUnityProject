@@ -23,7 +23,7 @@ namespace Assets.Scripts.Networking.Blocky.Definitions
                 Connections = new List<BlockConnectionType> { BlockConnectionType.Next, BlockConnectionType.Previous },
                 Args = new List<Dictionary<string, object>>
                 {
-                    BlockArg.NumberField("WaitTime", 5),
+                    BlockArg.NumberField("FRAMES", 5),
                     BlockArg.Dummy(),
                     BlockArg.Statement("DO")
                 }
@@ -39,7 +39,7 @@ namespace Assets.Scripts.Networking.Blocky.Definitions
                 Connections = new List<BlockConnectionType> { BlockConnectionType.Next, BlockConnectionType.Previous },
                 Args = new List<Dictionary<string, object>>
                 {
-                    BlockArg.NumberField("WaitTime", 5),
+                    BlockArg.NumberField("SECONDS", 5),
                     BlockArg.Dummy(),
                     BlockArg.Statement("DO")
                 }
