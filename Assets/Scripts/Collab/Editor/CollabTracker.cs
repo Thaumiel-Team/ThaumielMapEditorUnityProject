@@ -190,10 +190,7 @@ namespace Assets.Scripts.Collab.Editor
             };
         }
 
-        private static string BuildPropsHash(GameObject go, ObjectBase block, string fh, string th)
-        {
-            return $"{go.name}|{go.isStatic}|{block.MovementSmoothing}|{fh}|{th}";
-        }
+        private static string BuildPropsHash(GameObject go, ObjectBase block, string fh, string th) => $"{go.name}|{go.isStatic}|{block.MovementSmoothing}|{fh}|{th}";
 
         private static void OnUpdate()
         {

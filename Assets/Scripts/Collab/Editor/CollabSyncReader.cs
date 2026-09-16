@@ -77,10 +77,7 @@ namespace Assets.Scripts.Collab.Editor
             };
         }
 
-        public static TransformData ToTransform(SyncObject o)
-        {
-            return new TransformData { guid = o.guid, pos = o.pos, rot = o.rot, scale = o.scale };
-        }
+        public static TransformData ToTransform(SyncObject o) => new() { guid = o.guid, pos = o.pos, rot = o.rot, scale = o.scale };
 
         private static string ExtractHint(ObjectBase block)
         {

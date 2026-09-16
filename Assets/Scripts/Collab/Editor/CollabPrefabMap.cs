@@ -1,4 +1,5 @@
 using System;
+using Assets.Scripts.Components.Objects;
 using Assets.Scripts.Enums;
 using UnityEditor;
 using UnityEngine;
@@ -108,25 +109,25 @@ namespace Assets.Scripts.Collab.Editor
         {
             return t switch
             {
-                ObjectType.Primitive => typeof(Components.Objects.PrimitiveObject),
-                ObjectType.Light => typeof(Components.Objects.LightObject),
-                ObjectType.Door => typeof(Components.Objects.DoorObject),
-                ObjectType.Workstation => typeof(Components.Objects.WorkstationObject),
-                ObjectType.Interactable => typeof(Components.Objects.InteractableObject),
-                ObjectType.TextToy => typeof(Components.Objects.TextToyObject),
-                ObjectType.Capybara => typeof(Components.Objects.CapyBaraObject),
-                ObjectType.Pickup => typeof(Components.Objects.PickupObject),
-                ObjectType.Clutter => typeof(Components.Objects.ClutterObject),
-                ObjectType.Camera => typeof(Components.Objects.CameraObject),
-                ObjectType.Waypoint => typeof(Components.Objects.WaypointObject),
-                ObjectType.Locker => typeof(Components.Objects.LockerObject),
-                ObjectType.Target => typeof(Components.Objects.TargetObject),
-                ObjectType.Teleporter => typeof(Components.Objects.TeleporterObject),
-                ObjectType.GameObject => typeof(Components.Objects.EmptyGameObject),
-                ObjectType.Speaker => typeof(Components.Objects.SpeakerObject),
-                ObjectType.PlayerSpawnPoint => typeof(Components.Objects.PlayerSpawnPointObject),
-                ObjectType.RagdollSpawner => typeof(Components.Objects.RagdollSpawner),
-                _ => typeof(Components.Objects.EmptyGameObject),
+                ObjectType.Primitive => typeof(PrimitiveObject),
+                ObjectType.Light => typeof(LightObject),
+                ObjectType.Door => typeof(DoorObject),
+                ObjectType.Workstation => typeof(WorkstationObject),
+                ObjectType.Interactable => typeof(InteractableObject),
+                ObjectType.TextToy => typeof(TextToyObject),
+                ObjectType.Capybara => typeof(CapyBaraObject),
+                ObjectType.Pickup => typeof(PickupObject),
+                ObjectType.Clutter => typeof(ClutterObject),
+                ObjectType.Camera => typeof(CameraObject),
+                ObjectType.Waypoint => typeof(WaypointObject),
+                ObjectType.Locker => typeof(LockerObject),
+                ObjectType.Target => typeof(TargetObject),
+                ObjectType.Teleporter => typeof(TeleporterObject),
+                ObjectType.GameObject => typeof(EmptyGameObject),
+                ObjectType.Speaker => typeof(SpeakerObject),
+                ObjectType.PlayerSpawnPoint => typeof(PlayerSpawnPointObject),
+                ObjectType.RagdollSpawner => typeof(RagdollSpawner),
+                _ => typeof(EmptyGameObject),
             };
         }
     }

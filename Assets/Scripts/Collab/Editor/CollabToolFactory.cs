@@ -24,10 +24,7 @@ namespace Assets.Scripts.Collab.Editor
 
         }
 
-        public static ToolType KindOf(ToolBase tb)
-        {
-            return tb != null ? tb.ToolType : ToolType.Custom;
-        }
+        public static ToolType KindOf(ToolBase tb) => tb != null ? tb.ToolType : ToolType.Custom;
 
         public static List<SyncToolState> Extract(GameObject go)
         {

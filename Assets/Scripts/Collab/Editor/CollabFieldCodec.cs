@@ -298,39 +298,31 @@ namespace Assets.Scripts.Collab.Editor
             val = null;
             try
             {
-                if (fieldType == typeof(Color))
+                JObject o = JObject.Parse(json);
+                switch (fieldType)
                 {
-                    JObject o = JObject.Parse(json);
-                    val = new Color(StructFloat(o, "r"), StructFloat(o, "g"), StructFloat(o, "b"), StructFloat(o, "a", 1f));
-                    return true;
-                }
+                    case Type _ when fieldType == typeof(Color):
+                        val = new Color(StructFloat(o, "r"), StructFloat(o, "g"), StructFloat(o, "b"), StructFloat(o, "a", 1f));
+                        return true;
 
-                if (fieldType == typeof(Quaternion))
-                {
-                    JObject o = JObject.Parse(json);
-                    val = new Quaternion(StructFloat(o, "x"), StructFloat(o, "y"), StructFloat(o, "z"), StructFloat(o, "w"));
-                    return true;
-                }
+                    case Type _ when fieldType == typeof(Quaternion):
+                        val = new Quaternion(StructFloat(o, "x"), StructFloat(o, "y"), StructFloat(o, "z"), StructFloat(o, "w"));
+                        return true;
 
-                if (fieldType == typeof(Vector4))
-                {
-                    JObject o = JObject.Parse(json);
-                    val = new Vector4(StructFloat(o, "x"), StructFloat(o, "y"), StructFloat(o, "z"), StructFloat(o, "w"));
-                    return true;
-                }
+                    case Type _ when fieldType == typeof(Vector4):
+                        val = new Vector4(StructFloat(o, "x"), StructFloat(o, "y"), StructFloat(o, "z"), StructFloat(o, "w"));
+                        return true;
 
-                if (fieldType == typeof(Vector3))
-                {
-                    JObject o = JObject.Parse(json);
-                    val = new Vector3(StructFloat(o, "x"), StructFloat(o, "y"), StructFloat(o, "z"));
-                    return true;
-                }
+                    case Type _ when fieldType == typeof(Vector3):
+                        val = new Vector3(StructFloat(o, "x"), StructFloat(o, "y"), StructFloat(o, "z"));
+                        return true;
 
-                if (fieldType == typeof(Vector2))
-                {
-                    JObject o = JObject.Parse(json);
-                    val = new Vector2(StructFloat(o, "x"), StructFloat(o, "y"));
-                    return true;
+                    case Type _ when fieldType == typeof(Vector2):
+                        val = new Vector2(StructFloat(o, "x"), StructFloat(o, "y"));
+                        return true;
+
+                    default:
+                        return false;
                 }
             }
             catch
@@ -338,8 +330,6 @@ namespace Assets.Scripts.Collab.Editor
                 val = null;
                 return false;
             }
-
-            return false;
         }
 
         private static float StructFloat(JObject o, string key, float fallback = 0f)

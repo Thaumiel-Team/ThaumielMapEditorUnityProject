@@ -208,24 +208,12 @@ namespace Assets.Scripts.Collab
             MissingMemberHandling = MissingMemberHandling.Ignore,
         };
 
-        public static string Serialize(object o)
-        {
-            return JsonConvert.SerializeObject(o, Settings);
-        }
+        public static string Serialize(object o) => JsonConvert.SerializeObject(o, Settings);
 
-        public static T Deserialize<T>(string json)
-        {
-            return JsonConvert.DeserializeObject<T>(json, Settings);
-        }
+        public static T Deserialize<T>(string json) => JsonConvert.DeserializeObject<T>(json, Settings);
 
-        public static string NewMsgId()
-        {
-            return Guid.NewGuid().ToString("N");
-        }
+        public static string NewMsgId() => Guid.NewGuid().ToString("N");
 
-        public static long NowTicks()
-        {
-            return DateTime.UtcNow.Ticks;
-        }
+        public static long NowTicks() => DateTime.UtcNow.Ticks;
     }
 }

@@ -35,10 +35,7 @@ namespace Assets.Scripts.Collab
             }
         }
 
-        private void Awake()
-        {
-            EnsureAssigned();
-        }
+        private void Awake() => EnsureAssigned();
 
         private void OnEnable()
         {
@@ -52,10 +49,7 @@ namespace Assets.Scripts.Collab
                 _registry.Remove(_id);
         }
 
-        private void OnValidate()
-        {
-            EnsureAssigned();
-        }
+        private void OnValidate() => EnsureAssigned();
 
         public void EnsureAssigned()
         {
