@@ -8,10 +8,10 @@ namespace Assets.Scripts.Components.Objects
     public class WaypointObject : ObjectBase
     {
         [Header("Waypoint Settings")]
-        [Tooltip("The priority of this waypoint.")]
+        [Tooltip("The priority of the waypoint.")]
         public float Priority;
 
-        [Tooltip("If enabled, the bounds of this waypoint will be visible on the server.")]
+        [Tooltip("If enabled, the bounds of the waypoint will be visible on the server.")]
         public bool VisualizeBounds;
 
         public override ObjectType ObjectType => ObjectType.Waypoint;

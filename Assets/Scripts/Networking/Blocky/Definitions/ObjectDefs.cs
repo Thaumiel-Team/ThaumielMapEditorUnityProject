@@ -33,11 +33,11 @@ namespace Assets.Scripts.Networking.Blocky.Definitions
                 Connections = new List<BlockConnectionType> { BlockConnectionType.Previous, BlockConnectionType.Next },
                 Args = new List<Dictionary<string, object>>
                 {
-                    BlockArg.TextField("Full Method Name (namespace + method)"),
-                    BlockArg.Value("Argument 1"),
-                    BlockArg.Value("Argument 2"),
-                    BlockArg.Value("Argument 3"),
-                    BlockArg.Value("Argument 4"),
+                    BlockArg.TextField("METHOD", "Namespace.Class.Method"),
+                    BlockArg.Value("ARG1"),
+                    BlockArg.Value("ARG2"),
+                    BlockArg.Value("ARG3"),
+                    BlockArg.Value("ARG4"),
                 }
             });
 
@@ -51,12 +51,12 @@ namespace Assets.Scripts.Networking.Blocky.Definitions
                 Connections = new List<BlockConnectionType> { BlockConnectionType.Previous, BlockConnectionType.Next },
                 Args = new List<Dictionary<string, object>>
                 {
-                    BlockArg.Value("Instance"),
-                    BlockArg.TextField("Full Method Name (namespace + method)"),
-                    BlockArg.Value("Argument 1"),
-                    BlockArg.Value("Argument 2"),
-                    BlockArg.Value("Argument 3"),
-                    BlockArg.Value("Argument 4"),
+                    BlockArg.Value("INSTANCE"),
+                    BlockArg.TextField("METHOD", "Namespace.Class.Method"),
+                    BlockArg.Value("ARG1"),
+                    BlockArg.Value("ARG2"),
+                    BlockArg.Value("ARG3"),
+                    BlockArg.Value("ARG4"),
                 }
             });
         }

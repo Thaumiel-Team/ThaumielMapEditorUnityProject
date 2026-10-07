@@ -49,6 +49,10 @@ namespace Assets.Scripts.Networking.Blocky
         private static readonly Queue<Action> _mainQueue = new();
         private static readonly object _queueLock = new();
 
+        private static bool _batching;
+        private static readonly List<Dictionary<string, object>> _batchedCategories = new();
+        private static readonly List<Dictionary<string, object>> _batchedBlocks = new();
+
         static BlocklyServer()
         {
             EditorApplication.update += EditorUpdate;
@@ -146,17 +150,14 @@ namespace Assets.Scripts.Networking.Blocky
                     _client?.Close();
                     _client = new WsConnection(tcp, OnRawMessage, OnConnectionClosed);
                     _client.Start();
-                    Enqueue(() =>
-                    {
-                        Debug.Log("[BlocklyServer] Browser connected.");
-                        OnClientConnected?.Invoke();
-                    });
+                    Debug.Log("[BlocklyServer] Browser connected.");
+                    Enqueue(() => OnClientConnected?.Invoke());
                 }
                 catch (SocketException) when (!_running) { break; }
                 catch (Exception ex)
                 {
                     if (_running)
-                        Enqueue(() => Debug.LogWarning($"[BlocklyServer] Accept error: {ex.Message}"));
+                        Debug.LogWarning($"[BlocklyServer] Accept error: {ex.Message}");
                 }
             }
         }
@@ -173,16 +174,12 @@ namespace Assets.Scripts.Networking.Blocky
                 switch (type)
                 {
                     case "connected":
-                        Enqueue(() => Debug.Log("[BlocklyServer] Handshake received from browser."));
+                        Debug.Log("[BlocklyServer] Handshake received from browser.");
                         break;
 
                     case "code_export":
                         CodeExportPayload payload = _des.Deserialize<CodeExportPayload>(yaml);
-                        Enqueue(() =>
-                        {
-                            Debug.Log($"[BlocklyServer] Code export ({payload.Language}).");
-                            OnCodeExport?.Invoke(payload, ActiveTargetEvent);
-                        });
+                        Enqueue(() => OnCodeExport?.Invoke(payload, ActiveTargetEvent));
                         break;
 
                     case "xml_export":
@@ -196,22 +193,27 @@ namespace Assets.Scripts.Networking.Blocky
 
                     case "block_registered":
                         dict.TryGetValue("id", out var bId);
-                        Enqueue(() => Debug.Log($"[BlocklyServer] Block registered: {bId}"));
+                        Debug.Log($"[BlocklyServer] Block registered: {bId}");
+                        break;
+
+                    case "blocks_registered":
+                        dict.TryGetValue("count", out var blkCount);
+                        Debug.Log($"[BlocklyServer] Block batch registered: {blkCount} blocks.");
                         break;
 
                     case "category_registered":
                         dict.TryGetValue("name", out var cName);
-                        Enqueue(() => Debug.Log($"[BlocklyServer] Category registered: {cName}"));
+                        Debug.Log($"[BlocklyServer] Category registered: {cName}");
                         break;
 
                     default:
-                        Enqueue(() => Debug.Log($"[BlocklyServer] Unknown msg type: {type}"));
+                        Debug.Log($"[BlocklyServer] Unknown msg type: {type}");
                         break;
                 }
             }
             catch (Exception ex)
             {
-                Enqueue(() => Debug.LogWarning($"[BlocklyServer] YAML parse error: {ex.Message}"));
+                Debug.LogWarning($"[BlocklyServer] YAML parse error: {ex.Message}");
             }
         }
 
@@ -230,13 +232,20 @@ namespace Assets.Scripts.Networking.Blocky
         /// <param name="icon">Emoji shown before the category name.</param>
         public static void RegisterCategory(string name, object color = null, string icon = "🔌")
         {
-            Send(new Dictionary<string, object>
+            Dictionary<string, object> dict = new()
             {
                 ["type"] = "register_category",
                 ["name"] = name,
                 ["color"] = color ?? 200,
                 ["icon"] = icon
-            });
+            };
+
+            if (_batching)
+            {
+                _batchedCategories.Add(dict);
+            }
+            else
+                Send(dict);
         }
 
         /// <summary>
@@ -268,7 +277,37 @@ namespace Assets.Scripts.Networking.Blocky
             if (block.HelpUrl != null)
                 dict["helpUrl"] = block.HelpUrl;
 
-            Send(dict);
+            if (_batching)
+            {
+                _batchedBlocks.Add(dict);
+            }
+            else
+                Send(dict);
+        }
+
+        public static void BeginBatch()
+        {
+            _batching = true;
+            _batchedCategories.Clear();
+            _batchedBlocks.Clear();
+        }
+
+        public static void EndBatch()
+        {
+            _batching = false;
+
+            if (_batchedCategories.Count == 0 && _batchedBlocks.Count == 0)
+                return;
+
+            Send(new Dictionary<string, object>
+            {
+                ["type"] = "register_batch",
+                ["categories"] = _batchedCategories,
+                ["blocks"] = _batchedBlocks
+            });
+
+            _batchedCategories.Clear();
+            _batchedBlocks.Clear();
         }
 
         /// <summary>
@@ -282,6 +321,15 @@ namespace Assets.Scripts.Networking.Blocky
         /// </summary>
         public static void LoadXml(string xml) =>
             Send(new Dictionary<string, object> { ["type"] = "load_xml", ["xml"] = xml });
+
+        public static void LoadXml(string xml, string eventBlockType) =>
+            Send(new Dictionary<string, object> { ["type"] = "load_xml", ["xml"] = xml, ["event"] = eventBlockType ?? "" });
+
+        public static void LoadEvent(string eventBlockType) =>
+            Send(new Dictionary<string, object> { ["type"] = "load_event", ["event"] = eventBlockType });
+
+        public static void EnsureEvent(string eventBlockType) =>
+            Send(new Dictionary<string, object> { ["type"] = "ensure_event", ["event"] = eventBlockType });
 
         /// <summary>
         /// Wipe the browser workspace.

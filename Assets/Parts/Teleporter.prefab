@@ -105,7 +105,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Assets.Scripts.Components.TeleporterObject
   <Static>k__BackingField: 0
   <MovementSmoothing>k__BackingField: 0
-  <Target>k__BackingField: {fileID: 0}
-  <CoolDown>k__BackingField: 0
-  <AllowedRoles>k__BackingField: 
-  <PerPlayerCooldown>k__BackingField: 0
+  Targets: []
+  CoolDown: 0
+  AllowedRoles: 
+  PerPlayerCooldown: 0
+  Flags: 0

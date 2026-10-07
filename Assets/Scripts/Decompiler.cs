@@ -14,14 +14,17 @@ namespace Assets.Scripts
 {
     public static class Decompiler
     {
-        public static BuilderPrefabRegistry _registry;
+        public static event Action<YamlSchematic> OnSchematicDecompiled;
 
-        private static Dictionary<int, Transform> _instanceMap = new();
+        private const string PartsFolder = "Assets/Parts";
 
-        public static void DecompileData(BuilderPrefabRegistry registry)
+        private static readonly Dictionary<string, GameObject> _prefabCache = new();
+
+        private static readonly Dictionary<int, Transform> _instanceMap = new();
+
+        public static void DecompileData()
         {
             _instanceMap.Clear();
-            _registry = registry;
 
             string yamlPath = EditorUtility.OpenFilePanel("Select Schematic", "", "yml");
             if (string.IsNullOrEmpty(yamlPath))
@@ -136,6 +139,24 @@ namespace Assets.Scripts
                                 doorlink.Properties = tool.Properties;
                                 doorlink.Decompile();
                                 break;
+
+                            case ToolType.ColliderTrigger:
+                                ColliderTrigger collider = block.AddComponent<ColliderTrigger>();
+                                collider.Properties = tool.Properties;
+                                collider.Decompile();
+                                break;
+
+                            case ToolType.InteractableTrigger:
+                                InteractableTrigger interactable = block.AddComponent<InteractableTrigger>();
+                                interactable.Properties = tool.Properties;
+                                interactable.Decompile();
+                                break;
+
+                            case ToolType.BlockyRuntime:
+                                BlockyRuntime blocky = block.AddComponent<BlockyRuntime>();
+                                blocky.Properties = tool.Properties;
+                                blocky.Decompile();
+                                break;
                         }
                     }
                 }
@@ -143,16 +164,21 @@ namespace Assets.Scripts
 
             Selection.activeGameObject = root;
             Debug.Log($"Decompiled schematic '{schematic.FileName}' with {schematic.Objects.Count} objects.");
+            OnSchematicDecompiled?.Invoke(schematic);
         }
 
-        public static void LoadRegistry()
+        private static GameObject LoadPartPrefab(string relativePath)
         {
-            string[] guids = AssetDatabase.FindAssets("t:BuilderPrefabRegistry");
-            if (guids.Length == 0)
-                return;
+            string path = $"{PartsFolder}/{relativePath}";
+            if (_prefabCache.TryGetValue(path, out GameObject cached))
+                return cached;
 
-            string path = AssetDatabase.GUIDToAssetPath(guids[0]);
-            _registry = AssetDatabase.LoadAssetAtPath<BuilderPrefabRegistry>(path);
+            GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(path);
+            if (prefab == null)
+                Debug.LogWarning($"Decompiler: prefab not found at '{path}'.");
+
+            _prefabCache[path] = prefab;
+            return prefab;
         }
 
         public static GameObject GetPrefabForObject(YamlCustomObject obj)
@@ -165,15 +191,17 @@ namespace Assets.Scripts
                 ObjectType.Clutter => GetClutterPrefab(obj),
                 ObjectType.Locker => GetLockerPrefab(obj),
                 ObjectType.Target => GetTargetPrefab(obj),
-                ObjectType.TextToy => _registry.TextToyPrefab,
-                ObjectType.Capybara => _registry.CapybaraPrefab,
-                ObjectType.Light => _registry.LightPrefab,
-                ObjectType.Workstation => _registry.WorkstationPrefab,
-                ObjectType.Interactable => _registry.InteractablePrefab,
-                ObjectType.Waypoint => _registry.WaypointPrefab,
-                ObjectType.Pickup => _registry.PickupPrefab,
-                ObjectType.Teleporter => _registry.TeleporterPrefab,
-                ObjectType.GameObject => _registry.EmptyGameObjectPrefab,
+                ObjectType.TextToy => LoadPartPrefab("Text.prefab"),
+                ObjectType.Capybara => LoadPartPrefab("Capybara.prefab"),
+                ObjectType.Light => LoadPartPrefab("Area Light.prefab"),
+                ObjectType.Workstation => LoadPartPrefab("Work Station.prefab"),
+                ObjectType.Interactable => LoadPartPrefab("Interactable.prefab"),
+                ObjectType.Waypoint => LoadPartPrefab("Waypoint.prefab"),
+                ObjectType.Pickup => LoadPartPrefab("Pickup.prefab"),
+                ObjectType.Teleporter => LoadPartPrefab("Teleporter.prefab"),
+                ObjectType.GameObject => LoadPartPrefab("Empty GameObject.prefab"),
+                ObjectType.PlayerSpawnPoint => LoadPartPrefab("Player Spawn Point.prefab"),
+                ObjectType.RagdollSpawner => LoadPartPrefab("Ragdoll Spawner.prefab"),
                 _ => null
             };
         }
@@ -185,12 +213,12 @@ namespace Assets.Scripts
 
             return Enum.Parse<PrimitiveType>(Convert.ToString(primitiveType)) switch
             {
-                PrimitiveType.Sphere => _registry.SpherePrefab,
-                PrimitiveType.Cube => _registry.CubePrefab,
-                PrimitiveType.Cylinder => _registry.CylinderPrefab,
-                PrimitiveType.Capsule => _registry.CapsulePrefab,
-                PrimitiveType.Plane => _registry.PlanePrefab,
-                PrimitiveType.Quad => _registry.QuadPrefab,
+                PrimitiveType.Sphere => LoadPartPrefab("Primitives/Sphere.prefab"),
+                PrimitiveType.Cube => LoadPartPrefab("Primitives/Cube.prefab"),
+                PrimitiveType.Cylinder => LoadPartPrefab("Primitives/Cylinder.prefab"),
+                PrimitiveType.Capsule => LoadPartPrefab("Primitives/Capsule.prefab"),
+                PrimitiveType.Plane => LoadPartPrefab("Primitives/Plane.prefab"),
+                PrimitiveType.Quad => LoadPartPrefab("Primitives/Quad.prefab"),
                 _ => null
             };
         }
@@ -202,11 +230,11 @@ namespace Assets.Scripts
 
             return Enum.Parse<DoorType>(Convert.ToString(doorType)) switch
             {
-                DoorType.Lcz => _registry.LczDoorPrefab,
-                DoorType.Hcz => _registry.HczDoorPrefab,
-                DoorType.Ez => _registry.EzDoorPrefab,
-                DoorType.Gate => _registry.GateDoorPrefab,
-                DoorType.BulkHead => _registry.BulkHeadDoorPrefab,
+                DoorType.Lcz => LoadPartPrefab("Doors/LCZ BreakableDoor.prefab"),
+                DoorType.Hcz => LoadPartPrefab("Doors/HCZ BreakableDoor.prefab"),
+                DoorType.Ez => LoadPartPrefab("Doors/EZ BreakableDoor.prefab"),
+                DoorType.Gate => LoadPartPrefab("Doors/Spawnable Unsecured Pryable GateDoor.prefab"),
+                DoorType.BulkHead => LoadPartPrefab("Doors/HCZ BulkDoor.prefab"),
                 _ => null
             };
         }
@@ -218,11 +246,11 @@ namespace Assets.Scripts
 
             return Enum.Parse<Enums.CameraType>(Convert.ToString(cameraType)) switch
             {
-                Enums.CameraType.Lcz => _registry.LczCameraPrefab,
-                Enums.CameraType.Hcz => _registry.HczCameraPrefab,
-                Enums.CameraType.Ez => _registry.EzCameraPrefab,
-                Enums.CameraType.EzArm => _registry.EzArmCameraPrefab,
-                Enums.CameraType.Sz => _registry.SzCameraPrefab,
+                Enums.CameraType.Lcz => LoadPartPrefab("Cameras/LczCameraToy.prefab"),
+                Enums.CameraType.Hcz => LoadPartPrefab("Cameras/HczCameraToy.prefab"),
+                Enums.CameraType.Ez => LoadPartPrefab("Cameras/EzCameraToy.prefab"),
+                Enums.CameraType.EzArm => LoadPartPrefab("Cameras/EzArmCameraToy.prefab"),
+                Enums.CameraType.Sz => LoadPartPrefab("Cameras/SzCameraToy.prefab"),
                 _ => null
             };
         }
@@ -234,14 +262,14 @@ namespace Assets.Scripts
 
             return Enum.Parse<ClutterType>(Convert.ToString(clutterType)) switch
             {
-                ClutterType.SimpleBoxes => _registry.SimpleBoxesPrefab,
-                ClutterType.PipesShort => _registry.PipesShortPrefab,
-                ClutterType.BoxesLadder => _registry.BoxesLadderPrefab,
-                ClutterType.TankSupportedShelf => _registry.TankSupportedShelfPrefab,
-                ClutterType.AngledFences => _registry.AngledFencesPrefab,
-                ClutterType.HugeOrangePipes => _registry.HugeOrangePipesPrefab,
-                ClutterType.PipesLongOpen => _registry.PipesLongOpenPrefab,
-                ClutterType.BrokenElectricalBox => _registry.BrokenElectricalBoxPrefab,
+                ClutterType.SimpleBoxes => LoadPartPrefab("Clutter/Simple Boxes Open Connector.prefab"),
+                ClutterType.PipesShort => LoadPartPrefab("Clutter/Pipes Short Open Connector.prefab"),
+                ClutterType.BoxesLadder => LoadPartPrefab("Clutter/Boxes Ladder Open Connector.prefab"),
+                ClutterType.TankSupportedShelf => LoadPartPrefab("Clutter/Tank-Supported Shelf Open Connector.prefab"),
+                ClutterType.AngledFences => LoadPartPrefab("Clutter/Angled Fences Open Connector.prefab"),
+                ClutterType.HugeOrangePipes => LoadPartPrefab("Clutter/Huge Orange Pipes Open Connector.prefab"),
+                ClutterType.PipesLongOpen => LoadPartPrefab("Clutter/Pipes Long Open Connector.prefab"),
+                ClutterType.BrokenElectricalBox => LoadPartPrefab("Clutter/Broken Electrical Box Open Connector.prefab"),
                 _ => null
             };
         }
@@ -253,13 +281,13 @@ namespace Assets.Scripts
 
             return Enum.Parse<LockerType>(Convert.ToString(lockerType)) switch
             {
-                LockerType.Pedestal => _registry.PedestalPrefab,
-                LockerType.LargeGun => _registry.LargeGunPrefab,
-                LockerType.RifleRack => _registry.RifleRackPrefab,
-                LockerType.Misc => _registry.MiscLockerPrefab,
-                LockerType.Medkit => _registry.MedkitPrefab,
-                LockerType.Adrenaline => _registry.AdrenalinePrefab,
-                LockerType.ExperimentalWeapon => _registry.ExperimentalWeaponPrefab,
+                LockerType.Pedestal => LoadPartPrefab("Lockers/SCP Pedestal.prefab"),
+                LockerType.LargeGun => LoadPartPrefab("Lockers/Large Locker.prefab"),
+                LockerType.RifleRack => LoadPartPrefab("Lockers/Locker.prefab"),
+                LockerType.Misc => LoadPartPrefab("Lockers/Locker.prefab"),
+                LockerType.Medkit => LoadPartPrefab("Lockers/MedKit.prefab"),
+                LockerType.Adrenaline => LoadPartPrefab("Lockers/Adrenaline Medkit Locker.prefab"),
+                LockerType.ExperimentalWeapon => LoadPartPrefab("Lockers/Experimental Weapon Locker.prefab"),
                 _ => null
             };
         }
@@ -271,9 +299,9 @@ namespace Assets.Scripts
 
             return Enum.Parse<TargetType>(Convert.ToString(targetType)) switch
             {
-                TargetType.Binary => _registry.BinaryTargetPrefab,
-                TargetType.ClassD => _registry.ClassDTargetPrefab,
-                TargetType.Sport => _registry.SportTargetPrefab,
+                TargetType.Binary => LoadPartPrefab("Targets/binaryTargetPrefab.prefab"),
+                TargetType.ClassD => LoadPartPrefab("Targets/dboyTargetPrefab.prefab"),
+                TargetType.Sport => LoadPartPrefab("Targets/sportTargetPrefab.prefab"),
                 _ => null
             };
         }

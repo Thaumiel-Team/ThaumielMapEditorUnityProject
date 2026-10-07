@@ -7,55 +7,63 @@ using System.Threading.Tasks;
 using Debug = UnityEngine.Debug;
 using System;
 
-[InitializeOnLoad]
 public class AutoUpdateSetup
 {
-    private const string RepoUrl = "https://github.com/Mr-Baguetter/ThaumielMapEditorUnityProject.git";
+    private const string RepoUrl = "https://github.com/Thaumiel-Team/ThaumielMapEditorUnityProject.git";
     private const string RemoteName = "origin";
+    private const string BranchName = "master";
 
     private const string GitWindowsUrl = "https://github.com/git-for-windows/git/releases/download/v2.44.0.windows.1/Git-2.44.0-64-bit.exe";
     private const string GitMacUrl = "https://sourceforge.net/projects/git-osx-installer/files/latest/download";
-    private const string PrefKey = "AutoUpdate_Setup";
-    private const string InstallerPath = "Temp/git_installer";
+    private const string PrefKey = "AutoUpdate_Enabled";
 
-    static AutoUpdateSetup()
+    [MenuItem("Thaumiel/Tools/Auto Update/Check for Updates")]
+    private static void CheckForUpdatesMenu()
     {
-        if (EditorPrefs.HasKey(PrefKey))
+        if (!IsGitInstalled())
         {
-            if (EditorPrefs.GetBool(PrefKey))
-                EditorApplication.delayCall += CheckForUpdates;
+            bool installGit = EditorUtility.DisplayDialog(
+                "Git Not Found",
+                "Git is required to check for updates. Would you like to install it?",
+                "Install Git",
+                "Cancel"
+            );
 
+            if (installGit)
+            {
+                _ = DownloadAndInstallGitAsync();
+            }
             return;
         }
 
-        EditorApplication.delayCall += PromptUser;
+        EnsureRepoConfigured();
+        CheckForUpdates();
     }
 
-    private static void PromptUser()
+    [MenuItem("Thaumiel/Tools/Auto Update/Update to Latest")]
+    private static void ForceUpdateMenu()
     {
-        bool wantsAutoUpdate = EditorUtility.DisplayDialog(
-            "Automatic Updates",
-            "Would you like to enable update checking from GitHub?\n\nThis will install Git if it is not already installed.",
-            "Yes, enable",
-            "No thanks"
+        if (!IsGitInstalled())
+        {
+            EditorUtility.DisplayDialog("Git Not Found", "Git is not installed.", "OK");
+            return;
+        }
+
+        bool confirm = EditorUtility.DisplayDialog(
+            "Confirm Update",
+            "This will pull the latest changes from GitHub and may overwrite local files.\n\nContinue?",
+            "Yes, Update",
+            "Cancel"
         );
 
-        EditorPrefs.SetBool(PrefKey, wantsAutoUpdate);
-
-        if (!wantsAutoUpdate)
-            return;
-
-        if (IsGitInstalled())
+        if (confirm)
         {
-            EnsureRemoteAndCheck();
-        }
-        else
-        {
-            _ = DownloadAndInstallGitAsync();
+            EnsureRepoConfigured();
+            TryRunGitPull();
         }
     }
 
-    private static void EnsureRemoteAndCheck()
+    private static void EnsureRepoConfigured()
     {
         string rootDir = Application.dataPath + "/../";
 
@@ -64,8 +72,22 @@ public class AutoUpdateSetup
             string gitDir = Path.GetFullPath(Path.Combine(rootDir, ".git"));
             if (!Directory.Exists(gitDir))
             {
-                Debug.LogWarning("[AutoUpdate] Project is not a git repository. Run 'git init' in the project root first.");
-                return;
+                bool initRepo = EditorUtility.DisplayDialog(
+                    "Not a Git Repository",
+                    "This project is not a Git repository. Initialize it now?",
+                    "Yes, initialize",
+                    "Cancel"
+                );
+
+                if (!initRepo) return;
+
+                GitResult initResult = RunGitCommand("init", rootDir);
+                if (initResult.ExitCode != 0)
+                {
+                    Debug.LogError($"[AutoUpdate] git init failed: {initResult.Error}");
+                    return;
+                }
+                Debug.Log("[AutoUpdate] Initialized git repository.");
             }
 
             GitResult remoteResult = RunGitCommand($"remote get-url {RemoteName}", rootDir);
@@ -74,74 +96,76 @@ public class AutoUpdateSetup
             if (string.IsNullOrEmpty(currentUrl))
             {
                 RunGitCommand($"remote add {RemoteName} {RepoUrl}", rootDir);
-                Debug.Log($"[AutoUpdate] Added remote '{RemoteName}' → {RepoUrl}");
+                Debug.Log($"[AutoUpdate] Added remote '{RemoteName}' -> {RepoUrl}");
             }
             else if (!currentUrl.Equals(RepoUrl, StringComparison.OrdinalIgnoreCase))
             {
                 RunGitCommand($"remote set-url {RemoteName} {RepoUrl}", rootDir);
-                Debug.Log($"[AutoUpdate] Updated remote '{RemoteName}' from {currentUrl} → {RepoUrl}");
-            }
-            else
-            {
-                Debug.Log($"[AutoUpdate] Remote '{RemoteName}' is already pointing to {RepoUrl}");
+                Debug.Log($"[AutoUpdate] Updated remote to {RepoUrl}");
             }
         }
         catch (Exception ex)
         {
-            Debug.LogWarning($"[AutoUpdate] Could not configure remote: {ex.Message}");
+            Debug.LogWarning($"[AutoUpdate] Config error: {ex.Message}");
         }
-
-        CheckForUpdates();
     }
 
     private static void CheckForUpdates()
     {
-        if (!IsGitInstalled())
-        {
-            Debug.LogWarning("[AutoUpdate] Git is not installed or not on PATH. Cannot check for updates.");
-            return;
-        }
+        string rootDir = Application.dataPath + "/../";
 
         try
         {
-            string rootDir = Application.dataPath + "/../";
+            GitResult branchResult = RunGitCommand("rev-parse --abbrev-ref HEAD", rootDir);
+            string currentBranch = branchResult.Output.Trim();
 
-            Debug.Log($"[AutoUpdate] Fetching from '{RemoteName}'...");
+            if (!currentBranch.Equals(BranchName, StringComparison.OrdinalIgnoreCase))
+            {
+                bool switchBranch = EditorUtility.DisplayDialog(
+                    "Wrong Branch",
+                    $"Currently on '{currentBranch}'. Switch to '{BranchName}' to check for updates?",
+                    "Switch",
+                    "Cancel"
+                );
 
+                if (!switchBranch) return;
+
+                GitResult switchResult = RunGitCommand($"checkout {BranchName}", rootDir);
+                if (switchResult.ExitCode != 0)
+                {
+                    RunGitCommand($"checkout -b {BranchName} {RemoteName}/{BranchName}", rootDir);
+                }
+            }
+
+            EditorUtility.DisplayProgressBar("Checking for Updates", "Fetching from remote...", 0.5f);
             GitResult fetchResult = RunGitCommand($"fetch {RemoteName}", rootDir);
+            EditorUtility.ClearProgressBar();
+
             if (fetchResult.ExitCode != 0)
             {
-                Debug.LogWarning($"[AutoUpdate] Fetch failed (exit {fetchResult.ExitCode}): {fetchResult.Error}");
+                EditorUtility.DisplayDialog("Fetch Failed", fetchResult.Error, "OK");
                 return;
             }
 
-            GitResult revListResult = RunGitCommand($"rev-list HEAD..{RemoteName}/HEAD --count", rootDir);
+            GitResult revListResult = RunGitCommand($"rev-list HEAD..{RemoteName}/{BranchName} --count", rootDir);
             if (revListResult.ExitCode != 0)
             {
-                Debug.LogWarning($"[AutoUpdate] Could not compare revisions (exit {revListResult.ExitCode}): {revListResult.Error}");
+                EditorUtility.DisplayDialog("Error", "Could not compare revisions.", "OK");
                 return;
             }
 
-            string status = revListResult.Output.Trim();
-
-            if (!int.TryParse(status, out int count))
+            if (!int.TryParse(revListResult.Output.Trim(), out int count) || count <= 0)
             {
-                Debug.LogWarning($"[AutoUpdate] Unexpected output from rev-list: '{status}'");
+                EditorUtility.DisplayDialog("Up to Date", "No new updates available.", "OK");
                 return;
             }
 
-            if (count <= 0)
-            {
-                Debug.Log("[AutoUpdate] Project is up to date.");
-                return;
-            }
-
-            GitResult logResult = RunGitCommand($"log HEAD..{RemoteName}/HEAD --oneline -n 5", rootDir);
-            string commitMessages = logResult.Output;
+            GitResult logResult = RunGitCommand($"log HEAD..{RemoteName}/{BranchName} --oneline -n 5", rootDir);
+            string commits = logResult.Output;
 
             bool update = EditorUtility.DisplayDialog(
-                "Update Available",
-                $"There are {count} new update(s) available.\n\nRecent changes:\n{commitMessages}\n\nWould you like to pull these updates now?",
+                $"{count} Update(s) Available",
+                $"Recent changes:\n{commits}\n\nUpdate now?",
                 "Update Now",
                 "Later"
             );
@@ -151,22 +175,65 @@ public class AutoUpdateSetup
         }
         catch (Exception ex)
         {
-            Debug.LogWarning($"[AutoUpdate] Could not check for updates: {ex.Message}");
+            Debug.LogWarning($"[AutoUpdate] {ex.Message}");
         }
     }
 
-    private readonly struct GitResult
+    private static void TryRunGitPull()
     {
-        public readonly string Output;
-        public readonly string Error;
-        public readonly int ExitCode;
+        string rootDir = Application.dataPath + "/../";
 
-        public GitResult(string output, string error, int exitCode)
+        GitResult statusResult = RunGitCommand("status --porcelain", rootDir);
+        bool hasChanges = !string.IsNullOrWhiteSpace(statusResult.Output);
+
+        if (hasChanges)
         {
-            Output = output;
-            Error = error;
-            ExitCode = exitCode;
+            int choice = EditorUtility.DisplayDialogComplex(
+                "Local Changes Detected",
+                "You have uncommitted changes. What would you like to do?",
+                "Stash & Pull",
+                "Cancel",
+                "Force Pull (Discard Changes)"
+            );
+
+            if (choice == 1)
+                return;
+
+            if (choice == 0)
+            {
+                RunGitCommand("stash push -m \"AutoUpdate stash\"", rootDir);
+            }
+            else if (choice == 2)
+            {
+                bool confirmForce = EditorUtility.DisplayDialog(
+                    "WARNING",
+                    "This will DISCARD all local uncommitted changes. Are you sure?",
+                    "Yes, Discard",
+                    "Cancel"
+                );
+                if (!confirmForce) return;
+                RunGitCommand("reset --hard", rootDir);
+            }
         }
+
+        EditorUtility.DisplayProgressBar("Updating", "Pulling latest changes...", 0.5f);
+        GitResult pullResult = RunGitCommand($"pull {RemoteName} {BranchName}", rootDir);
+        EditorUtility.ClearProgressBar();
+
+        if (pullResult.ExitCode != 0)
+        {
+            EditorUtility.DisplayDialog("Update Failed", pullResult.Error, "OK");
+            return;
+        }
+
+        GitResult commitResult = RunGitCommand("rev-parse --short HEAD", rootDir);
+        EditorUtility.DisplayDialog(
+            "Update Complete",
+            $"Updated to commit: {commitResult.Output.Trim()}\n\nUnity will now refresh assets.",
+            "OK"
+        );
+
+        AssetDatabase.Refresh();
     }
 
     private static GitResult RunGitCommand(string args, string workingDir)
@@ -181,7 +248,9 @@ public class AutoUpdateSetup
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
                 UseShellExecute = false,
-                CreateNoWindow = true
+                CreateNoWindow = true,
+                StandardOutputEncoding = System.Text.Encoding.UTF8,
+                StandardErrorEncoding = System.Text.Encoding.UTF8
             }
         };
 
@@ -189,7 +258,6 @@ public class AutoUpdateSetup
         string output = process.StandardOutput.ReadToEnd();
         string error = process.StandardError.ReadToEnd();
         process.WaitForExit();
-
         return new GitResult(output, error, process.ExitCode);
     }
 
@@ -208,84 +276,65 @@ public class AutoUpdateSetup
                     CreateNoWindow = true
                 }
             };
-
             process.Start();
             process.WaitForExit();
             return process.ExitCode == 0;
         }
-        catch
-        {
-            return false;
-        }
+        catch { return false; }
     }
 
     private static async Task DownloadAndInstallGitAsync()
     {
         string url = Application.platform == RuntimePlatform.WindowsEditor ? GitWindowsUrl : GitMacUrl;
         string extension = Application.platform == RuntimePlatform.WindowsEditor ? ".exe" : ".pkg";
-        string installerPath = InstallerPath + extension;
+        string installerPath = "Temp/git_installer" + extension;
 
-        EditorUtility.DisplayProgressBar("Auto Update Setup", "Downloading Git...", 0f);
+        Directory.CreateDirectory("Temp");
+        EditorUtility.DisplayProgressBar("Installing Git", "Downloading...", 0f);
+
         using UnityWebRequest request = new(url, UnityWebRequest.kHttpVerbGET);
         request.downloadHandler = new DownloadHandlerFile(installerPath);
-        UnityWebRequestAsyncOperation operation = request.SendWebRequest();
+        UnityWebRequestAsyncOperation op = request.SendWebRequest();
 
-        while (!operation.isDone)
+        while (!op.isDone)
         {
-            EditorUtility.DisplayProgressBar("Auto Update Setup", "Downloading Git...", operation.progress);
+            EditorUtility.DisplayProgressBar("Installing Git", "Downloading...", op.progress);
             await Task.Delay(100);
         }
 
         EditorUtility.ClearProgressBar();
-        if (request.result == UnityWebRequest.Result.Success)
-            await InstallGitAsync(installerPath);
-    }
 
-    private static async Task InstallGitAsync(string installerPath)
-    {
-        try
+        if (request.result != UnityWebRequest.Result.Success)
         {
-            ProcessStartInfo startInfo = Application.platform == RuntimePlatform.WindowsEditor ? new ProcessStartInfo { FileName = installerPath, Arguments = "/VERYSILENT /NORESTART", UseShellExecute = true } : new ProcessStartInfo { FileName = "sudo", Arguments = $"installer -pkg {installerPath} -target /", UseShellExecute = true };
-
-            Process process = Process.Start(startInfo)!;
-            await Task.Run(() => process.WaitForExit());
-
-            if (File.Exists(installerPath))
-                File.Delete(installerPath);
-
-            if (process.ExitCode == 0)
-                EnsureRemoteAndCheck();
-        }
-        catch (Exception ex)
-        {
-            Debug.LogError($"[AutoUpdate] Installation failed: {ex.Message}");
-        }
-    }
-
-    private static void TryRunGitPull()
-    {
-        GitResult result = RunGitCommand($"pull {RemoteName}", Application.dataPath + "/../");
-
-        if (result.ExitCode != 0)
-        {
-            Debug.LogWarning($"[AutoUpdate] Pull failed (exit {result.ExitCode}): {result.Error}");
+            EditorUtility.DisplayDialog("Download Failed", request.error, "OK");
             return;
         }
 
-        Debug.Log($"[AutoUpdate] Pull result: {result.Output}");
-        AssetDatabase.Refresh();
+        EditorUtility.DisplayProgressBar("Installing Git", "Running installer...", 0.5f);
+        ProcessStartInfo startInfo = Application.platform == RuntimePlatform.WindowsEditor
+            ? new ProcessStartInfo { FileName = installerPath, Arguments = "/VERYSILENT /NORESTART", UseShellExecute = true }
+            : new ProcessStartInfo { FileName = "sudo", Arguments = $"installer -pkg {installerPath} -target /", UseShellExecute = true };
+
+        Process proc = Process.Start(startInfo)!;
+        await Task.Run(() => proc.WaitForExit());
+        EditorUtility.ClearProgressBar();
+
+        if (File.Exists(installerPath))
+            File.Delete(installerPath);
+
+        if (proc.ExitCode == 0)
+        {
+            EditorUtility.DisplayDialog("Git Installed", "Git has been installed. Please restart Unity.", "OK");
+        }
+        else
+            EditorUtility.DisplayDialog("Install Failed", "Git installation failed.", "OK");
     }
 
-    [MenuItem("Thaumiel/Tools/Auto Update/Reset Setup")]
-    private static void ResetSetup()
+    private readonly struct GitResult
     {
-        EditorPrefs.DeleteKey(PrefKey);
-        Debug.Log("[AutoUpdate] Setup preference cleared.");
-    }
-
-    [MenuItem("Thaumiel/Tools/Auto Update/Check for Updates")]
-    private static void ManualCheck()
-    {
-        EnsureRemoteAndCheck();
+        public readonly string Output;
+        public readonly string Error;
+        public readonly int ExitCode;
+        public GitResult(string o, string e, int c) { Output = o; Error = e; ExitCode = c; }
     }
 }

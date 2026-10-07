@@ -16,10 +16,11 @@ using Debug = UnityEngine.Debug;
 
 namespace Assets.Scripts
 {
-#pragma warning disable CS0618
     [ExecuteInEditMode]
     public class Builder : MonoBehaviour
     {
+        public static event Action<Builder, YamlSchematic> OnSchematicCompiled;
+
         private Config config;
 
         [field: SerializeField]
@@ -35,7 +36,7 @@ namespace Assets.Scripts
             Color.white
         };
 
-        private static readonly Color CullingAreaColor = new Color(1f, 0.5f, 0f);
+        private static readonly Color CullingAreaColor = new(1f, 0.5f, 0f);
 
         [SerializeField]
         internal ServerSide server;
@@ -104,10 +105,6 @@ namespace Assets.Scripts
             Gizmos.DrawLine(center - right - up, center + right + up);
             Gizmos.DrawLine(center + right - up, center - right + up);
         }
-        
-#nullable enable
-        public static event Action<Builder>? OnBuilt;
-#nullable disable
 
         public void CompileData()
         {
@@ -135,7 +132,7 @@ namespace Assets.Scripts
             };
 
             File.WriteAllText(Path.Combine(directoryPath, $"{name}.yml"), YamlParser.Serializer.Serialize(schematic));
-            OnBuilt?.Invoke(this);
+            OnSchematicCompiled?.Invoke(this, schematic);
 
             if (config.OpenExportAfterCompiling)
             {
@@ -227,26 +224,6 @@ namespace Assets.Scripts
 
             return tools;
         }
-
-        // TODO: Test this.
-        /*
-        private List<YamlArea> CompileCulling()
-        {
-            List<YamlArea> areas = new();
-            CullingSettings.Compile(transform);
-            YamlArea culling = new()
-            {
-                ObjectId = transform.gameObject.GetInstanceID(),
-                ParentId = transform.gameObject.GetInstanceID(),
-                SchematicName = name.Replace(' ', '_'),
-                AreaType = AreaType.CullingArea,
-                Values = CullingSettings.Properties
-            };
-
-            areas.Add(culling);
-            return areas;
-        }
-        */
 
         private void SetupOutput(out string directoryPath)
         {

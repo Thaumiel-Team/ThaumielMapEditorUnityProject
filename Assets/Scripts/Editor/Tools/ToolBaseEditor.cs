@@ -17,6 +17,16 @@ namespace Assets.Scripts.Editor.Tools
         private static string _activeTargetEvent;
         private static bool _isSubscribed = false;
 
+        private static readonly Dictionary<string, string> FieldEventMap = new()
+        {
+            ["OnEntered"] = "trigger_enter_event",
+            ["OnExited"] = "trigger_exit_event",
+            ["OnInteracted"] = "interaction_event",
+            ["OnInteractionDenied"] = "interaction_denied_event",
+            ["OnSpawned"] = "spawned_event",
+            ["OnDestroyed"] = "destroyed_event",
+        };
+
         private readonly Dictionary<string, int> _selectedBlockyIndex = new();
 
         public override void OnInspectorGUI()
@@ -38,7 +48,7 @@ namespace Assets.Scripts.Editor.Tools
             FieldInfo[] fields = target.GetType().GetFields(BindingFlags.Public | BindingFlags.Instance);
             ToolBase tool = (ToolBase)target;
 
-foreach (FieldInfo field in fields)
+            foreach (FieldInfo field in fields)
             {
                 if (field.FieldType != typeof(InteractableClasses) && field.FieldType != typeof(ColliderClasses) && field.FieldType != typeof(CodeExportPayload))
                     continue;
@@ -46,6 +56,15 @@ foreach (FieldInfo field in fields)
                 if (GUILayout.Button($"Open Blocky Editor for {field.Name}", btnStyle))
                 {
                     OpenBlockyEditor(tool, field.Name, xml: null);
+                }
+
+                if (tool is BlockyRuntime runtime && field.Name == nameof(runtime.Blocky))
+                {
+                    if (GUILayout.Button("Open Blocky Editor for OnSpawned", btnStyle))
+                        OpenBlockyEditorForEvent(tool, field.Name, runtime.Blocky?.Xml, "spawned_event", lockWorkspace: false);
+
+                    if (GUILayout.Button("Open Blocky Editor for OnDestroyed", btnStyle))
+                        OpenBlockyEditorForEvent(tool, field.Name, runtime.Blocky?.Xml, "destroyed_event", lockWorkspace: false);
                 }
 
                 List<CodeExportPayload> blockyList = GetBlockyList(field, tool);
@@ -94,9 +113,8 @@ foreach (FieldInfo field in fields)
             for (int i = 0; i < entries.Count; i++)
             {
                 CodeExportPayload e = entries[i];
-                string lang = string.IsNullOrEmpty(e.Language) ? "Unknown" : e.Language;
                 string time = string.IsNullOrEmpty(e.Timestamp) ? "" : $"  [{e.Timestamp[..Math.Min(19, e.Timestamp.Length)]}]";
-                labels[i] = $"{i + 1}. {lang}{time}";
+                labels[i] = $"{i + 1}. {time}";
             }
             return labels;
         }
@@ -121,6 +139,12 @@ foreach (FieldInfo field in fields)
 
         private static void OpenBlockyEditor(ToolBase tool, string fieldName, string xml)
         {
+            FieldEventMap.TryGetValue(fieldName, out string eventBlockType);
+            OpenBlockyEditorForEvent(tool, fieldName, xml, eventBlockType, lockWorkspace: eventBlockType != null);
+        }
+
+        private static void OpenBlockyEditorForEvent(ToolBase tool, string fieldName, string xml, string eventBlockType, bool lockWorkspace)
+        {
             _activeTool = tool;
             _activeTargetEvent = fieldName;
 
@@ -143,24 +167,42 @@ foreach (FieldInfo field in fields)
             Application.OpenURL(fileUri);
             Debug.Log($"[Blocky] Awaiting exports for {tool.gameObject.name} -> {fieldName}...");
 
-            if (!string.IsNullOrEmpty(xml))
+            void SendSetup()
             {
-                if (BlocklyServer.IsClientConnected)
+                if (!string.IsNullOrEmpty(xml))
                 {
-                    BlocklyServer.LoadXml(xml);
+                    BlocklyServer.LoadXml(xml, lockWorkspace ? eventBlockType : null);
                     Debug.Log($"[Blocky] Restored workspace XML for {fieldName}.");
+
+                    if (!lockWorkspace && !string.IsNullOrEmpty(eventBlockType))
+                        BlocklyServer.EnsureEvent(eventBlockType);
                 }
-                else
+                else if (!string.IsNullOrEmpty(eventBlockType))
                 {
-                    string xmlCapture = xml;
-                    void OnConnected()
+                    if (lockWorkspace)
                     {
-                        BlocklyServer.LoadXml(xmlCapture);
-                        BlocklyServer.OnClientConnected -= OnConnected;
-                        Debug.Log($"[Blocky] Restored workspace XML for {fieldName} after reconnect.");
+                        BlocklyServer.LoadEvent(eventBlockType);
                     }
-                    BlocklyServer.OnClientConnected += OnConnected;
+                    else
+                        BlocklyServer.EnsureEvent(eventBlockType);
+
+                    Debug.Log($"[Blocky] Requested event '{eventBlockType}' for {fieldName}.");
                 }
+            }
+
+            if (BlocklyServer.IsClientConnected)
+            {
+                SendSetup();
+            }
+            else
+            {
+                void OnConnected()
+                {
+                    SendSetup();
+                    BlocklyServer.OnClientConnected -= OnConnected;
+                    Debug.Log($"[Blocky] Sent workspace setup for {fieldName} after reconnect.");
+                }
+                BlocklyServer.OnClientConnected += OnConnected;
             }
         }
 

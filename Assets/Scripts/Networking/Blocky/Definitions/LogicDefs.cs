@@ -41,12 +41,9 @@ namespace Assets.Scripts.Networking.Blocky.Definitions
                 Category = "Logic",
                 Color = "#f51fbc",
                 Tooltip = "Creates a new empty list.",
-                Message = "new List %1",
+                Message = "new List",
                 Connections = new List<BlockConnectionType> { BlockConnectionType.Output },
-                Args = new List<Dictionary<string, object>>
-                {
-                    BlockArg.Dummy()
-                }
+                Args = null
             });
 
             // list.Add(item)

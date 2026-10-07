@@ -2,8 +2,5 @@ using UnityEngine;
 
 namespace Assets.Scripts.Components
 {
-    public class ServerSide : MonoBehaviour
-    {
-        // Hi
-    }
+    public class ServerSide : MonoBehaviour { }
 }

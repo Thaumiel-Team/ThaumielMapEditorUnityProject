@@ -14,7 +14,7 @@ namespace Assets.Scripts.Components.Objects
         public override void Compile(Transform root)
         {
             base.Compile(root);
-            base.Properties = new()
+            Properties = new()
             {
                 ["TargetType"] = TargetType,
             };

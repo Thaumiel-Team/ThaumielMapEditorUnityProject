@@ -35,10 +35,11 @@ namespace Assets.Scripts.Networking.Blocky.Definitions
                 Category = "Waypoint",
                 Color = "#1565C0",
                 Tooltip = "Gets a property of the Waypoint.",
-                Message = "Get %1 of Waypoint",
+                Message = "Get %2 of Waypoint: %1",
                 Connections = new List<BlockConnectionType> { BlockConnectionType.Output },
                 Args = new List<Dictionary<string, object>>
                 {
+                    BlockArg.Value("Waypoint"),
                     BlockArg.Dropdown("Property", EnumOptions<Properties>())
                 }
             });
@@ -53,7 +54,7 @@ namespace Assets.Scripts.Networking.Blocky.Definitions
                 Color = "#1565C0",
                 Tooltip = "Create a new WaypointObject with a given name.",
                 Message = "Create Waypoint  Name: %1",
-                Connections = new List<BlockConnectionType> { BlockConnectionType.Previous, BlockConnectionType.Next },
+                Connections = new List<BlockConnectionType> { BlockConnectionType.Output },
                 Args = new List<Dictionary<string, object>>
                 {
                     BlockArg.TextField("name", "MyWaypoint")
@@ -69,10 +70,11 @@ namespace Assets.Scripts.Networking.Blocky.Definitions
                 Category = "Waypoint",
                 Color = "#1565C0",
                 Tooltip = "Toggle whether the waypoint's bounds are visualized in the editor or at runtime.",
-                Message = "Set Visualize Bounds → %1",
+                Message = "Set Visualize Bounds of Waypoint: %1 → %2",
                 Connections = new List<BlockConnectionType> { BlockConnectionType.Previous, BlockConnectionType.Next },
                 Args = new List<Dictionary<string, object>>
                 {
+                    BlockArg.Value("Waypoint"),
                     BlockArg.Checkbox("visualizeBounds", false)
                 }
             });
@@ -86,10 +88,11 @@ namespace Assets.Scripts.Networking.Blocky.Definitions
                 Category = "Waypoint",
                 Color = "#1565C0",
                 Tooltip = "Set the priority value of the waypoint. Higher values influence ordering or selection logic.",
-                Message = "Set Priority → %1",
+                Message = "Set Priority of Waypoint: %1 → %2",
                 Connections = new List<BlockConnectionType> { BlockConnectionType.Previous, BlockConnectionType.Next },
                 Args = new List<Dictionary<string, object>>
                 {
+                    BlockArg.Value("Waypoint"),
                     BlockArg.NumberField("priority", 0.0)
                 }
             });
@@ -103,10 +106,11 @@ namespace Assets.Scripts.Networking.Blocky.Definitions
                 Category = "Waypoint",
                 Color = "#1565C0",
                 Tooltip = "Set the size of the waypoint bounds.",
-                Message = "Set Bounds Size →  x: %1  y: %2  z: %3",
+                Message = "Set Bounds Size of Waypoint: %1 →  x: %2  y: %3  z: %4",
                 Connections = new List<BlockConnectionType> { BlockConnectionType.Previous, BlockConnectionType.Next },
                 Args = new List<Dictionary<string, object>>
                 {
+                    BlockArg.Value("Waypoint"),
                     BlockArg.NumberField("x", 1.0),
                     BlockArg.NumberField("y", 1.0),
                     BlockArg.NumberField("z", 1.0)

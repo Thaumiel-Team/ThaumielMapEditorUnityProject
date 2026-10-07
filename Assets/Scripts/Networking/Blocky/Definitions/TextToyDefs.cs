@@ -32,10 +32,11 @@ namespace Assets.Scripts.Networking.Blocky.Definitions
                 Category = "TextToy",
                 Color = "#2E7D32",
                 Tooltip = "Gets a property of the text toy.",
-                Message = "Get %1 of TextToy",
+                Message = "Get %2 of TextToy: %1",
                 Connections = new List<BlockConnectionType> { BlockConnectionType.Output },
                 Args = new List<Dictionary<string, object>>
                 {
+                    BlockArg.Value("TextToy"),
                     BlockArg.Dropdown("Property", EnumOptions<Properties>())
                 }
             });
@@ -66,10 +67,11 @@ namespace Assets.Scripts.Networking.Blocky.Definitions
                 Category = "TextToy",
                 Color = "#2E7D32",
                 Tooltip = "Set the text format string displayed by the TextToy.",
-                Message = "Set Text → %1",
+                Message = "Set Text of TextToy: %1 → %2",
                 Connections = new List<BlockConnectionType> { BlockConnectionType.Previous, BlockConnectionType.Next },
                 Args = new List<Dictionary<string, object>>
                 {
+                    BlockArg.Value("TextToy"),
                     BlockArg.TextField("text", "Hello World")
                 }
             });
@@ -83,12 +85,13 @@ namespace Assets.Scripts.Networking.Blocky.Definitions
                 Category = "TextToy",
                 Color = "#2E7D32",
                 Tooltip = "Set the display size (width and height) of the TextToy.",
-                Message = "Set Display Size →  w: %1  h: %2",
+                Message = "Set Display Size of TextToy: %1 →  w: %2  h: %3",
                 Connections = new List<BlockConnectionType> { BlockConnectionType.Previous, BlockConnectionType.Next },
                 Args = new List<Dictionary<string, object>>
                 {
-                    BlockArg.NumberField("x", 1.0),
-                    BlockArg.NumberField("y", 1.0)
+                    BlockArg.Value("TextToy"),
+                    BlockArg.NumberField("width", 1.0),
+                    BlockArg.NumberField("height", 1.0)
                 }
             });
         }

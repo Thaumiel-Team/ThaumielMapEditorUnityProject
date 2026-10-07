@@ -6,10 +6,6 @@ namespace Assets.Scripts.Networking.Blocky
     [Serializable]
     public class CodeExportPayload
     {
-        public string Type;
-
-        public string Language;
-
         public string Code;
 
         public string Xml;

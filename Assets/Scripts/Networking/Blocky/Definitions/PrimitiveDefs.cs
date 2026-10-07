@@ -46,10 +46,11 @@ namespace Assets.Scripts.Networking.Blocky.Definitions
                 Category = "Primitive",
                 Color = "#6A1B9A",
                 Tooltip = "Gets a property of the primitive.",
-                Message = "Get %1 of Primitive",
+                Message = "Get %2 of Primitive: %1",
                 Connections = new List<BlockConnectionType> { BlockConnectionType.Output },
                 Args = new List<Dictionary<string, object>>
                 {
+                    BlockArg.Value("Primitive"),
                     BlockArg.Dropdown("Property", EnumOptions<Properties>())
                 }
             });
@@ -81,10 +82,11 @@ namespace Assets.Scripts.Networking.Blocky.Definitions
                 Category = "Primitive",
                 Color = "#6A1B9A",
                 Tooltip = "Set the world position of the PrimitiveObject. Syncs to all spawned players.",
-                Message = "Set Position →  x: %1  y: %2  z: %3",
+                Message = "Set Position of Primitive: %1 →  x: %2  y: %3  z: %4",
                 Connections = new List<BlockConnectionType> { BlockConnectionType.Previous, BlockConnectionType.Next },
                 Args = new List<Dictionary<string, object>>
                 {
+                    BlockArg.Value("Primitive"),
                     BlockArg.NumberField("x", 0.0),
                     BlockArg.NumberField("y", 0.0),
                     BlockArg.NumberField("z", 0.0)
@@ -100,10 +102,11 @@ namespace Assets.Scripts.Networking.Blocky.Definitions
                 Category = "Primitive",
                 Color = "#6A1B9A",
                 Tooltip = "Set the rotation (Euler angles) of the PrimitiveObject. Syncs to all spawned players.",
-                Message = "Set Rotation →  x: %1  y: %2  z: %3",
+                Message = "Set Rotation of Primitive: %1 →  x: %2  y: %3  z: %4",
                 Connections = new List<BlockConnectionType> { BlockConnectionType.Previous, BlockConnectionType.Next },
                 Args = new List<Dictionary<string, object>>
                 {
+                    BlockArg.Value("Primitive"),
                     BlockArg.NumberField("x", 0.0),
                     BlockArg.NumberField("y", 0.0),
                     BlockArg.NumberField("z", 0.0)
@@ -119,10 +122,11 @@ namespace Assets.Scripts.Networking.Blocky.Definitions
                 Category = "Primitive",
                 Color = "#6A1B9A",
                 Tooltip = "Set the scale of the PrimitiveObject. Syncs to all spawned players.",
-                Message = "Set Scale →  x: %1  y: %2  z: %3",
+                Message = "Set Scale of Primitive: %1 →  x: %2  y: %3  z: %4",
                 Connections = new List<BlockConnectionType> { BlockConnectionType.Previous, BlockConnectionType.Next },
                 Args = new List<Dictionary<string, object>>
                 {
+                    BlockArg.Value("Primitive"),
                     BlockArg.NumberField("x", 1.0),
                     BlockArg.NumberField("y", 1.0),
                     BlockArg.NumberField("z", 1.0)
@@ -138,10 +142,11 @@ namespace Assets.Scripts.Networking.Blocky.Definitions
                 Category = "Primitive",
                 Color = "#6A1B9A",
                 Tooltip = "Set the RGBA color of the PrimitiveObject. Values are 0.0–1.0. Syncs to all spawned players.",
-                Message = "Set Color →  r: %1  g: %2  b: %3  a: %4",
+                Message = "Set Color of Primitive: %1 →  r: %2  g: %3  b: %4  a: %5",
                 Connections = new List<BlockConnectionType> { BlockConnectionType.Previous, BlockConnectionType.Next },
                 Args = new List<Dictionary<string, object>>
                 {
+                    BlockArg.Value("Primitive"),
                     BlockArg.NumberField("r", 1.0, 0.0, 1.0),
                     BlockArg.NumberField("g", 1.0, 0.0, 1.0),
                     BlockArg.NumberField("b", 1.0, 0.0, 1.0),
@@ -158,10 +163,11 @@ namespace Assets.Scripts.Networking.Blocky.Definitions
                 Category = "Primitive",
                 Color = "#6A1B9A",
                 Tooltip = "Set the mesh shape of the PrimitiveObject. Syncs to all spawned players.",
-                Message = "Set Shape → %1",
+                Message = "Set Shape of Primitive: %1 → %2",
                 Connections = new List<BlockConnectionType> { BlockConnectionType.Previous, BlockConnectionType.Next },
                 Args = new List<Dictionary<string, object>>
                 {
+                    BlockArg.Value("Primitive"),
                     BlockArg.Dropdown("primitiveType", EnumOptions<PrimitiveType>())
                 }
             });
@@ -175,10 +181,11 @@ namespace Assets.Scripts.Networking.Blocky.Definitions
                 Category = "Primitive",
                 Color = "#6A1B9A",
                 Tooltip = "Set the PrimitiveFlags on the PrimitiveObject. Controls visibility and collision behaviour.",
-                Message = "Set Flags → %1",
+                Message = "Set Flags of Primitive: %1 → %2",
                 Connections = new List<BlockConnectionType> { BlockConnectionType.Previous, BlockConnectionType.Next },
                 Args = new List<Dictionary<string, object>>
                 {
+                    BlockArg.Value("Primitive"),
                     BlockArg.Dropdown("primitiveFlags", EnumOptions<PrimitiveFlags>())
                 }
             });
@@ -192,10 +199,11 @@ namespace Assets.Scripts.Networking.Blocky.Definitions
                 Category = "Primitive",
                 Color = "#6A1B9A",
                 Tooltip = "Toggle whether the PrimitiveObject is treated as a static (non-moving) object. Syncs to all spawned players.",
-                Message = "Set Static → %1",
+                Message = "Set Static of Primitive: %1 → %2",
                 Connections = new List<BlockConnectionType> { BlockConnectionType.Previous, BlockConnectionType.Next },
                 Args = new List<Dictionary<string, object>>
                 {
+                    BlockArg.Value("Primitive"),
                     BlockArg.Checkbox("isStatic", false)
                 }
             });
@@ -209,10 +217,11 @@ namespace Assets.Scripts.Networking.Blocky.Definitions
                 Category = "Primitive",
                 Color = "#6A1B9A",
                 Tooltip = "Set the movement smoothing byte (0–255) for interpolation on clients.",
-                Message = "Set Movement Smoothing → %1",
+                Message = "Set Movement Smoothing of Primitive: %1 → %2",
                 Connections = new List<BlockConnectionType> { BlockConnectionType.Previous, BlockConnectionType.Next },
                 Args = new List<Dictionary<string, object>>
                 {
+                    BlockArg.Value("Primitive"),
                     BlockArg.NumberField("movementSmoothing", 0, 0, 255)
                 }
             });

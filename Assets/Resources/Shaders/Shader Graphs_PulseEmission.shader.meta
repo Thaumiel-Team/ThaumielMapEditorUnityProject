@@ -1,0 +1,12 @@
+fileFormatVersion: 2
+guid: 36a5b76716b4eb24bab69fcd19972ded
+timeCreated: 1787823852
+licenseType: Free
+ShaderImporter:
+  externalObjects: {}
+  defaultTextures: []
+  nonModifiableTextures:
+  - _HDRPLit_9ccede5c759f47328be7a7de0be3904b_DetailMap_913208011_Texture2D: {fileID: 0}
+  userData:
+  assetBundleName:
+  assetBundleVariant:

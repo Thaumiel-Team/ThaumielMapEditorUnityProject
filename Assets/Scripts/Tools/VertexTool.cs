@@ -21,8 +21,8 @@ namespace Assets.Scripts.Tools
             WaitVerts
         }
 
-        private static readonly Color ColObj1 = new Color(0.20f, 0.60f, 1.00f);
-        private static readonly Color ColObj2 = new Color(1.00f, 0.40f, 0.20f);
+        private static readonly Color ColObj1 = new(0.20f, 0.60f, 1.00f);
+        private static readonly Color ColObj2 = new(1.00f, 0.40f, 0.20f);
         private static readonly Color ColSel = Color.yellow;
         private GameObject _obj1;
         private Vector3[] _verts1 = new Vector3[0];
@@ -148,7 +148,7 @@ namespace Assets.Scripts.Tools
             if ((_hState == QSState.WaitObj1 || _hState == QSState.WaitObj2) && e.type == EventType.MouseDown && e.button == 0)
             {
                 GameObject hit = HandleUtility.PickGameObject(e.mousePosition, false);
-                if (hit?.GetComponent<MeshFilter>()?.sharedMesh != null)
+                if (hit != null ? hit.GetComponent<MeshFilter>().sharedMesh : null != null)
                 {
                     if (_hState == QSState.WaitObj1)
                     {
@@ -290,7 +290,7 @@ namespace Assets.Scripts.Tools
                     sv.Repaint();
                 }
 
-                GUIStyle ls = new GUIStyle(EditorStyles.boldLabel);
+                GUIStyle ls = new(EditorStyles.boldLabel);
                 ls.normal.textColor = isSel ? Color.yellow : col;
                 Handles.Label(wp + 1.5f * size * Vector3.up, $"{prefix} V{i}", ls);
             }
@@ -300,7 +300,7 @@ namespace Assets.Scripts.Tools
         {
             if (mode == ConnectMode.Standard || mode == ConnectMode.CornerMeet)
             {
-                Vector3 corner = GetCornerPoint(vw1, t1, vl1, vw2, t2, vl2, lockY);
+                Vector3 corner = GetCornerPoint(vw1, t1, vl1, vw2, t2, vl2, lockY, out bool parallel);
                 if (!lockY)
                     corner.y = yMid ? (vw1.y + vw2.y) * 0.5f : vw2.y;
 
@@ -315,15 +315,16 @@ namespace Assets.Scripts.Tools
 
                 Handles.color = new Color(0.3f, 1f, 0.4f);
                 Handles.SphereHandleCap(0, corner, Quaternion.identity, HandleUtility.GetHandleSize(corner) * 0.15f, EventType.Repaint);
-                Handles.Label(corner + Vector3.up * 0.25f, "Corner", EditorStyles.boldLabel);
+                Handles.Label(corner + Vector3.up * 0.25f, parallel ? "Midpoint (parallel walls)" : "Corner", EditorStyles.boldLabel);
             }
             else
             {
+                Vector3 target = GetFullResizeTarget(t1, vl1, t2, vl2, lockY, yMid);
                 Handles.color = Color.yellow;
-                Handles.DrawDottedLine(vw1, vw2, 4f);
+                Handles.DrawDottedLine(vw1, target, 4f);
                 Handles.color = new Color(1f, 0.9f, 0.2f);
-                Handles.SphereHandleCap(0, vw2, Quaternion.identity, HandleUtility.GetHandleSize(vw2) * 0.1f, EventType.Repaint);
-                Handles.Label(vw2 + Vector3.up * 0.2f, "Target", EditorStyles.boldLabel);
+                Handles.SphereHandleCap(0, target, Quaternion.identity, HandleUtility.GetHandleSize(target) * 0.1f, EventType.Repaint);
+                Handles.Label(target + Vector3.up * 0.2f, "Target", EditorStyles.boldLabel);
             }
         }
 
@@ -408,7 +409,7 @@ namespace Assets.Scripts.Tools
             if ((_qs == QSState.WaitObj1 || _qs == QSState.WaitObj2) && e.type == EventType.MouseDown && e.button == 0)
             {
                 GameObject hit = HandleUtility.PickGameObject(e.mousePosition, false);
-                if (hit?.GetComponent<MeshFilter>()?.sharedMesh != null)
+                if (hit != null ? hit.GetComponent<MeshFilter>().sharedMesh : null != null)
                 {
                     if (_qs == QSState.WaitObj1)
                     {
@@ -554,14 +555,15 @@ namespace Assets.Scripts.Tools
                 EditorGUILayout.HelpBox("Select both objects and one vertex each to enable.", MessageType.None);
 
             EditorGUILayout.Space(5);
-            if (GUILayout.Button("Refresh Vertices")) RefreshAll();
+            if (GUILayout.Button("Refresh Vertices"))
+                RefreshAll();
 
             EditorGUILayout.Space(10);
             GUILayout.Label("Keybinds", EditorStyles.boldLabel);
             EditorGUILayout.HelpBox("These keys work in the Scene View at all times, even when this window is closed.", MessageType.None);
-            DrawKeybindRow("Activate / Confirm", ref _capAct, ref _capToggle, KeyActivate, k => KeyActivate = k);
-            DrawKeybindRow("Toggle Mode", ref _capToggle, ref _capAct, KeyToggleMode, k => KeyToggleMode = k);
-            DrawKeybindRow("Toggle Y Lock", ref _capLockY, ref _capAct, KeyToggleLockY, k => KeyToggleLockY = k);
+            DrawKeybindRow("Activate / Confirm", ref _capAct, ref _capToggle, KeyActivate);
+            DrawKeybindRow("Toggle Mode", ref _capToggle, ref _capAct, KeyToggleMode);
+            DrawKeybindRow("Toggle Y Lock", ref _capLockY, ref _capAct, KeyToggleLockY);
             EditorGUILayout.HelpBox("Toggle Y Lock works everywhere in the Scene View. Set to None to disable.", MessageType.None);
 
             if (_capAct || _capToggle || _capLockY)
@@ -622,14 +624,14 @@ namespace Assets.Scripts.Tools
             Vector3 vl1 = _verts1[_v1], vl2 = _verts2[_v2];
             Vector3 vw1 = _obj1.transform.TransformPoint(vl1);
             Vector3 vw2 = _obj2.transform.TransformPoint(vl2);
-            Vector3 corner = GetCornerPoint(vw1, _obj1.transform, vl1, vw2, _obj2.transform, vl2, _lockY);
+            Vector3 corner = GetCornerPoint(vw1, _obj1.transform, vl1, vw2, _obj2.transform, vl2, _lockY, out bool parallel);
             if (!_lockY)
                 corner.y = _yMidpoint ? (vw1.y + vw2.y) * 0.5f : vw2.y;
 
             Undo.RecordObject(_obj1.transform, "Vertex Connector: Standard");
-            ScaleObjectToReach(_obj1, vl1, vw1, corner, _lockY);
+            ScaleObjectToReach(_obj1, vl1, vw1, corner, parallel);
             if (!_lockY)
-                ScaleObjectToReachY(_obj1, vl1, _obj1.transform.TransformPoint(vl1), corner);
+                ScaleObjectToReachY(_obj1, vl1, corner);
 
             RefreshAll();
         }
@@ -639,17 +641,17 @@ namespace Assets.Scripts.Tools
             Vector3 vl1 = _verts1[_v1], vl2 = _verts2[_v2];
             Vector3 vw1 = _obj1.transform.TransformPoint(vl1);
             Vector3 vw2 = _obj2.transform.TransformPoint(vl2);
-            Vector3 corner = GetCornerPoint(vw1, _obj1.transform, vl1, vw2, _obj2.transform, vl2, _lockY);
+            Vector3 corner = GetCornerPoint(vw1, _obj1.transform, vl1, vw2, _obj2.transform, vl2, _lockY, out bool parallel);
             if (!_lockY) corner.y = _yMidpoint ? (vw1.y + vw2.y) * 0.5f : vw2.y;
 
             Undo.RecordObject(_obj1.transform, "Vertex Connector: Corner Meet");
             Undo.RecordObject(_obj2.transform, "Vertex Connector: Corner Meet");
-            ScaleObjectToReach(_obj1, vl1, vw1, corner, _lockY);
-            ScaleObjectToReach(_obj2, vl2, vw2, corner, _lockY);
+            ScaleObjectToReach(_obj1, vl1, vw1, corner, parallel);
+            ScaleObjectToReach(_obj2, vl2, vw2, corner, parallel);
             if (!_lockY)
             {
-                ScaleObjectToReachY(_obj1, vl1, _obj1.transform.TransformPoint(_verts1[_v1]), corner);
-                ScaleObjectToReachY(_obj2, vl2, _obj2.transform.TransformPoint(_verts2[_v2]), corner);
+                ScaleObjectToReachY(_obj1, vl1, corner);
+                ScaleObjectToReachY(_obj2, vl2, corner);
             }
             RefreshAll();
         }
@@ -657,14 +659,21 @@ namespace Assets.Scripts.Tools
         private void ConnectFullResize()
         {
             Vector3 vl1 = _verts1[_v1];
-            Vector3 vw1 = _obj1.transform.TransformPoint(vl1);
-            Vector3 target = _obj2.transform.TransformPoint(_verts2[_v2]);
-            if (!_lockY && _yMidpoint)
-                target.y = (vw1.y + target.y) * 0.5f;
+            Vector3 target = GetFullResizeTarget(_obj1.transform, vl1, _obj2.transform, _verts2[_v2], _lockY, _yMidpoint);
 
             Undo.RecordObject(_obj1.transform, "Vertex Connector: Full Resize");
-            ScaleObjectToReachAllAxes(_obj1, vl1, vw1, target, _lockY);
+            ScaleObjectToReachAllAxes(_obj1, vl1, target, _lockY);
             RefreshAll();
+        }
+
+        private static Vector3 GetFullResizeTarget(Transform t1, Vector3 vl1, Transform t2, Vector3 vl2, bool lockY, bool yMid)
+        {
+            Vector3 vw1 = t1.TransformPoint(vl1);
+            Vector3 target = t2.TransformPoint(vl2);
+            if (!lockY && yMid)
+                target.y = (vw1.y + target.y) * 0.5f;
+
+            return target;
         }
 
         private static void HeadlessConnect()
@@ -679,67 +688,59 @@ namespace Assets.Scripts.Tools
 
             if (_hMode == ConnectMode.Standard)
             {
-                Vector3 corner = GetCornerPoint(vw1, _hObj1.transform, vl1, vw2, _hObj2.transform, vl2, _hLockY);
+                Vector3 corner = GetCornerPoint(vw1, _hObj1.transform, vl1, vw2, _hObj2.transform, vl2, _hLockY, out bool parallel);
                 if (!_hLockY)
                     corner.y = _hYMid ? (vw1.y + vw2.y) * 0.5f : vw2.y;
 
-                ScaleObjectToReach(_hObj1, vl1, vw1, corner, _hLockY);
+                ScaleObjectToReach(_hObj1, vl1, vw1, corner, parallel);
                 if (!_hLockY)
-                    ScaleObjectToReachY(_hObj1, vl1, _hObj1.transform.TransformPoint(vl1), corner);
+                    ScaleObjectToReachY(_hObj1, vl1, corner);
             }
             else if (_hMode == ConnectMode.CornerMeet)
             {
-                Vector3 corner = GetCornerPoint(vw1, _hObj1.transform, vl1, vw2, _hObj2.transform, vl2, _hLockY);
+                Vector3 corner = GetCornerPoint(vw1, _hObj1.transform, vl1, vw2, _hObj2.transform, vl2, _hLockY, out bool parallel);
                 if (!_hLockY) corner.y = _hYMid ? (vw1.y + vw2.y) * 0.5f : vw2.y;
-                ScaleObjectToReach(_hObj1, vl1, vw1, corner, _hLockY);
-                ScaleObjectToReach(_hObj2, vl2, vw2, corner, _hLockY);
+                ScaleObjectToReach(_hObj1, vl1, vw1, corner, parallel);
+                ScaleObjectToReach(_hObj2, vl2, vw2, corner, parallel);
                 if (!_hLockY)
                 {
-                    ScaleObjectToReachY(_hObj1, vl1, _hObj1.transform.TransformPoint(vl1), corner);
-                    ScaleObjectToReachY(_hObj2, vl2, _hObj2.transform.TransformPoint(vl2), corner);
+                    ScaleObjectToReachY(_hObj1, vl1, corner);
+                    ScaleObjectToReachY(_hObj2, vl2, corner);
                 }
             }
             else
             {
-                Vector3 target = vw2;
-                if (!_hLockY && _hYMid)
-                    target.y = (vw1.y + vw2.y) * 0.5f;
-                    
-                ScaleObjectToReachAllAxes(_hObj1, vl1, vw1, target, _hLockY);
+                Vector3 target = GetFullResizeTarget(_hObj1.transform, vl1, _hObj2.transform, vl2, _hLockY, _hYMid);
+                ScaleObjectToReachAllAxes(_hObj1, vl1, target, _hLockY);
             }
         }
 
-        private static void ScaleObjectToReach(GameObject obj, Vector3 vLocal, Vector3 vWorld, Vector3 target, bool lockY)
+        private static void ScaleObjectToReach(GameObject obj, Vector3 vLocal, Vector3 vWorld, Vector3 target, bool bothAxes)
         {
-            Transform t = obj.transform; Vector3 scale = t.localScale;
-            float wx = Mathf.Abs(vLocal.x) * scale.x;
-            float wy = (!lockY && Mathf.Abs(vLocal.y) > 0.001f) ? Mathf.Abs(vLocal.y) * scale.y : -1f;
-            float wz = Mathf.Abs(vLocal.z) * scale.z;
+            if (Vector2.Distance(new Vector2(vWorld.x, vWorld.z), new Vector2(target.x, target.z)) < 0.001f)
+                return;
 
-            Vector3 worldAxis; float axisScale; float vertComp;
-            if (wx >= wz && wx >= wy && wx >= 0f)
+            Transform t = obj.transform;
+            float wx = Mathf.Abs(vLocal.x) * t.localScale.x;
+            float wz = Mathf.Abs(vLocal.z) * t.localScale.z;
+            bool primaryIsX = wx >= wz;
+
+            ScaleXZAxisToReach(obj, primaryIsX, primaryIsX ? vLocal.x : vLocal.z, target);
+            if (bothAxes)
+                ScaleXZAxisToReach(obj, !primaryIsX, !primaryIsX ? vLocal.x : vLocal.z, target);
+        }
+
+        private static void ScaleXZAxisToReach(GameObject obj, bool isX, float vertComp, Vector3 target)
+        {
+            if (Mathf.Abs(vertComp) < 0.001f)
             {
-                worldAxis = t.right;
-                axisScale = scale.x;
-                vertComp = vLocal.x;
-            }
-            else if (wz >= wx && wz >= wy && wz >= 0f)
-            {
-                worldAxis = t.forward;
-                axisScale = scale.z;
-                vertComp = vLocal.z;
-            }
-            else if (wy >= 0f)
-            {
-                worldAxis = t.up;
-                axisScale = scale.y;
-                vertComp = vLocal.y;
-            }
-            else
-            {
-                Debug.LogWarning($"Vertex Connector: No valid axis on {obj.name}.");
+                Debug.LogWarning($"Vertex Connector: '{obj.name}' vertex is centered on the {(isX ? "X" : "Z")} axis and cannot be stretched. Try Full Resize.");
                 return;
             }
+
+            Transform t = obj.transform;
+            Vector3 worldAxis = isX ? t.right : t.forward;
+            float axisScale = isX ? t.localScale.x : t.localScale.z;
 
             float sign = Mathf.Sign(vertComp);
             Vector3 fixedFace = t.position - worldAxis * (axisScale * 0.5f * sign);
@@ -750,23 +751,19 @@ namespace Assets.Scripts.Tools
                 return;
             }
 
-            Vector3 ns = scale;
-            if (worldAxis == t.right)
+            Vector3 ns = t.localScale;
+            if (isX)
             {
                 ns.x = newWidth;
             }
-            else if (worldAxis == t.forward) 
-            {
-                ns.z = newWidth;
-            }
             else
-                ns.y = newWidth;
+                ns.z = newWidth;
 
             t.localScale = ns;
             t.position = fixedFace + worldAxis * (newWidth * 0.5f * sign);
         }
 
-        private static void ScaleObjectToReachY(GameObject obj, Vector3 vLocal, Vector3 vWorld, Vector3 target)
+        private static void ScaleObjectToReachY(GameObject obj, Vector3 vLocal, Vector3 target)
         {
             if (Mathf.Abs(vLocal.y) < 0.001f)
                 return;
@@ -785,7 +782,7 @@ namespace Assets.Scripts.Tools
             t.localScale = ns; t.position = fix + t.up * (newH * 0.5f * sign);
         }
 
-        private static void ScaleObjectToReachAllAxes(GameObject obj, Vector3 vLocal, Vector3 vWorld, Vector3 target, bool lockY)
+        private static void ScaleObjectToReachAllAxes(GameObject obj, Vector3 vLocal, Vector3 target, bool lockY)
         {
             Transform t = obj.transform; Vector3 scale = t.localScale;
             void Ax(Vector3 axis, float sc, float comp)
@@ -827,7 +824,7 @@ namespace Assets.Scripts.Tools
             Ax(t.forward, scale.z, vLocal.z);
         }
 
-        private static Vector3 GetCornerPoint(Vector3 v1, Transform t1, Vector3 vl1, Vector3 v2, Transform t2, Vector3 vl2, bool lockY)
+        private static Vector3 GetCornerPoint(Vector3 v1, Transform t1, Vector3 vl1, Vector3 v2, Transform t2, Vector3 vl2, bool lockY, out bool parallel)
         {
             Vector2 p1 = new(v1.x, v1.z), p2 = new(v2.x, v2.z);
             Vector2 d1 = WallAxis2D(t1, vl1, v1, v2), d2 = WallAxis2D(t2, vl2, v2, v1);
@@ -836,11 +833,12 @@ namespace Assets.Scripts.Tools
             Vector2 ix;
             if (Mathf.Abs(denom) < 0.0001f)
             {
-                Debug.LogWarning("Vertex Connector: Walls are parallel, using midpoint fallback.");
+                parallel = true;
                 ix = (p1 + p2) * 0.5f;
             }
             else
             {
+                parallel = false;
                 Vector2 dp = p2 - p1;
                 float t = (dp.x * (-d2.y) - dp.y * (-d2.x)) / denom;
                 ix = p1 + t * d1;
@@ -902,12 +900,12 @@ namespace Assets.Scripts.Tools
 
         private static void DrawColoredLabel(string text, Color col)
         {
-            GUIStyle s = new GUIStyle(EditorStyles.boldLabel);
+            GUIStyle s = new(EditorStyles.boldLabel);
             s.normal.textColor = col;
             GUILayout.Label(text, s);
         }
 
-        private void DrawKeybindRow(string label, ref bool capturing, ref bool other, KeyCode current, System.Action<KeyCode> setter)
+        private void DrawKeybindRow(string label, ref bool capturing, ref bool other, KeyCode current)
         {
             EditorGUILayout.BeginHorizontal();
             EditorGUILayout.LabelField(label, GUILayout.Width(160));

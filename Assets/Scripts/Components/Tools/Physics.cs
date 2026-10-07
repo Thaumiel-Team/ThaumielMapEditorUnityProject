@@ -41,7 +41,7 @@ namespace Assets.Scripts.Components.Tools
         public override void Decompile()
         {
             Weight = Properties.TryGetValue("Weight", out object weightobj) ? Convert.ToSingle(weightobj) : 10f;
-            Enabled = Properties.TryGetValue("Enabled", out object enablobj) ? Convert.ToBoolean(enablobj) : default;
+            Enabled = Properties.TryGetValue("Enabled", out object enablobj) && Convert.ToBoolean(enablobj);
             Drag = Properties.TryGetValue("Drag", out object dragobj) ? Convert.ToSingle(dragobj) : 5f;
             AngularDrag = Properties.TryGetValue("AngularDrag", out object angularDragobj) ? Convert.ToSingle(angularDragobj) : 5f;
             CollisionMode = Properties.TryGetValue("CollisionMode", out object collobj) ? YamlHelpers.ParseEnum<CollisionDetectionMode>(collobj) : default;

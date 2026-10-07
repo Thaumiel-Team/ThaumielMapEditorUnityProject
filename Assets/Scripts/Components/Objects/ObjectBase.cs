@@ -13,7 +13,7 @@ namespace Assets.Scripts.Components.Objects
         public virtual ObjectType ObjectType { get; internal set; }
 
         public int ObjectId { get; set; }
-        public int ParentId { get; set; }
+        public int ParentId { get; set; } = 0;
 
         public string Name { get; set; }
         public Vector3 Position { get; set; }
@@ -41,12 +41,12 @@ namespace Assets.Scripts.Components.Objects
 
             ObjectId = transform.gameObject.GetInstanceID();
 
-            if (ServerSide)
+            if (ServerSide && transform.parent != null && transform.parent.parent != null)
             {
-                ParentId = transform.parent.parent?.gameObject.GetInstanceID() ?? 0;
+                ParentId = transform.parent.parent.gameObject.GetInstanceID();
             }
             else
-                ParentId = transform.parent?.gameObject.GetInstanceID() ?? 0;
+                ParentId = transform.parent.gameObject.GetInstanceID();
 
             Position = t.localPosition;
             Rotation = t.localEulerAngles;

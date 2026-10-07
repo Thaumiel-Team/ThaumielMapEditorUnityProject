@@ -16,7 +16,7 @@ namespace Assets.Scripts.Components.Objects
         [Tooltip("The teleporter that this object will send players to.")]
         public List<TeleporterObject> Targets = new();
 
-        internal List<Guid> TargetIds = new();
+        public List<Guid> TargetIds = new();
 
         private List<string> RawIds = new();
 
@@ -36,10 +36,25 @@ namespace Assets.Scripts.Components.Objects
 
         private void OnValidate()
         {
+            if (Id == Guid.Empty)
+            {
+                Id = Guid.NewGuid();
+                UnityEditor.EditorUtility.SetDirty(this);
+            }
+
             List<Guid> ids = new();
             foreach (TeleporterObject target in Targets)
             {
-                ids.Add(target.Id);
+                if (target != null)
+                {
+                    if (target.Id == Guid.Empty)
+                    {
+                        target.Id = Guid.NewGuid();
+                        UnityEditor.EditorUtility.SetDirty(target);
+                    }
+
+                    ids.Add(target.Id);
+                }
             }
 
             TargetIds = ids;

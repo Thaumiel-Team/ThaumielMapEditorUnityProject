@@ -13,7 +13,7 @@ namespace Assets.Scripts.Components.Tools.Helpers
         [Tooltip("The roles that are allowed to trigger this. Empty = all")]
         public List<RoleTypeId> AllowedRoles;
 
-        [Header("Interactable Trigger Only:")]
+        public string LabAPIPermission;
 
         public DoorPermissionFlags KeycardPermissions;
     }

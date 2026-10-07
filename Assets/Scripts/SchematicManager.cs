@@ -2,16 +2,21 @@ using System.Diagnostics;
 using System.IO;
 using Assets.Scripts;
 using UnityEditor;
+using UnityEngine;
 using Debug = UnityEngine.Debug;
 
 [InitializeOnLoad]
 public class SchematicManager : EditorWindow
 {
+    static SchematicManager()
+    {
+    }
+
     [MenuItem("SchematicManager/Compile %#d")]
     public static void Compile()
     {
         Debug.ClearDeveloperConsole();
-        Builder[] builders = FindObjectsByType<Builder>();
+        Builder[] builders = FindObjectsByType<Builder>(FindObjectsSortMode.InstanceID);
         if (builders.Length > 0)
         {
             foreach (Builder schematic in builders)
@@ -39,15 +44,6 @@ public class SchematicManager : EditorWindow
     [MenuItem("SchematicManager/Decompile Schematic %#e")]
     public static void Decompile()
     {
-        string[] guids = AssetDatabase.FindAssets("t:BuilderPrefabRegistry");
-        if (guids.Length == 0)
-        {
-            Debug.LogError("No BuilderPrefabRegistry found. Create one via Thaumiel/Decompiler.");
-            return;
-        }
-
-        string path = AssetDatabase.GUIDToAssetPath(guids[0]);
-        BuilderPrefabRegistry registry = AssetDatabase.LoadAssetAtPath<BuilderPrefabRegistry>(path);
-        Decompiler.DecompileData(registry);
+        Decompiler.DecompileData();
     }
 }

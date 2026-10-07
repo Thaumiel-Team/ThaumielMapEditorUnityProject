@@ -23,6 +23,10 @@ namespace Assets.Scripts.Components.Tools
 
         public InteractableClasses OnInteractionDenied;
 
+        public InteractableClasses OnSpawned;
+
+        public InteractableClasses OnDestroyed;
+
         public override ToolType ToolType => ToolType.InteractableTrigger;
 
         private void OnDrawGizmosSelected()
@@ -68,7 +72,9 @@ namespace Assets.Scripts.Components.Tools
                 ["Permission"] = Permissions,
                 ["InteractionTime"] = InteractionTime,
                 ["OnInteracted"] = OnInteracted,
-                ["OnInteractionDenied"] = OnInteractionDenied
+                ["OnInteractionDenied"] = OnInteractionDenied,
+                ["OnSpawned"] = OnSpawned,
+                ["OnDestroyed"] = OnDestroyed
             };
         }
 
@@ -79,6 +85,12 @@ namespace Assets.Scripts.Components.Tools
 
             if (Properties.TryGetValue("OnInteractionDenied", out var denied))
                 OnInteractionDenied = YamlHelpers.ParseObject<InteractableClasses>(denied);      
+
+            if (Properties.TryGetValue("OnSpawned", out var spawned))
+                OnSpawned = YamlHelpers.ParseObject<InteractableClasses>(spawned);
+
+            if (Properties.TryGetValue("OnDestroyed", out var destroyed))
+                OnDestroyed = YamlHelpers.ParseObject<InteractableClasses>(destroyed);
 
             if (Properties.TryGetValue("InteractionTime", out var time))
                 InteractionTime = Convert.ToSingle(time);
@@ -108,6 +120,20 @@ namespace Assets.Scripts.Components.Tools
                 OnInteractionDenied.Blocky ??= new List<CodeExportPayload>();
                 OnInteractionDenied.Blocky.Add(payload);
                 Debug.Log($"[InteractableTrigger] Successfully added export to {gameObject.name}'s OnInteractionDenied.Blocky list.");
+            }
+            else if (targetEvent == nameof(OnSpawned))
+            {
+                OnSpawned ??= new InteractableClasses();
+                OnSpawned.Blocky ??= new List<CodeExportPayload>();
+                OnSpawned.Blocky.Add(payload);
+                Debug.Log($"[InteractableTrigger] Successfully added export to {gameObject.name}'s OnSpawned.Blocky list.");
+            }
+            else if (targetEvent == nameof(OnDestroyed))
+            {
+                OnDestroyed ??= new InteractableClasses();
+                OnDestroyed.Blocky ??= new List<CodeExportPayload>();
+                OnDestroyed.Blocky.Add(payload);
+                Debug.Log($"[InteractableTrigger] Successfully added export to {gameObject.name}'s OnDestroyed.Blocky list.");
             }
 
             EditorUtility.SetDirty(this);

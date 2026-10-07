@@ -16,6 +16,10 @@ namespace Assets.Scripts.Components.Tools
 
         public ColliderClasses OnExited;
 
+        public ColliderClasses OnSpawned;
+
+        public ColliderClasses OnDestroyed;
+
         public Permission Permissions;
 
         public override ToolType ToolType => ToolType.ColliderTrigger;
@@ -34,6 +38,8 @@ namespace Assets.Scripts.Components.Tools
                 ["Bounds"] = Bounds,
                 ["OnEntered"] = OnEntered,
                 ["OnExited"] = OnExited,
+                ["OnSpawned"] = OnSpawned,
+                ["OnDestroyed"] = OnDestroyed,
                 ["Permission"] = Permissions
             };
         }
@@ -45,6 +51,12 @@ namespace Assets.Scripts.Components.Tools
 
             if (Properties.TryGetValue("OnExited", out var exited))
                 OnExited = YamlHelpers.ParseObject<ColliderClasses>(exited);
+
+            if (Properties.TryGetValue("OnSpawned", out var spawned))
+                OnSpawned = YamlHelpers.ParseObject<ColliderClasses>(spawned);
+
+            if (Properties.TryGetValue("OnDestroyed", out var destroyed))
+                OnDestroyed = YamlHelpers.ParseObject<ColliderClasses>(destroyed);
 
             if (Properties.TryGetValue("Bounds", out var bounds))
                 Bounds = YamlHelpers.ParseVector3(bounds);
@@ -68,6 +80,20 @@ namespace Assets.Scripts.Components.Tools
                 OnExited.Blocky ??= new List<CodeExportPayload>();
                 OnExited.Blocky.Add(payload);
                 Debug.Log($"[ColliderTrigger] Successfully added export to {gameObject.name}'s OnExited.Blocky list.");
+            }
+            else if (targetEvent == nameof(OnSpawned))
+            {
+                OnSpawned ??= new ColliderClasses();
+                OnSpawned.Blocky ??= new List<CodeExportPayload>();
+                OnSpawned.Blocky.Add(payload);
+                Debug.Log($"[ColliderTrigger] Successfully added export to {gameObject.name}'s OnSpawned.Blocky list.");
+            }
+            else if (targetEvent == nameof(OnDestroyed))
+            {
+                OnDestroyed ??= new ColliderClasses();
+                OnDestroyed.Blocky ??= new List<CodeExportPayload>();
+                OnDestroyed.Blocky.Add(payload);
+                Debug.Log($"[ColliderTrigger] Successfully added export to {gameObject.name}'s OnDestroyed.Blocky list.");
             }
 
             EditorUtility.SetDirty(this);

@@ -15,6 +15,6 @@ namespace Assets.Scripts.Components.Tools.Helpers
         public string AnimationName;
 
         [HideInInspector]
-        public string ResolvedAnimationName => !string.IsNullOrEmpty(AnimationName) ? AnimationName : Animator?.runtimeAnimatorController?.name;
+        public string ResolvedAnimationName => !string.IsNullOrEmpty(AnimationName) ? AnimationName : Animator != null ? Animator.runtimeAnimatorController != null ? Animator.runtimeAnimatorController.name : null : null;
     }
 }
