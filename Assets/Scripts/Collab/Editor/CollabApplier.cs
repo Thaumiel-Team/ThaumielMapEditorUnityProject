@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Assets.Scripts.Components;
 using Assets.Scripts.Components.Objects;
+using Assets.Scripts.Editor.Tools;
 using Assets.Scripts.Enums;
 using Assets.Scripts.Yaml;
 using UnityEditor;
@@ -170,6 +171,27 @@ namespace Assets.Scripts.Collab.Editor
                             break;
                         }
 
+                    case CollabTypes.Blocky:
+                        {
+                            if (!CheckSeq(env))
+                                break;
+
+                            BlockyData b = CollabJson.Deserialize<BlockyData>(env.data);
+                            string appliedXml = null;
+                            using (Suppress())
+                            {
+                                appliedXml = CollabBlockySync.ApplyRemote(b);
+                            }
+
+                            if (b != null)
+                            {
+                                AfterRemoteChange(b.guid, false);
+                                if (!string.IsNullOrEmpty(appliedXml))
+                                    ToolBaseEditor.NotifyRemoteBlockyChanged(b.guid, b.toolType, b.field, appliedXml);
+                            }
+                            break;
+                        }
+
                     case CollabTypes.Selection:
                         {
                             SelectionData s = CollabJson.Deserialize<SelectionData>(env.data);
@@ -295,6 +317,9 @@ namespace Assets.Scripts.Collab.Editor
                         
                     case CollabTypes.Props:
                         return CollabJson.Deserialize<PropsData>(env.data)?.guid ?? string.Empty;
+
+                    case CollabTypes.Blocky:
+                        return CollabJson.Deserialize<BlockyData>(env.data)?.guid ?? string.Empty;
                 }
             }
             catch { }

@@ -213,7 +213,7 @@ namespace Assets.Scripts.Networking.Blocky
                     return Encoding.UTF8.GetString(payload); // text
 
                 case 0x2:
-                    return ""; // binary – ignored
+                    return ""; // binary
 
                 case 0x8:
                     return null; // close

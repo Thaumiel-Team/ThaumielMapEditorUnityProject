@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Reflection;
+using Assets.Scripts.Components.Tools;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using UnityEngine;
@@ -67,6 +68,9 @@ namespace Assets.Scripts.Collab.Editor
                     Debug.LogWarning($"[Collab] Apply field {t.Name}.{sf.key} failed: {ex.Message}");
                 }
             }
+
+            if (comp is ToolBase tool)
+                CollabBlockySync.NormalizeTool(tool);
         }
 
         public static string FieldsHash(List<SyncField> fields)
