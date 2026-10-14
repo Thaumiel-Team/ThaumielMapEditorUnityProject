@@ -241,6 +241,10 @@ def write_json(unused: List[AssetInfo], project_root: Path, out_path: Path):
 
 
 def main():
+    try:
+        sys.stdout.reconfigure(encoding="utf-8")
+    except Exception:
+        pass
     parser = argparse.ArgumentParser(description="Find unused assets in a Unity project.")
     parser.add_argument("project", nargs="?", default=".",
                          help="Path to the Unity project root (the folder containing Assets/).")

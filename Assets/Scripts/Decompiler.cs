@@ -277,6 +277,7 @@ namespace Assets.Scripts
                 ObjectType.GameObject => LoadPartPrefab("Empty GameObject.prefab"),
                 ObjectType.PlayerSpawnPoint => LoadPartPrefab("Player Spawn Point.prefab"),
                 ObjectType.RagdollSpawner => LoadPartPrefab("Ragdoll Spawner.prefab"),
+                ObjectType.CullingParent => LoadPartPrefab("CullableParent.prefab"),
                 _ => null
             };
         }

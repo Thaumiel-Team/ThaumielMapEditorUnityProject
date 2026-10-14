@@ -223,6 +223,9 @@ namespace Assets.Scripts.Tools
             if (e == null || e.type != EventType.KeyDown)
                 return false;
 
+            if (e.control || e.command)
+                return false;
+
             void repaint()
             {
                 sv.Repaint();
