@@ -26,7 +26,7 @@ namespace Assets.Scripts.Components.Tools
 
         private void OnDrawGizmosSelected()
         {
-            Gizmos.color = Color.green;
+            Gizmos.color = ColorHelper.GetColor(this);
             Gizmos.matrix = Matrix4x4.TRS(transform.position, transform.rotation, transform.lossyScale);
             Gizmos.DrawWireCube(Vector3.zero, Bounds);
         }
