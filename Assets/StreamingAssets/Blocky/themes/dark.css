@@ -1,0 +1,48 @@
+:root {
+    --bg: #282a36;
+    --bg2: #21222c;
+    --surface: #282a36;
+    --surface2: #30323f;
+    --surface3: #44475a;
+    --border: #44475a;
+    --border2: #6272a4;
+    --text: #f8f8f2;
+    --dim: #a4aac0;
+    --dim2: #6272a4;
+    --accent: #8be9fd;
+    --acc2: #bd93f9;
+    --green: #50fa7b;
+    --red: #ff5555;
+    --amber: #f1fa8c;
+    --orange: #ffb86c;
+    --purple: #bd93f9;
+    --shadow: 0 10px 30px rgba(0, 0, 0, .50);
+    --glow: 0 0 0 1px rgba(139, 233, 253, .35), 0 0 16px rgba(139, 233, 253, .22);
+    --header-top: #30323f;
+    --well-bg: rgba(0, 0, 0, .25);
+    --well-bg-2: rgba(0, 0, 0, .30);
+    --well-bg-soft: rgba(248, 248, 242, .04);
+    --hairline: rgba(248, 248, 242, .06);
+    --overlay-bg: rgba(30, 31, 43, .96);
+    --overlay-bg-soft: rgba(30, 31, 43, .90);
+    --code-text: #9be9fd;
+    --kbd-bg: rgba(248, 248, 242, .08);
+    --scroll-thumb: #44475a;
+    --blockly-toolbox: #21222c;
+    --blockly-flyout: #282a36;
+    --blockly-label: #a4aac0;
+    --blockly-grid: #333545;
+    --field-text: #ffffff;
+    --ink-ok: #50fa7b;
+    --ink-warn: #f1fa8c;
+    --ink-err: #ff5555;
+    --ink-accent: #8be9fd;
+    --on-accent: #000000;
+}
+
+body {
+    background:
+        radial-gradient(1000px 500px at 15% -10%, rgba(189, 147, 249, .08), transparent 60%),
+        radial-gradient(900px 480px at 105% 115%, rgba(139, 233, 253, .06), transparent 60%),
+        var(--bg);
+}

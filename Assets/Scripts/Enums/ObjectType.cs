@@ -22,5 +22,6 @@ namespace Assets.Scripts.Enums
         Speaker = 17,
         PlayerSpawnPoint = 18,
         RagdollSpawner = 19,
+        CullingParent = 20
     }
 }

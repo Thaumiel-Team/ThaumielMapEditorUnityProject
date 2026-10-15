@@ -25,9 +25,7 @@ public class SchematicManager : EditorWindow
             }
         }
         else
-        {
-            Debug.LogError("Compilation failed: No Builder script found in the scene. \n Please add the Builder script to a GameObject to compile your schematic.");
-        }
+            Debug.LogError("[SchematicManager] Compilation failed: No Builder script found in the scene. \n Please add the Builder script to a GameObject to compile your schematic.");
     }
 
     [MenuItem("SchematicManager/Open Directory")]

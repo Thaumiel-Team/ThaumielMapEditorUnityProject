@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using Assets.Scripts.Networking.Blocky;
 using Newtonsoft.Json;
 
 namespace Assets.Scripts.Collab
@@ -25,6 +26,7 @@ namespace Assets.Scripts.Collab
         public const string Error = "error";
         public const string Bye = "bye";
         public const string JoinDenied = "join_denied";
+        public const string Blocky = "blocky";
 
         public static bool IsReliable(string type)
         {
@@ -197,6 +199,15 @@ namespace Assets.Scripts.Collab
     public class ErrorData
     {
         public string reason = string.Empty; 
+    }
+
+    [Serializable]
+    public class BlockyData
+    {
+        public string guid = string.Empty;
+        public int toolType;
+        public string field = string.Empty;
+        public CodeExportPayload payload;
     }
 
     public static class CollabJson

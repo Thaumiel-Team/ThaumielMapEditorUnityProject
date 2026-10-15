@@ -4,6 +4,8 @@ using System.IO;
 using System.Reflection;
 using UnityEditor;
 using UnityEngine;
+using Assets.Scripts.Collab;
+using Assets.Scripts.Collab.Editor;
 using Assets.Scripts.Components.Tools;
 using Assets.Scripts.Components.Tools.Helpers;
 using Assets.Scripts.Networking.Blocky;
@@ -15,6 +17,8 @@ namespace Assets.Scripts.Editor.Tools
     {
         private static ToolBase _activeTool;
         private static string _activeTargetEvent;
+        private static string _activeEventBlockType;
+        private static bool _activeLockWorkspace;
         private static bool _isSubscribed = false;
 
         private static readonly Dictionary<string, string> FieldEventMap = new()
@@ -147,6 +151,8 @@ namespace Assets.Scripts.Editor.Tools
         {
             _activeTool = tool;
             _activeTargetEvent = fieldName;
+            _activeEventBlockType = eventBlockType;
+            _activeLockWorkspace = lockWorkspace;
 
             if (!_isSubscribed)
             {
@@ -210,12 +216,47 @@ namespace Assets.Scripts.Editor.Tools
         {
             if (_activeTool != null && !string.IsNullOrEmpty(_activeTargetEvent))
             {
+                if (payload == null)
+                    return;
+
                 _activeTool.OnBlocklyExportReceived(payload, _activeTargetEvent);
+                CollabBlockySync.TryBroadcastLocalExport(_activeTool, _activeTargetEvent, payload);
             }
             else
             {
                 Debug.LogWarning("[Blocky] Received export from browser, but no tool/event is actively waiting for it. Please click an 'Open Blocky Editor' button on a tool first.");
             }
+        }
+
+        public static void NotifyRemoteBlockyChanged(string guid, int toolType, string field, string xml)
+        {
+            if (string.IsNullOrEmpty(xml) || _activeTool == null || string.IsNullOrEmpty(_activeTargetEvent))
+                return;
+
+            if (!string.Equals(_activeTargetEvent, field, StringComparison.Ordinal))
+                return;
+
+            if ((int)_activeTool.ToolType != toolType)
+                return;
+
+            if (!string.Equals(CollabId.Get(_activeTool.gameObject), guid, StringComparison.Ordinal))
+                return;
+
+            if (!BlocklyServer.IsClientConnected)
+                return;
+
+            if (_activeLockWorkspace && !string.IsNullOrEmpty(_activeEventBlockType))
+            {
+                BlocklyServer.LoadXml(xml, _activeEventBlockType);
+            }
+            else
+            {
+                BlocklyServer.LoadXml(xml);
+                if (!string.IsNullOrEmpty(_activeEventBlockType))
+                    BlocklyServer.EnsureEvent(_activeEventBlockType);
+            }
+
+            Debug.Log($"[Blocky] Workspace refreshed from collab peer for {_activeTool.gameObject.name}.{_activeTargetEvent}.");
         }
     }
 }

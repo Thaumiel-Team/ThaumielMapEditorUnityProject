@@ -157,10 +157,12 @@ namespace Assets.Scripts.Networking.Blocky
                 EditorGUILayout.LabelField("Log", EditorStyles.boldLabel);
                 GUILayout.FlexibleSpace();
                 if (GUILayout.Button("Clear", EditorStyles.miniButton, GUILayout.Width(45)))
+                {
                     lock (_logLock)
                     {
                         _log.Clear();
                     }
+                }
             }
 
             float lineH = EditorGUIUtility.singleLineHeight + 1;

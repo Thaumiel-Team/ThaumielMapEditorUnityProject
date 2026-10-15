@@ -52,6 +52,7 @@ namespace Assets.Scripts.Networking.Blocky
         private static bool _batching;
         private static readonly List<Dictionary<string, object>> _batchedCategories = new();
         private static readonly List<Dictionary<string, object>> _batchedBlocks = new();
+        private static readonly List<Dictionary<string, object>> _batchedEvents = new();
 
         static BlocklyServer()
         {
@@ -179,6 +180,9 @@ namespace Assets.Scripts.Networking.Blocky
 
                     case "code_export":
                         CodeExportPayload payload = _des.Deserialize<CodeExportPayload>(yaml);
+                        if (payload != null)
+                            BlockyPayloadCodec.Normalize(payload);
+                            
                         Enqueue(() => OnCodeExport?.Invoke(payload, ActiveTargetEvent));
                         break;
 
@@ -204,6 +208,11 @@ namespace Assets.Scripts.Networking.Blocky
                     case "category_registered":
                         dict.TryGetValue("name", out var cName);
                         Debug.Log($"[BlocklyServer] Category registered: {cName}");
+                        break;
+
+                    case "event_registered":
+                        dict.TryGetValue("id", out var eId);
+                        Debug.Log($"[BlocklyServer] Event registered: {eId}");
                         break;
 
                     default:
@@ -274,8 +283,17 @@ namespace Assets.Scripts.Networking.Blocky
             if (block.Generator != null)
                 dict["generator"] = block.Generator;
 
+            if (block.OutputType != null)
+                dict["outputType"] = block.OutputType;
+
+            if (block.PropertyTypes != null && block.PropertyTypes.Count > 0)
+                dict["propertyTypes"] = new Dictionary<string, string>(block.PropertyTypes);
+
             if (block.HelpUrl != null)
                 dict["helpUrl"] = block.HelpUrl;
+
+            if (block.Explanation != null)
+                dict["explanation"] = block.Explanation;
 
             if (_batching)
             {
@@ -285,29 +303,197 @@ namespace Assets.Scripts.Networking.Blocky
                 Send(dict);
         }
 
+        /// <summary>
+        /// Report validation issues to the browser. They appear in its issue
+        /// list, counters, and block badges. Replaces the previous set, so send
+        /// the full current list each time. Blocks are matched by type via
+        /// <see cref="BlockIssue.BlockTypes"/>; issues without types are shown
+        /// workspace-wide.
+        ///
+        /// Example:
+        ///   BlocklyServer.ReportIssues(new[]
+        ///   {
+        ///       new BlockIssue { Id = "hp-range", Level = "warn",
+        ///           Message = "Health above 100 needs a max-health block.",
+        ///           BlockTypes = new List<string> { "set_player_health" } },
+        ///   });
+        /// </summary>
+        public static void ReportIssues(IEnumerable<BlockIssue> issues)
+        {
+            List<Dictionary<string, object>> list = new();
+            if (issues != null)
+            {
+                foreach (BlockIssue issue in issues)
+                {
+                    if (issue == null || string.IsNullOrEmpty(issue.Id) || string.IsNullOrEmpty(issue.Message))
+                        continue;
+
+                    Dictionary<string, object> dict = new()
+                    {
+                        ["id"] = issue.Id,
+                        ["level"] = issue.Level ?? "warn",
+                        ["message"] = issue.Message,
+                    };
+
+                    if (issue.BlockTypes != null && issue.BlockTypes.Count > 0)
+                        dict["blockTypes"] = new List<string>(issue.BlockTypes);
+
+                    list.Add(dict);
+                }
+            }
+
+            Send(new Dictionary<string, object> { ["type"] = "register_issues", ["issues"] = list });
+        }
+
+        /// <summary>
+        /// Clear all server-reported issues in the browser.
+        /// </summary>
+        public static void ClearIssues() => ReportIssues(null);
+
+        /// <summary>
+        /// Register a conditional validation rule in the browser. The browser
+        /// evaluates it live against every block and shows an issue wherever
+        /// the condition matches (with badges and click-to-locate). Registering
+        /// again with the same id replaces the rule.
+        ///
+        /// Example (boolean compared to anything else):
+        ///   BlocklyServer.RegisterCheck(new BlockCheck
+        ///   {
+        ///       Id = "compare-mismatch", Level = "err",
+        ///       Message = "Cannot compare {A} with {B}.",
+        ///       Blocks = new List<string> { "logic_compare" },
+        ///       InputTypesDiffer = new List<string> { "A", "B" },
+        ///   });
+        /// </summary>
+        public static void RegisterCheck(BlockCheck check)
+        {
+            if (check == null || string.IsNullOrEmpty(check.Id) || string.IsNullOrEmpty(check.Message))
+                return;
+
+            Dictionary<string, object> dict = new()
+            {
+                ["type"] = "register_check",
+                ["id"] = check.Id,
+                ["level"] = check.Level ?? "warn",
+                ["message"] = check.Message,
+            };
+
+            if (check.Blocks != null && check.Blocks.Count > 0)
+                dict["blocks"] = new List<string>(check.Blocks);
+
+            if (check.InputTypesDiffer != null && check.InputTypesDiffer.Count >= 2)
+                dict["inputTypesDiffer"] = new List<string> { check.InputTypesDiffer[0], check.InputTypesDiffer[1] };
+
+            if (check.MismatchInputs != null && check.MismatchInputs.Count > 0 && !string.IsNullOrEmpty(check.MismatchExpected))
+            {
+                dict["mismatchInputs"] = new List<string>(check.MismatchInputs);
+                dict["mismatchExpected"] = check.MismatchExpected;
+            }
+
+            if (check.RequiredInputs != null && check.RequiredInputs.Count > 0)
+                dict["requiredInputs"] = new List<string>(check.RequiredInputs);
+
+            Send(dict);
+        }
+
+        /// <summary>
+        /// Clear all server-registered validation rules in the browser.
+        /// </summary>
+        public static void ClearChecks() =>
+            Send(new Dictionary<string, object> { ["type"] = "clear_checks" });
+
         public static void BeginBatch()
         {
             _batching = true;
             _batchedCategories.Clear();
             _batchedBlocks.Clear();
+            _batchedEvents.Clear();
         }
 
         public static void EndBatch()
         {
             _batching = false;
 
-            if (_batchedCategories.Count == 0 && _batchedBlocks.Count == 0)
+            if (_batchedCategories.Count == 0 && _batchedBlocks.Count == 0 && _batchedEvents.Count == 0)
                 return;
 
-            Send(new Dictionary<string, object>
+            Dictionary<string, object> batch = new()
             {
                 ["type"] = "register_batch",
                 ["categories"] = _batchedCategories,
                 ["blocks"] = _batchedBlocks
-            });
+            };
+
+            if (_batchedEvents.Count > 0)
+                batch["events"] = _batchedEvents;
+
+            Send(batch);
 
             _batchedCategories.Clear();
             _batchedBlocks.Clear();
+            _batchedEvents.Clear();
+        }
+
+        /// <summary>
+        /// Register a custom event block in the browser Events toolbox.
+        /// Each param becomes a variable dropdown on the block and a
+        /// same-position parameter in the generated C# method.
+        /// Sent immediately (never batched); call after the client connects.
+        ///
+        /// Example:
+        ///   BlocklyServer.RegisterEvent(new BlockEvent
+        ///   {
+        ///       Id = "my_custom_event", Label = "OnCustom", Method = "OnCustom",
+        ///       Params = new List&lt;BlockEventParam&gt;
+        ///       {
+        ///           BlockEventParam.Var("player", "Player"),
+        ///           BlockEventParam.Var("amount", "int"),
+        ///       },
+        ///       Tooltip = "Runs when something custom happens.",
+        ///   });
+        /// </summary>
+        public static void RegisterEvent(BlockEvent evt)
+        {
+            if (evt == null || string.IsNullOrEmpty(evt.Id))
+                return;
+
+            Dictionary<string, object> dict = new()
+            {
+                ["type"] = "register_event",
+                ["id"] = evt.Id,
+                ["label"] = evt.Label ?? evt.Id,
+                ["color"] = evt.Color ?? "#E65100",
+                ["tooltip"] = evt.Tooltip ?? "",
+                ["explanation"] = evt.Explanation ?? "",
+            };
+
+            if (!string.IsNullOrEmpty(evt.Method))
+                dict["method"] = evt.Method;
+
+            if (evt.Params != null && evt.Params.Count > 0)
+            {
+                List<Dictionary<string, object>> pars = new();
+                foreach (BlockEventParam p in evt.Params)
+                {
+                    if (p == null || string.IsNullOrEmpty(p.Name))
+                        continue;
+
+                    pars.Add(new Dictionary<string, object>
+                    {
+                        ["name"] = p.Name,
+                        ["type"] = p.Type ?? "object",
+                    });
+                }
+
+                dict["params"] = pars;
+            }
+
+            if (_batching)
+            {
+                _batchedEvents.Add(dict);
+            }
+            else
+                Send(dict);
         }
 
         /// <summary>

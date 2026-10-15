@@ -1,5 +1,6 @@
 ﻿using Assets.Scripts.Components.Tools.Helpers;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -8,13 +9,31 @@ namespace Assets.Scripts.Networking.Blocky
 {
     public static class BlockNodeHelper
     {
+        public static Dictionary<object, object> CoerceNode(object raw)
+        {
+            if (raw == null)
+                return null;
+
+            if (raw is Dictionary<object, object> direct)
+                return direct;
+
+            object norm = BlockyPayloadCodec.NormalizeValue(raw);
+            if (norm is Dictionary<string, object> strDict)
+            {
+                Dictionary<object, object> coerced = new();
+                foreach (KeyValuePair<string, object> kv in strDict)
+                    coerced[kv.Key] = kv.Value;
+
+                return coerced;
+            }
+
+            return null;
+        }
+
         /// <summary>
         /// Get the "type" field of a block node.
         /// </summary>
-        public static string GetType(Dictionary<object, object> node)
-        {
-            return GetString(node, "type");
-        }
+        public static string GetType(Dictionary<object, object> node) => GetString(node, "type");
 
         /// <summary>
         /// Read a string field from a block node.
@@ -30,18 +49,12 @@ namespace Assets.Scripts.Networking.Blocky
         /// <summary>
         /// Read an int field from a block node.
         /// </summary>
-        public static int GetInt(Dictionary<object, object> node, string key, int fallback = 0)
-        {
-            return int.TryParse(GetString(node, key), out int v) ? v : fallback;
-        }
+        public static int GetInt(Dictionary<object, object> node, string key, int fallback = 0) => int.TryParse(GetString(node, key), out int v) ? v : fallback;
 
         /// <summary>
         /// Read a float field from a block node.
         /// </summary>
-        public static float GetFloat(Dictionary<object, object> node, string key, float fallback = 0f)
-        {
-            return float.TryParse(GetString(node, key), NumberStyles.Any, CultureInfo.InvariantCulture, out float v) ? v : fallback;
-        }
+        public static float GetFloat(Dictionary<object, object> node, string key, float fallback = 0f) => float.TryParse(GetString(node, key), NumberStyles.Any, CultureInfo.InvariantCulture, out float v) ? v : fallback;
 
         /// <summary>
         /// Read a bool field from a block node.
@@ -78,7 +91,7 @@ namespace Assets.Scripts.Networking.Blocky
             if (node == null || !node.TryGetValue(inputName, out object value))
                 return null;
 
-            return value as Dictionary<object, object>;
+            return CoerceNode(value);
         }
 
         /// <summary>
@@ -89,8 +102,21 @@ namespace Assets.Scripts.Networking.Blocky
             if (node == null || !node.TryGetValue(stmtName, out object value))
                 return new List<Dictionary<object, object>>();
 
-            if (value is List<object> list)
-                return list.OfType<Dictionary<object, object>>().ToList();
+            if (value is string)
+                return new List<Dictionary<object, object>>();
+
+            if (value is IEnumerable enumerable)
+            {
+                List<Dictionary<object, object>> stmts = new();
+                foreach (object item in enumerable)
+                {
+                    Dictionary<object, object> entry = CoerceNode(item);
+                    if (entry != null)
+                        stmts.Add(entry);
+                }
+
+                return stmts;
+            }
 
             return new List<Dictionary<object, object>>();
         }
@@ -99,11 +125,7 @@ namespace Assets.Scripts.Networking.Blocky
         /// <summary>
         /// Cast a raw List&lt;object&gt; entry (from CodeExportPayload.Blocks) to a typed block node dictionary.
         /// </summary>
-        public static Dictionary<object, object> AsNode(object raw)
-        {
-            return raw as Dictionary<object, object>;
-        }
-
+        public static Dictionary<object, object> AsNode(object raw) => CoerceNode(raw);
         /// <summary>
         /// Enumerate the top-level block list, yielding only entries whose "type" field matches <paramref name="blockType"/>.
         /// </summary>
@@ -114,16 +136,12 @@ namespace Assets.Scripts.Networking.Blocky
 
             foreach (object raw in blocks)
             {
-                Dictionary<object, object> node = AsNode(raw);
+                Dictionary<object, object> node = CoerceNode(raw);
                 if (node == null)
-                {
                     continue;
-                }
 
                 if (GetType(node) == blockType)
-                {
                     yield return node;
-                }
             }
         }
 
@@ -137,8 +155,13 @@ namespace Assets.Scripts.Networking.Blocky
             if (node == null)
                 return null;
 
-            string blockType = GetType(node);
+            return HydrateByType(GetType(node), node);
+        }
 
+        public static object Hydrate(object raw) => Hydrate(CoerceNode(raw));
+
+        private static object HydrateByType(string blockType, Dictionary<object, object> node)
+        {
             return blockType switch
             {
                 "play_animation" => HydratePlayAnimation(node),

@@ -1,0 +1,45 @@
+:root {
+    --bg: #000000;
+    --bg2: #0a0a0a;
+    --surface: #000000;
+    --surface2: #111111;
+    --surface3: #222222;
+    --border: #8a8a8a;
+    --border2: #ffffff;
+    --text: #ffffff;
+    --dim: #d0d0d0;
+    --dim2: #a0a0a0;
+    --accent: #ffff00;
+    --acc2: #00ffff;
+    --green: #00ff00;
+    --red: #ff4d4d;
+    --amber: #ffff00;
+    --orange: #ff9500;
+    --purple: #d580ff;
+    --shadow: none;
+    --glow: 0 0 0 2px #ffff00;
+    --header-top: #000000;
+    --well-bg: rgba(255, 255, 255, .08);
+    --well-bg-2: rgba(255, 255, 255, .10);
+    --well-bg-soft: rgba(255, 255, 255, .05);
+    --hairline: rgba(255, 255, 255, .22);
+    --overlay-bg: rgba(0, 0, 0, .97);
+    --overlay-bg-soft: rgba(0, 0, 0, .94);
+    --code-text: #ffffff;
+    --kbd-bg: rgba(255, 255, 255, .12);
+    --scroll-thumb: #767676;
+    --blockly-toolbox: #000000;
+    --blockly-flyout: #0a0a0a;
+    --blockly-label: #ffffff;
+    --blockly-grid: #333333;
+    --field-text: #ffffff;
+    --ink-ok: #00ff00;
+    --ink-warn: #ffff00;
+    --ink-err: #ff4d4d;
+    --ink-accent: #ffff00;
+    --on-accent: #000000;
+}
+
+body {
+    background: var(--bg);
+}

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
@@ -13,7 +14,7 @@ namespace Assets.Scripts.Tools
             FullResize
         }
 
-        private enum QSState
+        private enum FlowState
         {
             Idle,
             WaitObj1,
@@ -21,19 +22,55 @@ namespace Assets.Scripts.Tools
             WaitVerts
         }
 
-        private static readonly Color ColObj1 = new(0.20f, 0.60f, 1.00f);
-        private static readonly Color ColObj2 = new(1.00f, 0.40f, 0.20f);
-        private static readonly Color ColSel = Color.yellow;
-        private GameObject _obj1;
-        private Vector3[] _verts1 = new Vector3[0];
-        private int _v1 = -1;
-        private GameObject _obj2;
-        private Vector3[] _verts2 = new Vector3[0];
-        private int _v2 = -1;
-        private ConnectMode _mode = ConnectMode.CornerMeet;
-        private bool _lockY = true;
-        private bool _yMidpoint = true;
-        private Vector2 _scroll;
+        private enum Axis
+        {
+            X,
+            Y,
+            Z
+        }
+
+        private sealed class Session
+        {
+            public GameObject Obj1;
+            public Vector3[] Verts1 = Array.Empty<Vector3>();
+            public int V1 = -1;
+            public GameObject Obj2;
+            public Vector3[] Verts2 = Array.Empty<Vector3>();
+            public int V2 = -1;
+            public FlowState State = FlowState.Idle;
+
+            public bool HasObjects => Obj1 != null && Obj2 != null;
+            public bool HasVerts => HasObjects && V1 >= 0 && V1 < Verts1.Length && V2 >= 0 && V2 < Verts2.Length;
+
+            public void ResetPicks()
+            {
+                Obj1 = Obj2 = null;
+                Verts1 = Verts2 = Array.Empty<Vector3>();
+                V1 = V2 = -1;
+            }
+
+            public void ClampIndices()
+            {
+                if (V1 < 0 || V1 >= Verts1.Length)
+                    V1 = -1;
+
+                if (V2 < 0 || V2 >= Verts2.Length)
+                    V2 = -1;
+
+                if (Obj1 == null)
+                {
+                    Verts1 = Array.Empty<Vector3>();
+                    V1 = -1;
+                }
+
+                if (Obj2 == null)
+                {
+                    Verts2 = Array.Empty<Vector3>();
+                    V2 = -1;
+                }
+            }
+        }
+
         private const string PrefMode = "VTW_Mode";
         private const string PrefLockY = "VTW_LockY";
         private const string PrefYMid = "VTW_YMid";
@@ -59,10 +96,39 @@ namespace Assets.Scripts.Tools
             set => EditorPrefs.SetInt(PrefKeyLockY, (int)value);
         }
 
-        private bool _capAct, _capToggle, _capLockY;
-        private QSState _qs = QSState.Idle;
-        private bool _openedViaKeybind;
+        private ConnectMode Mode
+        {
+            get => (ConnectMode)EditorPrefs.GetInt(PrefMode, (int)ConnectMode.CornerMeet);
+            set => EditorPrefs.SetInt(PrefMode, (int)value);
+        }
+
+        private bool LockY
+        {
+            get => EditorPrefs.GetBool(PrefLockY, true);
+            set => EditorPrefs.SetBool(PrefLockY, value);
+        }
+
+        private bool YMidpoint
+        {
+            get => EditorPrefs.GetBool(PrefYMid, true);
+            set => EditorPrefs.SetBool(PrefYMid, value);
+        }
+
+        private static readonly Color ColObj1 = new(0.20f, 0.60f, 1.00f);
+        private static readonly Color ColObj2 = new(1.00f, 0.40f, 0.20f);
+        private static readonly Color ColSel = Color.yellow;
+
         private static VertexToolWindow _instance;
+        private static readonly Session _headless = new();
+
+        private readonly Session _session = new();
+        private Vector2 _scroll;
+        private int _capturingKey = -1;
+
+        private static GUIStyle _handleLabelStyle;
+        private static GUIStyle _overlayTitleStyle;
+        private static GUIStyle _overlayBodyStyle;
+        private static GUIStyle _overlayHintStyle;
 
         [InitializeOnLoadMethod]
         private static void InitAlwaysOn()
@@ -71,130 +137,11 @@ namespace Assets.Scripts.Tools
             SceneView.duringSceneGui += StaticSceneGUI;
         }
 
-        private static QSState _hState = QSState.Idle;
-        private static ConnectMode _hMode = ConnectMode.Standard;
-        private static bool _hLockY = true;
-        private static bool _hYMid = true;
-        private static GameObject _hObj1, _hObj2;
-        private static Vector3[] _hVerts1 = new Vector3[0];
-        private static Vector3[] _hVerts2 = new Vector3[0];
-        private static int _hV1 = -1, _hV2 = -1;
-
-        private static void StaticSceneGUI(SceneView sv)
-        {
-            if (_instance != null)
-                return;
-
-            Event e = Event.current;
-            if (e == null)
-                return;
-
-            if (e.type == EventType.KeyDown && KeyToggleLockY != KeyCode.None && e.keyCode == KeyToggleLockY)
-            {
-                _hLockY = !EditorPrefs.GetBool(PrefLockY, true);
-                EditorPrefs.SetBool(PrefLockY, _hLockY);
-                sv.Repaint();
-                e.Use();
-                return;
-            }
-
-            if (e.type == EventType.KeyDown && e.keyCode == KeyToggleMode && _hState != QSState.Idle)
-            {
-                _hMode = _hMode switch
-                {
-                    ConnectMode.Standard => ConnectMode.CornerMeet,
-                    ConnectMode.CornerMeet => ConnectMode.FullResize,
-                    _ => ConnectMode.Standard
-                };
-
-                EditorPrefs.SetInt(PrefMode, (int)_hMode);
-                sv.Repaint();
-                e.Use();
-                return;
-            }
-
-            if (e.type == EventType.KeyDown && e.keyCode == KeyCode.Escape && _hState != QSState.Idle)
-            {
-                _hState = QSState.Idle; _hObj1 = _hObj2 = null;
-                _hVerts1 = _hVerts2 = new Vector3[0]; _hV1 = _hV2 = -1;
-                sv.Repaint();
-                e.Use();
-                return;
-            }
-
-            if (e.type == EventType.KeyDown && e.keyCode == KeyActivate)
-            {
-                if (_hState == QSState.Idle)
-                {
-                    _hState = QSState.WaitObj1;
-                    _hMode = (ConnectMode)EditorPrefs.GetInt(PrefMode, (int)ConnectMode.Standard);
-                    _hLockY = EditorPrefs.GetBool(PrefLockY, true);
-                    _hYMid = EditorPrefs.GetBool(PrefYMid, true);
-                    _hObj1 = _hObj2 = null; _hVerts1 = _hVerts2 = new Vector3[0]; _hV1 = _hV2 = -1;
-                    sv.Repaint();
-                }
-                else if (_hState == QSState.WaitVerts && _hV1 >= 0 && _hV2 >= 0)
-                {
-                    HeadlessConnect(); _hState = QSState.Idle; sv.Repaint();
-                }
-                else
-                {
-                    _hState = QSState.Idle; sv.Repaint();
-                }
-                e.Use();
-                return;
-            }
-
-            if ((_hState == QSState.WaitObj1 || _hState == QSState.WaitObj2) && e.type == EventType.MouseDown && e.button == 0)
-            {
-                GameObject hit = HandleUtility.PickGameObject(e.mousePosition, false);
-                if (hit != null ? hit.GetComponent<MeshFilter>().sharedMesh : null != null)
-                {
-                    if (_hState == QSState.WaitObj1)
-                    {
-                        _hObj1 = hit; _hVerts1 = GetUniqueVerts(hit); _hV1 = -1;
-                        _hState = QSState.WaitObj2;
-                    }
-                    else if (hit != _hObj1)
-                    {
-                        _hObj2 = hit; _hVerts2 = GetUniqueVerts(hit); _hV2 = -1;
-                        _hState = QSState.WaitVerts;
-                    }
-                    sv.Repaint();
-                    e.Use();
-                }
-            }
-
-            if (_hState != QSState.Idle)
-            {
-                _hLockY = EditorPrefs.GetBool(PrefLockY, true);
-                _hYMid = EditorPrefs.GetBool(PrefYMid, true);
-                DrawHandlesStatic(_hObj1, _hVerts1, ref _hV1, ColObj1, "Obj1", sv);
-                DrawHandlesStatic(_hObj2, _hVerts2, ref _hV2, ColObj2, "Obj2", sv);
-
-                if (_hV1 >= 0 && _hV2 >= 0 && _hObj1 != null && _hObj2 != null)
-                {
-                    Vector3 vw1 = _hObj1.transform.TransformPoint(_hVerts1[_hV1]);
-                    Vector3 vw2 = _hObj2.transform.TransformPoint(_hVerts2[_hV2]);
-                    DrawConnectionPreview(vw1, vw2, _hObj1.transform, _hObj2.transform, _hVerts1[_hV1], _hVerts2[_hV2], _hMode, _hLockY, _hYMid);
-                }
-
-                DrawSceneOverlay(sv, ModeLabel(_hMode), _hState switch
-                {
-                    QSState.WaitObj1 => "Click Object 1 in scene",
-                    QSState.WaitObj2 => "Click Object 2 in scene",
-                    QSState.WaitVerts => _hV1 < 0 ? "Click a vertex on Object 1" : _hV2 < 0 ? "Click a vertex on Object 2" : "Confirm when ready",
-                    _ => ""
-                });
-            }
-        }
-
         [MenuItem("Thaumiel/Tools/Vertex Tool")]
         public static void Open()
         {
             VertexToolWindow w = GetWindow<VertexToolWindow>(false, "Vertex Connector");
             w.minSize = new Vector2(340f, 640f);
-            w._openedViaKeybind = false;
             w.Show();
         }
 
@@ -202,9 +149,9 @@ namespace Assets.Scripts.Tools
         {
             _instance = this;
             SceneView.duringSceneGui += OnSceneGUI;
-            _mode = (ConnectMode)EditorPrefs.GetInt(PrefMode, (int)ConnectMode.CornerMeet);
-            _lockY = EditorPrefs.GetBool(PrefLockY, true);
-            _yMidpoint = EditorPrefs.GetBool(PrefYMid, true);
+            Selection.selectionChanged += OnSelectionChanged;
+            Undo.undoRedoPerformed += OnUndoRedo;
+            _session.ClampIndices();
         }
 
         private void OnDisable()
@@ -213,111 +160,217 @@ namespace Assets.Scripts.Tools
                 _instance = null;
 
             SceneView.duringSceneGui -= OnSceneGUI;
-            EditorPrefs.SetInt(PrefMode, (int)_mode);
-            EditorPrefs.SetBool(PrefLockY, _lockY);
-            EditorPrefs.SetBool(PrefYMid, _yMidpoint);
-            _qs = QSState.Idle;
-            _capAct = _capToggle = _capLockY = false;
+            Selection.selectionChanged -= OnSelectionChanged;
+            Undo.undoRedoPerformed -= OnUndoRedo;
+            _session.State = FlowState.Idle;
+            _capturingKey = -1;
         }
 
-        private void OnSceneGUI(SceneView sv)
+        private void OnSelectionChanged() => Repaint();
+        private void OnUndoRedo()
         {
-            HandleKeybinds(sv);
-
-            if (_qs != QSState.Idle)
-            {
-                DrawSceneOverlay(sv, ModeLabel(_mode), _qs switch
-                {
-                    QSState.WaitObj1 => "Click Object 1 in scene",
-                    QSState.WaitObj2 => "Click Object 2 in scene",
-                    QSState.WaitVerts => _v1 < 0 ? "Click a vertex on Object 1" : _v2 < 0 ? "Click a vertex on Object 2" : "Confirm when ready",
-                    _ => ""
-                });
-            }
-
-            DrawHandlesInstance(_obj1, _verts1, ref _v1, ColObj1, "Obj1");
-            DrawHandlesInstance(_obj2, _verts2, ref _v2, ColObj2, "Obj2");
-
-            if (_v1 >= 0 && _v2 >= 0 && _obj1 != null && _obj2 != null)
-            {
-                Vector3 vw1 = _obj1.transform.TransformPoint(_verts1[_v1]);
-                Vector3 vw2 = _obj2.transform.TransformPoint(_verts2[_v2]);
-                DrawConnectionPreview(vw1, vw2, _obj1.transform, _obj2.transform, _verts1[_v1], _verts2[_v2], _mode, _lockY, _yMidpoint);
-            }
-
+            RefreshVerts(preserveSelection: true);
             Repaint();
+            SceneView.RepaintAll();
         }
 
-        private void DrawHandlesInstance(GameObject obj, Vector3[] verts, ref int sel, Color col, string prefix)
+        private static void StaticSceneGUI(SceneView sv)
         {
-            if (obj == null || verts.Length == 0)
+            if (_instance != null)
                 return;
 
-            Transform t = obj.transform;
-            for (int i = 0; i < verts.Length; i++)
-            {
-                Vector3 wp = t.TransformPoint(verts[i]);
-                bool isSel = i == sel;
-                float size = HandleUtility.GetHandleSize(wp) * (isSel ? 0.12f : 0.08f);
-                Handles.color = isSel ? ColSel : col;
-                if (Handles.Button(wp, Quaternion.identity, size, size, Handles.SphereHandleCap))
-                {
-                    sel = i;
-                    Repaint();
-                }
+            RunSceneFlow(sv, _headless, isHeadless: true);
+        }
 
-                GUIStyle ls = new(EditorStyles.boldLabel);
-                ls.normal.textColor = isSel ? Color.yellow : col;
-                Handles.Label(wp + 1.5f * size * Vector3.up, $"{prefix} V{i}", ls);
+        private void OnSceneGUI(SceneView sv) =>
+            RunSceneFlow(sv, _session, isHeadless: false);
+
+        private static void RunSceneFlow(SceneView sv, Session s, bool isHeadless)
+        {
+            s.ClampIndices();
+
+            if (HandleKeybinds(sv, s, isHeadless))
+                return;
+
+            if (s.State == FlowState.WaitObj1 || s.State == FlowState.WaitObj2)
+                HandleObjectClick(sv, s, isHeadless);
+
+            if (s.State != FlowState.Idle)
+                DrawSceneOverlay(sv, ModeLabel(CurrentMode()), StateMessage(s));
+
+            ConnectMode mode = CurrentMode();
+            bool lockY = EditorPrefs.GetBool(PrefLockY, true);
+            bool yMid = EditorPrefs.GetBool(PrefYMid, true);
+
+            DrawVertexHandles(s.Obj1, s.Verts1, 0, s, ColObj1, "Obj1", sv, isHeadless);
+            DrawVertexHandles(s.Obj2, s.Verts2, 1, s, ColObj2, "Obj2", sv, isHeadless);
+
+            if (s.HasVerts)
+            {
+                Vector3 vw1 = s.Obj1.transform.TransformPoint(s.Verts1[s.V1]);
+                Vector3 vw2 = s.Obj2.transform.TransformPoint(s.Verts2[s.V2]);
+                DrawConnectionPreview(vw1, vw2, s.Obj1.transform, s.Obj2.transform,
+                    s.Verts1[s.V1], s.Verts2[s.V2], mode, lockY, yMid);
             }
         }
 
-        private static void DrawHandlesStatic(GameObject obj, Vector3[] verts, ref int sel, Color col, string prefix, SceneView sv)
-        {
-            if (obj == null || verts.Length == 0)
-                return;
+        private static ConnectMode CurrentMode() =>
+            (ConnectMode)EditorPrefs.GetInt(PrefMode, (int)ConnectMode.CornerMeet);
 
-            Transform t = obj.transform;
-            for (int i = 0; i < verts.Length; i++)
+        private static bool HandleKeybinds(SceneView sv, Session s, bool isHeadless)
+        {
+            Event e = Event.current;
+            if (e == null || e.type != EventType.KeyDown)
+                return false;
+
+            if (e.control || e.command)
+                return false;
+
+            void repaint()
             {
-                Vector3 wp = t.TransformPoint(verts[i]);
-                bool isSel = i == sel;
-                float size = HandleUtility.GetHandleSize(wp) * (isSel ? 0.12f : 0.08f);
-                Handles.color = isSel ? ColSel : col;
-                if (Handles.Button(wp, Quaternion.identity, size, size, Handles.SphereHandleCap))
+                sv.Repaint();
+                if (!isHeadless && _instance != null)
+                    _instance.Repaint();
+            }
+
+            if (KeyToggleLockY != KeyCode.None && e.keyCode == KeyToggleLockY)
+            {
+                EditorPrefs.SetBool(PrefLockY, !EditorPrefs.GetBool(PrefLockY, true));
+                repaint();
+                e.Use();
+                return true;
+            }
+
+            if (e.keyCode == KeyToggleMode && s.State != FlowState.Idle)
+            {
+                EditorPrefs.SetInt(PrefMode, (int)CycleMode(CurrentMode()));
+                repaint();
+                e.Use();
+                return true;
+            }
+
+            if (e.keyCode == KeyCode.Escape && s.State != FlowState.Idle)
+            {
+                s.State = FlowState.Idle;
+                repaint();
+                e.Use();
+                return true;
+            }
+
+            if (e.keyCode == KeyActivate)
+            {
+                switch (s.State)
                 {
-                    sel = i;
-                    sv.Repaint();
+                    case FlowState.Idle:
+                        s.ResetPicks();
+                        s.State = FlowState.WaitObj1;
+                        break;
+
+                    case FlowState.WaitVerts when s.HasVerts:
+                        TryConnect(s, CurrentMode(), EditorPrefs.GetBool(PrefLockY, true), EditorPrefs.GetBool(PrefYMid, true));
+                        s.State = FlowState.Idle;
+                        break;
+
+                    default:
+                        s.State = FlowState.Idle;
+                        break;
                 }
 
-                GUIStyle ls = new(EditorStyles.boldLabel);
-                ls.normal.textColor = isSel ? Color.yellow : col;
-                Handles.Label(wp + 1.5f * size * Vector3.up, $"{prefix} V{i}", ls);
+                repaint();
+                e.Use();
+                return true;
             }
+
+            return false;
         }
 
-        private static void DrawConnectionPreview(Vector3 vw1, Vector3 vw2, Transform t1, Transform t2, Vector3 vl1, Vector3 vl2, ConnectMode mode, bool lockY, bool yMid)
+        private static void HandleObjectClick(SceneView sv, Session s, bool isHeadless)
         {
-            if (mode == ConnectMode.Standard || mode == ConnectMode.CornerMeet)
+            Event e = Event.current;
+            if (e == null || e.type != EventType.MouseDown || e.button != 0)
+                return;
+
+            if (!TryPickMeshObject(e.mousePosition, out GameObject hit))
+                return;
+
+            if (s.State == FlowState.WaitObj1)
             {
-                Vector3 corner = GetCornerPoint(vw1, t1, vl1, vw2, t2, vl2, lockY, out bool parallel);
-                if (!lockY)
-                    corner.y = yMid ? (vw1.y + vw2.y) * 0.5f : vw2.y;
-
-                Vector2 wd1 = WallAxis2D(t1, vl1, vw1, vw2);
-                Vector2 wd2 = WallAxis2D(t2, vl2, vw2, vw1);
-                Vector3 leg1 = -new Vector3(wd1.x, 0f, wd1.y);
-                Vector3 leg2 = -new Vector3(wd2.x, 0f, wd2.y);
-
-                Handles.color = ColObj1; Handles.DrawDottedLine(vw1, corner, 4f);
-                Handles.color = ColObj2; Handles.DrawDottedLine(vw2, corner, 4f);
-                DrawRightAngleMarker(corner, leg1, leg2);
-
-                Handles.color = new Color(0.3f, 1f, 0.4f);
-                Handles.SphereHandleCap(0, corner, Quaternion.identity, HandleUtility.GetHandleSize(corner) * 0.15f, EventType.Repaint);
-                Handles.Label(corner + Vector3.up * 0.25f, parallel ? "Midpoint (parallel walls)" : "Corner", EditorStyles.boldLabel);
+                s.Obj1 = hit;
+                s.Verts1 = GetUniqueVerts(hit);
+                s.V1 = -1;
+                s.State = FlowState.WaitObj2;
+            }
+            else if (hit != s.Obj1)
+            {
+                s.Obj2 = hit;
+                s.Verts2 = GetUniqueVerts(hit);
+                s.V2 = -1;
+                s.State = FlowState.WaitVerts;
             }
             else
+                return;
+
+            sv.Repaint();
+            if (!isHeadless && _instance != null)
+                _instance.Repaint();
+                
+            e.Use();
+        }
+
+        private static bool TryPickMeshObject(Vector2 mousePos, out GameObject hit)
+        {
+            hit = null;
+            GameObject picked = HandleUtility.PickGameObject(mousePos, false);
+            if (picked == null)
+                return false;
+
+            if (!picked.TryGetComponent(out MeshFilter mf) || mf == null || mf.sharedMesh == null)
+                return false;
+
+            hit = picked;
+            return true;
+        }
+
+        private static void DrawVertexHandles(GameObject obj, Vector3[] verts, int slot,
+            Session s, Color col, string prefix, SceneView sv, bool isHeadless)
+        {
+            if (obj == null || verts == null || verts.Length == 0)
+                return;
+
+            EnsureHandleStyle();
+            Transform t = obj.transform;
+
+            for (int i = 0; i < verts.Length; i++)
+            {
+                Vector3 wp = t.TransformPoint(verts[i]);
+                bool isSel = (slot == 0 ? s.V1 : s.V2) == i;
+                float size = HandleUtility.GetHandleSize(wp) * (isSel ? 0.12f : 0.08f);
+                Handles.color = isSel ? ColSel : col;
+
+                if (Handles.Button(wp, Quaternion.identity, size, size, Handles.SphereHandleCap))
+                {
+                    if (slot == 0)
+                    {
+                        s.V1 = i;
+                    }
+                    else
+                        s.V2 = i;
+
+                    sv.Repaint();
+                    if (!isHeadless && _instance != null)
+                        _instance.Repaint();
+                }
+
+                _handleLabelStyle.normal.textColor = isSel ? Color.yellow : col;
+                Handles.Label(wp + Vector3.up * (1.5f * size), $"{prefix} V{i}", _handleLabelStyle);
+            }
+        }
+
+        private static void DrawConnectionPreview(Vector3 vw1, Vector3 vw2,
+            Transform t1, Transform t2, Vector3 vl1, Vector3 vl2,
+            ConnectMode mode, bool lockY, bool yMid)
+        {
+            if (mode == ConnectMode.FullResize)
             {
                 Vector3 target = GetFullResizeTarget(t1, vl1, t2, vl2, lockY, yMid);
                 Handles.color = Color.yellow;
@@ -325,131 +378,111 @@ namespace Assets.Scripts.Tools
                 Handles.color = new Color(1f, 0.9f, 0.2f);
                 Handles.SphereHandleCap(0, target, Quaternion.identity, HandleUtility.GetHandleSize(target) * 0.1f, EventType.Repaint);
                 Handles.Label(target + Vector3.up * 0.2f, "Target", EditorStyles.boldLabel);
+                return;
             }
+
+            Vector3 corner = GetCornerPoint(vw1, t1, vl1, vw2, t2, vl2, lockY, yMid, out bool parallel);
+
+            Vector2 wd1 = WallAxis2D(t1, vl1, vw1, vw2);
+            Vector2 wd2 = WallAxis2D(t2, vl2, vw2, vw1);
+            Vector3 leg1 = -new Vector3(wd1.x, 0f, wd1.y);
+            Vector3 leg2 = -new Vector3(wd2.x, 0f, wd2.y);
+
+            Handles.color = ColObj1;
+            Handles.DrawDottedLine(vw1, corner, 4f);
+            Handles.color = ColObj2;
+            Handles.DrawDottedLine(vw2, corner, 4f);
+            DrawRightAngleMarker(corner, leg1, leg2);
+
+            Handles.color = new Color(0.3f, 1f, 0.4f);
+            Handles.SphereHandleCap(0, corner, Quaternion.identity, HandleUtility.GetHandleSize(corner) * 0.15f, EventType.Repaint);
+            Handles.Label(corner + Vector3.up * 0.25f, parallel ? "Midpoint (parallel walls)" : "Corner", EditorStyles.boldLabel);
         }
 
         private static void DrawRightAngleMarker(Vector3 corner, Vector3 d1, Vector3 d2)
         {
+            if (d1.sqrMagnitude < 0.0001f || d2.sqrMagnitude < 0.0001f)
+                return;
+
+            d1.Normalize();
+            d2.Normalize();
             float sz = HandleUtility.GetHandleSize(corner) * 0.18f;
-            Vector3 p1 = corner + d1 * sz, p2 = corner + d2 * sz, pm = p1 + d2 * sz;
+            Vector3 p1 = corner + d1 * sz;
+            Vector3 p2 = corner + d2 * sz;
+            Vector3 pm = p1 + d2 * sz;
             Handles.color = new Color(1f, 1f, 1f, 0.7f);
-            Handles.DrawLine(corner, p1); Handles.DrawLine(corner, p2);
-            Handles.DrawLine(p1, pm); Handles.DrawLine(p2, pm);
+            Handles.DrawLine(corner, p1);
+            Handles.DrawLine(corner, p2);
+            Handles.DrawLine(p1, pm);
+            Handles.DrawLine(p2, pm);
         }
 
         private static void DrawSceneOverlay(SceneView sv, string modeLabel, string stateMsg)
         {
+            EnsureOverlayStyles();
             Handles.BeginGUI();
             const float w = 380f, h = 68f;
             float x = (sv.position.width - w) * 0.5f;
             float y = sv.position.height - h - 40f;
             EditorGUI.DrawRect(new Rect(x - 6, y - 6, w + 12, h + 12), new Color(0f, 0f, 0f, 0.6f));
             EditorGUI.DrawRect(new Rect(x, y, w, 20f), new Color(0.15f, 0.35f, 0.5f));
-            GUI.Label(new Rect(x, y, w, 20f), $"  Mode: {modeLabel}  ({KeyToggleMode} to toggle)", new GUIStyle(EditorStyles.boldLabel) { normal = { textColor = Color.white }, alignment = TextAnchor.MiddleLeft });
-            GUI.Label(new Rect(x, y + 22f, w, 24f), $"  {stateMsg}", new GUIStyle(EditorStyles.label) { normal = { textColor = Color.white }, fontSize = 12 });
-            GUI.Label(new Rect(x, y + 46f, w, 20f), $"  [{KeyActivate}] confirm   [Esc] cancel", new GUIStyle(EditorStyles.label) { normal = { textColor = new Color(0.7f, 0.7f, 0.7f) }, fontSize = 11 });
+            GUI.Label(new Rect(x, y, w, 20f), $"  Mode: {modeLabel}  ({KeyToggleMode} to toggle)", _overlayTitleStyle);
+            GUI.Label(new Rect(x, y + 22f, w, 24f), $"  {stateMsg}", _overlayBodyStyle);
+            GUI.Label(new Rect(x, y + 46f, w, 20f), $"  [{KeyActivate}] confirm   [Esc] cancel", _overlayHintStyle);
             Handles.EndGUI();
         }
 
-        private void HandleKeybinds(SceneView sv)
+        private static void EnsureHandleStyle() => _handleLabelStyle ??= new GUIStyle(EditorStyles.boldLabel);
+
+        private static void EnsureOverlayStyles()
         {
-            Event e = Event.current;
-            if (e == null)
-                return;
-
-            if (e.type == EventType.KeyDown && KeyToggleLockY != KeyCode.None && e.keyCode == KeyToggleLockY)
+            _overlayTitleStyle ??= new GUIStyle(EditorStyles.boldLabel)
             {
-                _lockY = !_lockY; EditorPrefs.SetBool(PrefLockY, _lockY);
-                Repaint(); sv.Repaint(); e.Use(); return;
-            }
-
-            if (e.type == EventType.KeyDown && e.keyCode == KeyToggleMode)
-            {
-                _mode = _mode switch
+                normal =
                 {
-                    ConnectMode.Standard => ConnectMode.CornerMeet,
-                    ConnectMode.CornerMeet => ConnectMode.FullResize,
-                    _ => ConnectMode.Standard
-                };
-                EditorPrefs.SetInt(PrefMode, (int)_mode);
-                Repaint(); sv.Repaint(); e.Use(); return;
-            }
+                    textColor = Color.white
+                },
+                alignment = TextAnchor.MiddleLeft
+            };
 
-            if (e.type == EventType.KeyDown && e.keyCode == KeyActivate)
+            _overlayBodyStyle ??= new GUIStyle(EditorStyles.label)
             {
-                switch (_qs)
+                normal =
                 {
-                    case QSState.Idle:
-                        _obj1 = _obj2 = null; _verts1 = _verts2 = new Vector3[0]; _v1 = _v2 = -1;
-                        _qs = QSState.WaitObj1; Repaint(); break;
+                    textColor = Color.white
+                },
+                fontSize = 12
+            };
 
-                    case QSState.WaitVerts:
-                        if (_v1 >= 0 && _v2 >= 0 && _obj1 != null && _obj2 != null)
-                        {
-                            DoConnect(); _qs = QSState.Idle; _openedViaKeybind = false; Repaint();
-                        }
-                        break;
-
-                    default:
-                        _qs = QSState.Idle; _openedViaKeybind = false; Repaint(); break;
-                }
-                e.Use();
-                return;
-            }
-
-            if (e.type == EventType.KeyDown && e.keyCode == KeyCode.Escape && _qs != QSState.Idle)
+            _overlayHintStyle ??= new GUIStyle(EditorStyles.label)
             {
-                _qs = QSState.Idle; _openedViaKeybind = false;
-                Repaint();
-                sv.Repaint();
-                e.Use();
-                return;
-            }
-
-            if ((_qs == QSState.WaitObj1 || _qs == QSState.WaitObj2) && e.type == EventType.MouseDown && e.button == 0)
-            {
-                GameObject hit = HandleUtility.PickGameObject(e.mousePosition, false);
-                if (hit != null ? hit.GetComponent<MeshFilter>().sharedMesh : null != null)
+                normal =
                 {
-                    if (_qs == QSState.WaitObj1)
-                    {
-                        _obj1 = hit; _verts1 = GetUniqueVerts(hit); _v1 = -1;
-                        _qs = QSState.WaitObj2;
-                    }
-                    else if (hit != _obj1)
-                    {
-                        _obj2 = hit; _verts2 = GetUniqueVerts(hit); _v2 = -1;
-                        _qs = QSState.WaitVerts;
-                    }
-
-                    Repaint();
-                    sv.Repaint();
-                    e.Use();
-                }
-            }
+                    textColor = new Color(0.7f, 0.7f, 0.7f)
+                },
+                fontSize = 11
+            };
         }
 
         private void OnGUI()
         {
-            if (_openedViaKeybind)
-                return;
-
             _scroll = EditorGUILayout.BeginScrollView(_scroll);
 
             GUILayout.Label("Vertex Connector", EditorStyles.boldLabel);
-            EditorGUILayout.HelpBox("Click colored dots in the Scene View to pick vertices, or use the buttons below.", MessageType.Info);
-            EditorGUILayout.Space(8);
+            EditorGUILayout.HelpBox("Pick two objects + one vertex each (in the Scene View dots or the grids below), then Connect.", MessageType.Info);
+            DrawQuickStartRow();
 
+            EditorGUILayout.Space(8);
             DrawColoredLabel("Object 1 — Resize This  (Blue dots)", ColObj1);
-            DrawObjectField(ref _obj1, ref _verts1, ref _v1);
-            if (_verts1.Length > 0)
-                DrawVertexGrid(_verts1, _obj1, ref _v1, ColObj1);
+            DrawObjectField(_session, slot: 0);
+            if (_session.Verts1.Length > 0)
+                DrawVertexGrid(_session.Verts1, _session.Obj1, isFirst: true, ColObj1);
 
             EditorGUILayout.Space(4);
             EditorGUILayout.BeginHorizontal();
             GUILayout.FlexibleSpace();
             GUI.backgroundColor = new Color(1f, 0.85f, 0.2f);
-            if (GUILayout.Button("⇅  Swap Objects", GUILayout.Width(150), GUILayout.Height(26)))
+            if (GUILayout.Button("Swap Objects", GUILayout.Width(150), GUILayout.Height(26)))
                 SwapObjects();
 
             GUI.backgroundColor = Color.white;
@@ -458,212 +491,398 @@ namespace Assets.Scripts.Tools
             EditorGUILayout.Space(4);
 
             DrawColoredLabel("Object 2 — Snap Target  (Orange dots)", ColObj2);
-            DrawObjectField(ref _obj2, ref _verts2, ref _v2);
-            if (_verts2.Length > 0)
-                DrawVertexGrid(_verts2, _obj2, ref _v2, ColObj2);
+            DrawObjectField(_session, slot: 1);
+            if (_session.Verts2.Length > 0)
+                DrawVertexGrid(_session.Verts2, _session.Obj2, isFirst: false, ColObj2);
 
             EditorGUILayout.Space(8);
-            if (_v1 >= 0 && _obj1 != null)
+            DrawWorldReadout();
+
+            EditorGUILayout.Space(8);
+            DrawYControls();
+
+            EditorGUILayout.Space(8);
+            DrawModeControls();
+
+            EditorGUILayout.Space(8);
+            DrawConnectSection();
+
+            EditorGUILayout.Space(10);
+            DrawKeybindSection();
+
+            EditorGUILayout.EndScrollView();
+        }
+
+        private void DrawQuickStartRow()
+        {
+            EditorGUILayout.BeginHorizontal();
+            GUI.enabled = _session.State == FlowState.Idle;
+            if (GUILayout.Button("Start Picking (V)", GUILayout.Height(26)))
             {
-                Vector3 v = _obj1.transform.TransformPoint(_verts1[_v1]);
+                _session.ResetPicks();
+                _session.State = FlowState.WaitObj1;
+                SceneView.RepaintAll();
+            }
+
+            GUI.enabled = _session.State != FlowState.Idle;
+            if (GUILayout.Button("Cancel (Esc)", GUILayout.Height(26)))
+            {
+                _session.State = FlowState.Idle;
+                SceneView.RepaintAll();
+            }
+
+            GUI.enabled = true;
+            EditorGUILayout.EndHorizontal();
+
+            if (_session.State != FlowState.Idle)
+                EditorGUILayout.HelpBox(StateMessage(_session), MessageType.None);
+        }
+
+        private void DrawObjectField(Session s, int slot)
+        {
+            GameObject cur = slot == 0 ? s.Obj1 : s.Obj2;
+            GameObject next = (GameObject)EditorGUILayout.ObjectField("Object", cur, typeof(GameObject), true);
+            if (next == cur)
+            {
+                if (cur != null && (slot == 0 ? s.Verts1.Length : s.Verts2.Length) == 0)
+                    EditorGUILayout.HelpBox("No mesh found on this object.", MessageType.Warning);
+
+                return;
+            }
+
+            SetSessionObject(s, slot, next);
+        }
+
+        private void SetSessionObject(Session s, int slot, GameObject go)
+        {
+            if (slot == 0)
+            {
+                s.Obj1 = go;
+                s.Verts1 = GetUniqueVerts(go);
+                s.V1 = -1;
+            }
+            else
+            {
+                s.Obj2 = go;
+                s.Verts2 = GetUniqueVerts(go);
+                s.V2 = -1;
+            }
+
+            SceneView.RepaintAll();
+            Repaint();
+        }
+
+        private void DrawVertexGrid(Vector3[] verts, GameObject obj, bool isFirst, Color col)
+        {
+            EditorGUILayout.BeginHorizontal();
+            EditorGUILayout.LabelField($"{verts.Length} vertices", EditorStyles.miniLabel);
+            GUILayout.FlexibleSpace();
+            GUI.enabled = Selection.activeGameObject != null;
+            if (GUILayout.Button("Use Selection", GUILayout.Width(110)))
+                SetSessionObject(_session, isFirst ? 0 : 1, Selection.activeGameObject);
+
+            GUI.enabled = true;
+            EditorGUILayout.EndHorizontal();
+
+            const int cols = 4;
+            int rows = Mathf.CeilToInt(verts.Length / (float)cols);
+            for (int row = 0; row < rows; row++)
+            {
+                EditorGUILayout.BeginHorizontal();
+                for (int c = 0; c < cols; c++)
+                {
+                    int i = row * cols + c;
+                    if (i >= verts.Length)
+                        break;
+
+                    int sel = isFirst ? _session.V1 : _session.V2;
+                    GUI.backgroundColor = i == sel ? Color.yellow : col * 0.8f;
+                    Vector3 wp = obj.transform.TransformPoint(verts[i]);
+                    if (GUILayout.Button(new GUIContent($"V{i}", $"Local {verts[i]:F2}\nWorld {wp:F2}"), GUILayout.Width(56)))
+                    {
+                        if (isFirst)
+                        {
+                            _session.V1 = i;
+                        }
+                        else
+                            _session.V2 = i;
+
+                        SceneView.RepaintAll();
+                    }
+                }
+                EditorGUILayout.EndHorizontal();
+            }
+            GUI.backgroundColor = Color.white;
+        }
+
+        private void DrawWorldReadout()
+        {
+            if (_session.V1 >= 0 && _session.Obj1 != null && _session.V1 < _session.Verts1.Length)
+            {
+                Vector3 v = _session.Obj1.transform.TransformPoint(_session.Verts1[_session.V1]);
                 EditorGUILayout.LabelField($"V1 World: ({v.x:F3}, {v.y:F3}, {v.z:F3})");
             }
-            if (_v2 >= 0 && _obj2 != null)
+
+            if (_session.V2 >= 0 && _session.Obj2 != null && _session.V2 < _session.Verts2.Length)
             {
-                Vector3 v = _obj2.transform.TransformPoint(_verts2[_v2]);
+                Vector3 v = _session.Obj2.transform.TransformPoint(_session.Verts2[_session.V2]);
                 EditorGUILayout.LabelField($"V2 World: ({v.x:F3}, {v.y:F3}, {v.z:F3})");
             }
 
-            EditorGUILayout.Space(8);
+            if (_session.HasVerts)
+            {
+                Vector3 vw1 = _session.Obj1.transform.TransformPoint(_session.Verts1[_session.V1]);
+                Vector3 vw2 = _session.Obj2.transform.TransformPoint(_session.Verts2[_session.V2]);
+                float flat = Vector2.Distance(new Vector2(vw1.x, vw1.z), new Vector2(vw2.x, vw2.z));
+                EditorGUILayout.LabelField($"Planar distance: {flat:F3}m   Height delta: {Mathf.Abs(vw1.y - vw2.y):F3}m");
+            }
+        }
+
+        private void DrawYControls()
+        {
             GUILayout.Label("Y Axis", EditorStyles.boldLabel);
             EditorGUILayout.BeginHorizontal();
-            GUI.backgroundColor = _lockY ? new Color(1f, 0.4f, 0.4f) : new Color(0.4f, 0.8f, 0.4f);
-            if (GUILayout.Button(_lockY ? "🔒 Y  Locked" : "🔓 Y  Free", GUILayout.Height(28)))
-            { 
-                _lockY = !_lockY;
-                EditorPrefs.SetBool(PrefLockY, _lockY);
+            GUI.backgroundColor = LockY ? new Color(1f, 0.4f, 0.4f) : new Color(0.4f, 0.8f, 0.4f);
+            if (GUILayout.Button(LockY ? "Y Locked" : "Y Free", GUILayout.Height(28)))
+            {
+                LockY = !LockY;
                 SceneView.RepaintAll();
             }
 
-            GUI.enabled = !_lockY;
-            GUI.backgroundColor = (!_lockY && _yMidpoint) ? new Color(0.3f, 0.7f, 1f) : Color.white;
+            GUI.enabled = !LockY;
+            GUI.backgroundColor = !LockY && YMidpoint ? new Color(0.3f, 0.7f, 1f) : Color.white;
             if (GUILayout.Button("Midpoint Y", GUILayout.Height(28)))
             {
-                _yMidpoint = true;
-                EditorPrefs.SetBool(PrefYMid, true);
+                YMidpoint = true;
                 SceneView.RepaintAll();
             }
 
-            GUI.backgroundColor = (!_lockY && !_yMidpoint) ? new Color(1f, 0.6f, 0.2f) : Color.white;
+            GUI.backgroundColor = !LockY && !YMidpoint ? new Color(1f, 0.6f, 0.2f) : Color.white;
             if (GUILayout.Button("Object 2 Y", GUILayout.Height(28)))
             {
-                _yMidpoint = false;
-                EditorPrefs.SetBool(PrefYMid, false);
+                YMidpoint = false;
                 SceneView.RepaintAll();
             }
 
             GUI.enabled = true;
             GUI.backgroundColor = Color.white;
             EditorGUILayout.EndHorizontal();
-            EditorGUILayout.HelpBox(_lockY ? "Y locked — connects at the same height." : _yMidpoint ? "Y free — both objects meet at the midpoint height." : "Y free — both objects extend to Object 2's vertex height.", MessageType.None);
-            EditorGUILayout.Space(8);
+            EditorGUILayout.HelpBox(LockY
+                ? "Y locked — connects at the same height."
+                : YMidpoint
+                    ? "Y free — both objects meet at the midpoint height."
+                    : "Y free — both objects extend to Object 2's vertex height.", MessageType.None);
+        }
+
+        private void DrawModeControls()
+        {
+            ConnectMode mode = Mode;
             GUILayout.Label("Connection Mode", EditorStyles.boldLabel);
             EditorGUILayout.BeginHorizontal();
-            GUI.backgroundColor = _mode == ConnectMode.Standard ? new Color(0.3f, 0.7f, 1f) : Color.white;
-            if (GUILayout.Button("Standard", GUILayout.Height(26)))
-            {
-                _mode = ConnectMode.Standard;
-                EditorPrefs.SetInt(PrefMode, (int)_mode);
-                SceneView.RepaintAll();
-            }
-
-            GUI.backgroundColor = _mode == ConnectMode.CornerMeet ? new Color(0.3f, 1f, 0.5f) : Color.white;
-            if (GUILayout.Button("Corner Meet", GUILayout.Height(26)))
-            {
-                _mode = ConnectMode.CornerMeet;
-                EditorPrefs.SetInt(PrefMode, (int)_mode);
-                SceneView.RepaintAll();
-            }
-
-            GUI.backgroundColor = _mode == ConnectMode.FullResize ? new Color(1f, 0.8f, 0.2f) : Color.white;
-            if (GUILayout.Button("Full Resize", GUILayout.Height(26)))
-            {
-                _mode = ConnectMode.FullResize;
-                EditorPrefs.SetInt(PrefMode, (int)_mode);
-                SceneView.RepaintAll();
-            }
-
+            ModeButton("Standard", ConnectMode.Standard, mode, new Color(0.3f, 0.7f, 1f));
+            ModeButton("Corner Meet", ConnectMode.CornerMeet, mode, new Color(0.3f, 1f, 0.5f));
+            ModeButton("Full Resize", ConnectMode.FullResize, mode, new Color(1f, 0.8f, 0.2f));
             GUI.backgroundColor = Color.white;
             EditorGUILayout.EndHorizontal();
-            EditorGUILayout.HelpBox(_mode switch
+            EditorGUILayout.HelpBox(Mode switch
             {
                 ConnectMode.Standard => "Only Object 1 resizes to the right-angle corner where edges would meet.",
                 ConnectMode.CornerMeet => "Both objects extend to the right-angle corner where their edges intersect.",
                 _ => "Object 1 scales on ALL axes so its vertex lands exactly on Object 2's vertex."
             }, MessageType.None);
+        }
 
-            EditorGUILayout.Space(8);
-            bool canConnect = _obj1 != null && _obj2 != null && _v1 >= 0 && _v2 >= 0;
+        private void ModeButton(string label, ConnectMode value, ConnectMode current, Color active)
+        {
+            GUI.backgroundColor = current == value ? active : Color.white;
+            if (GUILayout.Button(label, GUILayout.Height(26)))
+            {
+                Mode = value;
+                SceneView.RepaintAll();
+            }
+        }
+
+        private void DrawConnectSection()
+        {
+            bool canConnect = CanConnect(_session, out string reason);
             GUI.enabled = canConnect;
             GUI.backgroundColor = canConnect ? new Color(0.3f, 0.9f, 0.3f) : Color.gray;
             if (GUILayout.Button("Connect Vertices", GUILayout.Height(45)))
-                DoConnect();
+            {
+                TryConnect(_session, Mode, LockY, YMidpoint);
+                RefreshVerts(preserveSelection: true);
+            }
 
             GUI.backgroundColor = Color.white;
             GUI.enabled = true;
             if (!canConnect)
-                EditorGUILayout.HelpBox("Select both objects and one vertex each to enable.", MessageType.None);
+                EditorGUILayout.HelpBox(reason, MessageType.None);
 
             EditorGUILayout.Space(5);
             if (GUILayout.Button("Refresh Vertices"))
-                RefreshAll();
+                RefreshVerts(preserveSelection: true);
+        }
 
-            EditorGUILayout.Space(10);
+        private void DrawKeybindSection()
+        {
             GUILayout.Label("Keybinds", EditorStyles.boldLabel);
             EditorGUILayout.HelpBox("These keys work in the Scene View at all times, even when this window is closed.", MessageType.None);
-            DrawKeybindRow("Activate / Confirm", ref _capAct, ref _capToggle, KeyActivate);
-            DrawKeybindRow("Toggle Mode", ref _capToggle, ref _capAct, KeyToggleMode);
-            DrawKeybindRow("Toggle Y Lock", ref _capLockY, ref _capAct, KeyToggleLockY);
+            DrawKeybindRow("Activate / Confirm", 0, KeyActivate, v => KeyActivate = v);
+            DrawKeybindRow("Toggle Mode", 1, KeyToggleMode, v => KeyToggleMode = v);
+            DrawKeybindRow("Toggle Y Lock", 2, KeyToggleLockY, v => KeyToggleLockY = v);
             EditorGUILayout.HelpBox("Toggle Y Lock works everywhere in the Scene View. Set to None to disable.", MessageType.None);
 
-            if (_capAct || _capToggle || _capLockY)
+            if (_capturingKey >= 0)
             {
                 Event e = Event.current;
                 if (e != null && e.type == EventType.KeyDown)
                 {
                     if (e.keyCode == KeyCode.Escape)
                     {
-                        _capAct = _capToggle = _capLockY = false;
+                        _capturingKey = -1;
                     }
                     else if (e.keyCode != KeyCode.None)
                     {
-                        if (_capAct)
+                        if (_capturingKey == 0)
                         {
                             KeyActivate = e.keyCode;
                         }
-                        else if (_capToggle)
+                        else if (_capturingKey == 1)
                         {
                             KeyToggleMode = e.keyCode;
                         }
                         else
                             KeyToggleLockY = e.keyCode;
 
-                        _capAct = _capToggle = _capLockY = false;
+                        _capturingKey = -1;
                     }
 
                     e.Use();
                     Repaint();
                     SceneView.RepaintAll();
                 }
-                Focus();
             }
-
-            EditorGUILayout.EndScrollView();
         }
 
-        private void DoConnect()
+        private void DrawKeybindRow(string label, int index, KeyCode current, Action<KeyCode> set)
         {
-            switch (_mode)
+            EditorGUILayout.BeginHorizontal();
+            EditorGUILayout.LabelField(label, GUILayout.Width(160));
+            bool capturing = _capturingKey == index;
+            string btn = capturing ? "[ Press a key... ]" : current.ToString();
+            GUI.backgroundColor = capturing ? new Color(1f, 0.8f, 0.2f) : Color.white;
+            if (GUILayout.Button(btn, GUILayout.Height(22)))
+                _capturingKey = capturing ? -1 : index;
+
+            GUI.backgroundColor = Color.white;
+
+            if (index == 2 && current != KeyCode.None && _capturingKey < 0)
             {
-                case ConnectMode.Standard:
-                    ConnectStandard();
-                    break;
-
-                case ConnectMode.CornerMeet:
-                    ConnectCornerMeet();
-                    break;
-
-                default:
-                    ConnectFullResize();
-                    break;
+                if (GUILayout.Button("None", GUILayout.Width(52)))
+                {
+                    set(KeyCode.None);
+                    SceneView.RepaintAll();
+                }
             }
+
+            EditorGUILayout.EndHorizontal();
         }
 
-        private void ConnectStandard()
+        private static void DrawColoredLabel(string text, Color col)
         {
-            Vector3 vl1 = _verts1[_v1], vl2 = _verts2[_v2];
-            Vector3 vw1 = _obj1.transform.TransformPoint(vl1);
-            Vector3 vw2 = _obj2.transform.TransformPoint(vl2);
-            Vector3 corner = GetCornerPoint(vw1, _obj1.transform, vl1, vw2, _obj2.transform, vl2, _lockY, out bool parallel);
-            if (!_lockY)
-                corner.y = _yMidpoint ? (vw1.y + vw2.y) * 0.5f : vw2.y;
-
-            Undo.RecordObject(_obj1.transform, "Vertex Connector: Standard");
-            ScaleObjectToReach(_obj1, vl1, vw1, corner, parallel);
-            if (!_lockY)
-                ScaleObjectToReachY(_obj1, vl1, corner);
-
-            RefreshAll();
+            GUIStyle s = new(EditorStyles.boldLabel);
+            s.normal.textColor = col;
+            GUILayout.Label(text, s);
         }
 
-        private void ConnectCornerMeet()
+        private static bool CanConnect(Session s, out string reason)
         {
-            Vector3 vl1 = _verts1[_v1], vl2 = _verts2[_v2];
-            Vector3 vw1 = _obj1.transform.TransformPoint(vl1);
-            Vector3 vw2 = _obj2.transform.TransformPoint(vl2);
-            Vector3 corner = GetCornerPoint(vw1, _obj1.transform, vl1, vw2, _obj2.transform, vl2, _lockY, out bool parallel);
-            if (!_lockY) corner.y = _yMidpoint ? (vw1.y + vw2.y) * 0.5f : vw2.y;
-
-            Undo.RecordObject(_obj1.transform, "Vertex Connector: Corner Meet");
-            Undo.RecordObject(_obj2.transform, "Vertex Connector: Corner Meet");
-            ScaleObjectToReach(_obj1, vl1, vw1, corner, parallel);
-            ScaleObjectToReach(_obj2, vl2, vw2, corner, parallel);
-            if (!_lockY)
+            if (s.Obj1 == null || s.Obj2 == null)
             {
-                ScaleObjectToReachY(_obj1, vl1, corner);
-                ScaleObjectToReachY(_obj2, vl2, corner);
+                reason = "Select both objects and one vertex each to enable.";
+                return false;
             }
-            RefreshAll();
+
+            if (s.Obj1 == s.Obj2)
+            {
+                reason = "Pick two different objects.";
+                return false;
+            }
+
+            if (s.V1 < 0 || s.V2 < 0 || s.V1 >= s.Verts1.Length || s.V2 >= s.Verts2.Length)
+            {
+                reason = "Click one vertex dot on each object to enable.";
+                return false;
+            }
+
+            reason = "";
+            return true;
         }
 
-        private void ConnectFullResize()
+        private static bool TryConnect(Session s, ConnectMode mode, bool lockY, bool yMid)
         {
-            Vector3 vl1 = _verts1[_v1];
-            Vector3 target = GetFullResizeTarget(_obj1.transform, vl1, _obj2.transform, _verts2[_v2], _lockY, _yMidpoint);
+            if (!CanConnect(s, out string reason))
+            {
+                Debug.LogWarning($"Vertex Connector: {reason}");
+                return false;
+            }
 
-            Undo.RecordObject(_obj1.transform, "Vertex Connector: Full Resize");
-            ScaleObjectToReachAllAxes(_obj1, vl1, target, _lockY);
-            RefreshAll();
+            return mode switch
+            {
+                ConnectMode.Standard => ConnectStandard(s, lockY, yMid),
+                ConnectMode.CornerMeet => ConnectCornerMeet(s, lockY, yMid),
+                _ => ConnectFullResize(s, lockY, yMid),
+            };
+
+        }
+
+        private static bool ConnectStandard(Session s, bool lockY, bool yMid)
+        {
+            Vector3 vl1 = s.Verts1[s.V1], vl2 = s.Verts2[s.V2];
+            Vector3 vw1 = s.Obj1.transform.TransformPoint(vl1);
+            Vector3 vw2 = s.Obj2.transform.TransformPoint(vl2);
+            Vector3 corner = GetCornerPoint(vw1, s.Obj1.transform, vl1, vw2, s.Obj2.transform, vl2, lockY, yMid, out bool parallel);
+
+            Undo.RecordObject(s.Obj1.transform, "Vertex Connector: Standard");
+            ScaleObjectToReach(s.Obj1, vl1, vw1, corner, parallel);
+            if (!lockY)
+                ScaleAxisToReach(s.Obj1, Axis.Y, vl1.y, corner);
+
+            EditorUtility.SetDirty(s.Obj1.transform);
+            return true;
+        }
+
+        private static bool ConnectCornerMeet(Session s, bool lockY, bool yMid)
+        {
+            Vector3 vl1 = s.Verts1[s.V1], vl2 = s.Verts2[s.V2];
+            Vector3 vw1 = s.Obj1.transform.TransformPoint(vl1);
+            Vector3 vw2 = s.Obj2.transform.TransformPoint(vl2);
+            Vector3 corner = GetCornerPoint(vw1, s.Obj1.transform, vl1, vw2, s.Obj2.transform, vl2, lockY, yMid, out bool parallel);
+
+            Undo.RecordObject(s.Obj1.transform, "Vertex Connector: Corner Meet");
+            Undo.RecordObject(s.Obj2.transform, "Vertex Connector: Corner Meet");
+            ScaleObjectToReach(s.Obj1, vl1, vw1, corner, parallel);
+            ScaleObjectToReach(s.Obj2, vl2, vw2, corner, parallel);
+            if (!lockY)
+            {
+                ScaleAxisToReach(s.Obj1, Axis.Y, vl1.y, corner);
+                ScaleAxisToReach(s.Obj2, Axis.Y, vl2.y, corner);
+            }
+
+            EditorUtility.SetDirty(s.Obj1.transform);
+            EditorUtility.SetDirty(s.Obj2.transform);
+            return true;
+        }
+
+        private static bool ConnectFullResize(Session s, bool lockY, bool yMid)
+        {
+            Vector3 vl1 = s.Verts1[s.V1];
+            Vector3 target = GetFullResizeTarget(s.Obj1.transform, vl1, s.Obj2.transform, s.Verts2[s.V2], lockY, yMid);
+
+            Undo.RecordObject(s.Obj1.transform, "Vertex Connector: Full Resize");
+            ScaleObjectToReachAllAxes(s.Obj1, vl1, target, lockY);
+            EditorUtility.SetDirty(s.Obj1.transform);
+            return true;
         }
 
         private static Vector3 GetFullResizeTarget(Transform t1, Vector3 vl1, Transform t2, Vector3 vl2, bool lockY, bool yMid)
@@ -676,85 +895,60 @@ namespace Assets.Scripts.Tools
             return target;
         }
 
-        private static void HeadlessConnect()
-        {
-            if (_hObj1 == null || _hObj2 == null) return;
-            Vector3 vl1 = _hVerts1[_hV1], vl2 = _hVerts2[_hV2];
-            Vector3 vw1 = _hObj1.transform.TransformPoint(vl1);
-            Vector3 vw2 = _hObj2.transform.TransformPoint(vl2);
-
-            Undo.RecordObject(_hObj1.transform, "Vertex Connector: Headless");
-            Undo.RecordObject(_hObj2.transform, "Vertex Connector: Headless");
-
-            if (_hMode == ConnectMode.Standard)
-            {
-                Vector3 corner = GetCornerPoint(vw1, _hObj1.transform, vl1, vw2, _hObj2.transform, vl2, _hLockY, out bool parallel);
-                if (!_hLockY)
-                    corner.y = _hYMid ? (vw1.y + vw2.y) * 0.5f : vw2.y;
-
-                ScaleObjectToReach(_hObj1, vl1, vw1, corner, parallel);
-                if (!_hLockY)
-                    ScaleObjectToReachY(_hObj1, vl1, corner);
-            }
-            else if (_hMode == ConnectMode.CornerMeet)
-            {
-                Vector3 corner = GetCornerPoint(vw1, _hObj1.transform, vl1, vw2, _hObj2.transform, vl2, _hLockY, out bool parallel);
-                if (!_hLockY) corner.y = _hYMid ? (vw1.y + vw2.y) * 0.5f : vw2.y;
-                ScaleObjectToReach(_hObj1, vl1, vw1, corner, parallel);
-                ScaleObjectToReach(_hObj2, vl2, vw2, corner, parallel);
-                if (!_hLockY)
-                {
-                    ScaleObjectToReachY(_hObj1, vl1, corner);
-                    ScaleObjectToReachY(_hObj2, vl2, corner);
-                }
-            }
-            else
-            {
-                Vector3 target = GetFullResizeTarget(_hObj1.transform, vl1, _hObj2.transform, vl2, _hLockY, _hYMid);
-                ScaleObjectToReachAllAxes(_hObj1, vl1, target, _hLockY);
-            }
-        }
-
         private static void ScaleObjectToReach(GameObject obj, Vector3 vLocal, Vector3 vWorld, Vector3 target, bool bothAxes)
         {
             if (Vector2.Distance(new Vector2(vWorld.x, vWorld.z), new Vector2(target.x, target.z)) < 0.001f)
                 return;
 
-            Transform t = obj.transform;
-            float wx = Mathf.Abs(vLocal.x) * t.localScale.x;
-            float wz = Mathf.Abs(vLocal.z) * t.localScale.z;
+            float wx = Mathf.Abs(vLocal.x) * obj.transform.localScale.x;
+            float wz = Mathf.Abs(vLocal.z) * obj.transform.localScale.z;
             bool primaryIsX = wx >= wz;
 
-            ScaleXZAxisToReach(obj, primaryIsX, primaryIsX ? vLocal.x : vLocal.z, target);
+            ScaleAxisToReach(obj, primaryIsX ? Axis.X : Axis.Z, primaryIsX ? vLocal.x : vLocal.z, target);
             if (bothAxes)
-                ScaleXZAxisToReach(obj, !primaryIsX, !primaryIsX ? vLocal.x : vLocal.z, target);
+                ScaleAxisToReach(obj, !primaryIsX ? Axis.X : Axis.Z, !primaryIsX ? vLocal.x : vLocal.z, target);
         }
 
-        private static void ScaleXZAxisToReach(GameObject obj, bool isX, float vertComp, Vector3 target)
+        private static void ScaleAxisToReach(GameObject obj, Axis axis, float vertComp, Vector3 target)
         {
             if (Mathf.Abs(vertComp) < 0.001f)
             {
-                Debug.LogWarning($"Vertex Connector: '{obj.name}' vertex is centered on the {(isX ? "X" : "Z")} axis and cannot be stretched. Try Full Resize.");
+                Debug.LogWarning($"Vertex Connector: '{obj.name}' vertex is centered on the {axis} axis and cannot be stretched. Try Full Resize.");
                 return;
             }
 
             Transform t = obj.transform;
-            Vector3 worldAxis = isX ? t.right : t.forward;
-            float axisScale = isX ? t.localScale.x : t.localScale.z;
+            Vector3 worldAxis = axis switch
+            {
+                Axis.X => t.right,
+                Axis.Y => t.up,
+                _ => t.forward
+            };
+
+            float axisScale = axis switch
+            {
+                Axis.X => t.localScale.x,
+                Axis.Y => t.localScale.y,
+                _ => t.localScale.z
+            };
 
             float sign = Mathf.Sign(vertComp);
             Vector3 fixedFace = t.position - worldAxis * (axisScale * 0.5f * sign);
             float newWidth = Vector3.Dot(target - fixedFace, worldAxis) * sign;
             if (newWidth < 0.001f)
             {
-                Debug.LogWarning($"Vertex Connector: {obj.name} would require negative scale.");
+                Debug.LogWarning($"Vertex Connector: {obj.name} would require negative scale on {axis}.");
                 return;
             }
 
             Vector3 ns = t.localScale;
-            if (isX)
+            if (axis == Axis.X)
             {
                 ns.x = newWidth;
+            }
+            else if (axis == Axis.Y)
+            {
+                ns.y = newWidth;
             }
             else
                 ns.z = newWidth;
@@ -763,75 +957,24 @@ namespace Assets.Scripts.Tools
             t.position = fixedFace + worldAxis * (newWidth * 0.5f * sign);
         }
 
-        private static void ScaleObjectToReachY(GameObject obj, Vector3 vLocal, Vector3 target)
-        {
-            if (Mathf.Abs(vLocal.y) < 0.001f)
-                return;
-
-            Transform t = obj.transform;
-            float sign = Mathf.Sign(vLocal.y);
-            Vector3 fix = t.position - t.up * (t.localScale.y * 0.5f * sign);
-            float newH = Vector3.Dot(target - fix, t.up) * sign;
-            if (newH < 0.001f)
-            {
-                Debug.LogWarning($"Vertex Connector: Y resize on {obj.name} would go negative.");
-                return;
-            }
-
-            Vector3 ns = t.localScale; ns.y = newH;
-            t.localScale = ns; t.position = fix + t.up * (newH * 0.5f * sign);
-        }
-
         private static void ScaleObjectToReachAllAxes(GameObject obj, Vector3 vLocal, Vector3 target, bool lockY)
         {
-            Transform t = obj.transform; Vector3 scale = t.localScale;
-            void Ax(Vector3 axis, float sc, float comp)
-            {
-                if (Mathf.Abs(comp) < 0.001f)
-                    return;
+            ScaleAxisToReach(obj, Axis.X, vLocal.x, target);
+            if (!lockY)
+                ScaleAxisToReach(obj, Axis.Y, vLocal.y, target);
 
-                if (axis == t.up && lockY)
-                    return;
-
-                float sign = Mathf.Sign(comp);
-                Vector3 fix = t.position - axis * (sc * 0.5f * sign);
-                float nw = Vector3.Dot(target - fix, axis) * sign;
-                if (nw < 0.001f)
-                {
-                    Debug.LogWarning($"Vertex Connector FullResize: axis on {obj.name} would go negative.");
-                    return;
-                }
-
-                Vector3 ns = t.localScale;
-                if (axis == t.right) 
-                {
-                    ns.x = nw;
-                }
-                else if (axis == t.forward) 
-                {
-                    ns.z = nw;
-                }
-                else
-                    ns.y = nw;
-
-                t.localScale = ns; t.position = fix + axis * (nw * 0.5f * sign);
-            }
-
-            Ax(t.right, scale.x, vLocal.x);
-            scale = t.localScale;
-            Ax(t.up, scale.y, vLocal.y);
-            scale = t.localScale;
-            Ax(t.forward, scale.z, vLocal.z);
+            ScaleAxisToReach(obj, Axis.Z, vLocal.z, target);
         }
 
-        private static Vector3 GetCornerPoint(Vector3 v1, Transform t1, Vector3 vl1, Vector3 v2, Transform t2, Vector3 vl2, bool lockY, out bool parallel)
+        private static Vector3 GetCornerPoint(Vector3 v1, Transform t1, Vector3 vl1, Vector3 v2, Transform t2, Vector3 vl2, bool lockY, bool yMid, out bool parallel)
         {
             Vector2 p1 = new(v1.x, v1.z), p2 = new(v2.x, v2.z);
-            Vector2 d1 = WallAxis2D(t1, vl1, v1, v2), d2 = WallAxis2D(t2, vl2, v2, v1);
+            Vector2 d1 = WallAxis2D(t1, vl1, v1, v2);
+            Vector2 d2 = WallAxis2D(t2, vl2, v2, v1);
 
-            float denom = d1.x * (-d2.y) - d1.y * (-d2.x);
+            float denom = d1.x * -d2.y - d1.y * -d2.x;
             Vector2 ix;
-            if (Mathf.Abs(denom) < 0.0001f)
+            if (Mathf.Abs(denom) < 0.0001f || d1.sqrMagnitude < 0.0001f || d2.sqrMagnitude < 0.0001f)
             {
                 parallel = true;
                 ix = (p1 + p2) * 0.5f;
@@ -840,10 +983,11 @@ namespace Assets.Scripts.Tools
             {
                 parallel = false;
                 Vector2 dp = p2 - p1;
-                float t = (dp.x * (-d2.y) - dp.y * (-d2.x)) / denom;
+                float t = (dp.x * -d2.y - dp.y * -d2.x) / denom;
                 ix = p1 + t * d1;
             }
-            float cornerY = lockY ? v1.y : (v1.y + v2.y) * 0.5f;
+
+            float cornerY = lockY ? v1.y : yMid ? (v1.y + v2.y) * 0.5f : v2.y;
             return new Vector3(ix.x, cornerY, ix.y);
         }
 
@@ -854,120 +998,21 @@ namespace Assets.Scripts.Tools
             float wx = Mathf.Abs(vLocal.x) * t.localScale.x;
             float wz = Mathf.Abs(vLocal.z) * t.localScale.z;
             Vector3 chosen = wx >= wz ? (axX.sqrMagnitude > 0.0001f ? axX.normalized : Vector3.right) : (axZ.sqrMagnitude > 0.0001f ? axZ.normalized : Vector3.forward);
+
             Vector3 span = to - from; span.y = 0f;
+            if (span.sqrMagnitude < 0.000001f)
+                return new Vector2(chosen.x, chosen.z);
+
             float sign = Vector3.Dot(chosen, span) >= 0f ? 1f : -1f;
             return new Vector2(chosen.x, chosen.z) * sign;
         }
 
-        private void DrawObjectField(ref GameObject obj, ref Vector3[] verts, ref int sel)
+        private static ConnectMode CycleMode(ConnectMode m) => m switch
         {
-            GameObject next = (GameObject)EditorGUILayout.ObjectField("Object", obj, typeof(GameObject), true);
-            if (next != obj)
-            {
-                obj = next; verts = GetUniqueVerts(obj);
-                sel = -1;
-                SceneView.RepaintAll();
-            }
-            if (obj != null && verts.Length == 0)
-                EditorGUILayout.HelpBox("No mesh found on this object.", MessageType.Warning);
-        }
-
-        private void DrawVertexGrid(Vector3[] verts, GameObject obj, ref int sel, Color col)
-        {
-            const int cols = 4;
-            int rows = Mathf.CeilToInt(verts.Length / (float)cols);
-            for (int row = 0; row < rows; row++)
-            {
-                EditorGUILayout.BeginHorizontal();
-                for (int c = 0; c < cols; c++)
-                {
-                    int i = row * cols + c;
-                    if (i >= verts.Length)
-                        break;
-
-                    GUI.backgroundColor = (i == sel) ? Color.yellow : col * 0.8f;
-                    Vector3 wp = obj.transform.TransformPoint(verts[i]);
-                    if (GUILayout.Button(new GUIContent($"V{i}", $"({wp.x:F2}, {wp.y:F2}, {wp.z:F2})"), GUILayout.Width(50)))
-                    { 
-                        sel = i;
-                        SceneView.RepaintAll();
-                    }
-                }
-                EditorGUILayout.EndHorizontal();
-            }
-            GUI.backgroundColor = Color.white;
-        }
-
-        private static void DrawColoredLabel(string text, Color col)
-        {
-            GUIStyle s = new(EditorStyles.boldLabel);
-            s.normal.textColor = col;
-            GUILayout.Label(text, s);
-        }
-
-        private void DrawKeybindRow(string label, ref bool capturing, ref bool other, KeyCode current)
-        {
-            EditorGUILayout.BeginHorizontal();
-            EditorGUILayout.LabelField(label, GUILayout.Width(160));
-            string btn = capturing ? "[ Press a key... ]" : current.ToString();
-            GUI.backgroundColor = capturing ? new Color(1f, 0.8f, 0.2f) : Color.white;
-            if (GUILayout.Button(btn, GUILayout.Height(22)))
-            {
-                if (!capturing)
-                {
-                    capturing = true;
-                    other = false;
-                }
-                else 
-                    capturing = false;
-
-                Repaint();
-            }
-
-            GUI.backgroundColor = Color.white;
-            EditorGUILayout.EndHorizontal();
-        }
-
-        private void SwapObjects()
-        {
-            (_obj1, _obj2) = (_obj2, _obj1);
-            (_verts1, _verts2) = (_verts2, _verts1);
-            (_v1, _v2) = (_v2, _v1);
-            SceneView.RepaintAll(); Repaint();
-        }
-
-        private void RefreshAll()
-        {
-            _verts1 = GetUniqueVerts(_obj1); _verts2 = GetUniqueVerts(_obj2);
-            _v1 = -1; _v2 = -1; SceneView.RepaintAll(); Repaint();
-        }
-
-        private static Vector3[] GetUniqueVerts(GameObject obj)
-        {
-            if (obj == null)
-                return new Vector3[0];
-
-            MeshFilter mf = obj.GetComponent<MeshFilter>();
-            if (mf == null || mf.sharedMesh == null)
-                return new Vector3[0];
-
-            List<Vector3> unique = new();
-            foreach (Vector3 v in mf.sharedMesh.vertices)
-            {
-                bool found = false;
-                foreach (Vector3 u in unique)
-                {
-                    if (Vector3.Distance(v, u) < 0.001f)
-                    {
-                        found = true;
-                        break;
-                    }
-                }
-                if (!found)
-                    unique.Add(v);
-            }
-            return unique.ToArray();
-        }
+            ConnectMode.Standard => ConnectMode.CornerMeet,
+            ConnectMode.CornerMeet => ConnectMode.FullResize,
+            _ => ConnectMode.Standard
+        };
 
         private static string ModeLabel(ConnectMode m) => m switch
         {
@@ -975,5 +1020,57 @@ namespace Assets.Scripts.Tools
             ConnectMode.CornerMeet => "Corner Meet",
             _ => "Full Resize"
         };
+
+        private static string StateMessage(Session s) => s.State switch
+        {
+            FlowState.WaitObj1 => "Click Object 1 in scene",
+            FlowState.WaitObj2 => "Click Object 2 in scene",
+            FlowState.WaitVerts => s.V1 < 0 ? "Click a vertex on Object 1" : s.V2 < 0 ? "Click a vertex on Object 2" : "Confirm when ready",
+            _ => ""
+        };
+
+        private void SwapObjects()
+        {
+            (_session.Obj1, _session.Obj2) = (_session.Obj2, _session.Obj1);
+            (_session.Verts1, _session.Verts2) = (_session.Verts2, _session.Verts1);
+            (_session.V1, _session.V2) = (_session.V2, _session.V1);
+            SceneView.RepaintAll();
+            Repaint();
+        }
+
+        private void RefreshVerts(bool preserveSelection)
+        {
+            int keep1 = preserveSelection ? _session.V1 : -1;
+            int keep2 = preserveSelection ? _session.V2 : -1;
+            Vector3[] next1 = GetUniqueVerts(_session.Obj1);
+            Vector3[] next2 = GetUniqueVerts(_session.Obj2);
+            _session.Verts1 = next1;
+            _session.Verts2 = next2;
+            _session.V1 = keep1 >= 0 && keep1 < next1.Length ? keep1 : -1;
+            _session.V2 = keep2 >= 0 && keep2 < next2.Length ? keep2 : -1;
+            SceneView.RepaintAll();
+            Repaint();
+        }
+
+        private static Vector3[] GetUniqueVerts(GameObject obj)
+        {
+            if (obj == null)
+                return Array.Empty<Vector3>();
+
+            if (!obj.TryGetComponent(out MeshFilter mf) || mf == null || mf.sharedMesh == null)
+                return Array.Empty<Vector3>();
+
+            Vector3[] src = mf.sharedMesh.vertices;
+            List<Vector3> unique = new(src.Length);
+            HashSet<Vector3Int> seen = new(src.Length);
+            foreach (Vector3 v in src)
+            {
+                Vector3Int key = new(Mathf.RoundToInt(v.x * 1000f), Mathf.RoundToInt(v.y * 1000f), Mathf.RoundToInt(v.z * 1000f));
+                if (seen.Add(key))
+                    unique.Add(v);
+            }
+
+            return unique.ToArray();
+        }
     }
 }

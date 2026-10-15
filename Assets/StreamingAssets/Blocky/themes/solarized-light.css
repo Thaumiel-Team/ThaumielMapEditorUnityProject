@@ -1,0 +1,48 @@
+:root {
+    --bg: #fdf6e3;
+    --bg2: #f0e9d6;
+    --surface: #fdf6e3;
+    --surface2: #eee8d5;
+    --surface3: #ddd2b3;
+    --border: #d9cfae;
+    --border2: #b8ab84;
+    --text: #586e75;
+    --dim: #839496;
+    --dim2: #93a1a1;
+    --accent: #268bd2;
+    --acc2: #2aa198;
+    --green: #859900;
+    --red: #dc322f;
+    --amber: #b58900;
+    --orange: #cb4b16;
+    --purple: #6c71c4;
+    --shadow: 0 10px 24px rgba(88, 110, 117, .20);
+    --glow: 0 0 0 1px rgba(38, 139, 210, .35), 0 0 16px rgba(38, 139, 210, .20);
+    --header-top: #fefbf0;
+    --well-bg: rgba(101, 123, 131, .07);
+    --well-bg-2: rgba(101, 123, 131, .09);
+    --well-bg-soft: rgba(101, 123, 131, .05);
+    --hairline: rgba(101, 123, 131, .14);
+    --overlay-bg: rgba(253, 246, 227, .96);
+    --overlay-bg-soft: rgba(253, 246, 227, .92);
+    --code-text: #1e6f7e;
+    --kbd-bg: rgba(101, 123, 131, .08);
+    --scroll-thumb: #c4b896;
+    --blockly-toolbox: #eee8d5;
+    --blockly-flyout: #fdf6e3;
+    --blockly-label: #839496;
+    --blockly-grid: #e0d5b5;
+    --field-text: #586e75;
+    --ink-ok: #5f7400;
+    --ink-warn: #8a6d00;
+    --ink-err: #c42b29;
+    --ink-accent: #1c6aa5;
+    --on-accent: #ffffff;
+}
+
+body {
+    background:
+        radial-gradient(1000px 500px at 15% -10%, rgba(38, 139, 210, .07), transparent 60%),
+        radial-gradient(900px 480px at 105% 115%, rgba(181, 137, 0, .06), transparent 60%),
+        var(--bg);
+}

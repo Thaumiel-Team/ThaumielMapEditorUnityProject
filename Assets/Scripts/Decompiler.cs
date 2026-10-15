@@ -33,6 +33,9 @@ namespace Assets.Scripts
             string yaml = File.ReadAllText(yamlPath);
             YamlSchematic schematic = YamlParser.Deserializer.Deserialize<YamlSchematic>(yaml);
 
+            string bundleDir = Path.GetDirectoryName(yamlPath);
+            Dictionary<string, AssetBundle> bundleCache = new();
+
             GameObject root = new(schematic.FileName);
             root.transform.rotation = Quaternion.Euler(schematic.Rotation);
             root.transform.localScale = schematic.Scale;
@@ -45,7 +48,7 @@ namespace Assets.Scripts
                 GameObject prefab = GetPrefabForObject(obj);
                 if (prefab == null)
                 {
-                    Debug.LogWarning($"No prefab mapped for ObjectType '{obj.ObjectType}', skipping '{obj.Name}'.");
+                    Debug.LogWarning($"[Decompiler] No prefab mapped for ObjectType '{obj.ObjectType}', skipping '{obj.Name}'.");
                     continue;
                 }
 
@@ -64,6 +67,7 @@ namespace Assets.Scripts
                     block.Properties = obj.Values;
 
                     block.Decompile(root.transform);
+                    RestoreAnimator(instance, block, obj.AnimatorName, bundleDir, bundleCache);
                 }
 
                 instance.transform.SetLocalPositionAndRotation(obj.Position, Quaternion.Euler(obj.Rotation));
@@ -79,7 +83,7 @@ namespace Assets.Scripts
                 GameObject prefab = GetPrefabForObject(obj);
                 if (prefab == null)
                 {
-                    Debug.LogWarning($"No prefab mapped for ObjectType '{obj.ObjectType}', skipping '{obj.Name}'.");
+                    Debug.LogWarning($"[Decompiler] No prefab mapped for ObjectType '{obj.ObjectType}', skipping '{obj.Name}'.");
                     continue;
                 }
 
@@ -105,6 +109,7 @@ namespace Assets.Scripts
                     block.Properties = obj.Values;
 
                     block.Decompile(root.transform);
+                    RestoreAnimator(instance, block, obj.AnimatorName, bundleDir, bundleCache);
                 }
 
                 instance.transform.SetLocalPositionAndRotation(obj.Position, Quaternion.Euler(obj.Rotation));
@@ -162,9 +167,79 @@ namespace Assets.Scripts
                 }
             }
 
+            foreach (AssetBundle bundle in bundleCache.Values)
+            {
+                if (bundle != null)
+                    bundle.Unload(false);
+            }
+            bundleCache.Clear();
+
             Selection.activeGameObject = root;
-            Debug.Log($"Decompiled schematic '{schematic.FileName}' with {schematic.Objects.Count} objects.");
+            Debug.Log($"[Decompiler] Decompiled schematic '{schematic.FileName}' with {schematic.Objects.Count} objects.");
             OnSchematicDecompiled?.Invoke(schematic);
+        }
+
+        private static void RestoreAnimator(GameObject instance, ObjectBase block, string animatorName, string bundleDir, Dictionary<string, AssetBundle> bundleCache)
+        {
+            if (block == null || string.IsNullOrEmpty(animatorName))
+                return;
+
+            block.AnimatorName = animatorName;
+
+            if (string.IsNullOrEmpty(bundleDir))
+                return;
+
+            try
+            {
+                if (!bundleCache.TryGetValue(animatorName, out AssetBundle bundle) || bundle == null)
+                {
+                    string path = Path.Combine(bundleDir, animatorName);
+                    if (!File.Exists(path))
+                    {
+                        Debug.LogWarning($"[Decompiler] Animation bundle '{animatorName}' not found next to the schematic. Animator left unassigned on '{instance.name}'.");
+                        return;
+                    }
+
+                    bundle = AssetBundle.LoadFromFile(path);
+                    if (bundle == null)
+                    {
+                        Debug.LogWarning($"[Decompiler] Failed to load animation bundle at '{path}'.");
+                        return;
+                    }
+
+                    bundleCache[animatorName] = bundle;
+                }
+
+                RuntimeAnimatorController controller = null;
+                foreach (RuntimeAnimatorController c in bundle.LoadAllAssets<RuntimeAnimatorController>())
+                {
+                    if (c == null)
+                        continue;
+                        
+                    controller = controller != null ? controller : c;
+                    if (c.name == animatorName)
+                    {
+                        controller = c;
+                        break;
+                    }
+                }
+
+                if (controller == null)
+                {
+                    Debug.LogWarning($"[Decompiler] Animation bundle '{animatorName}' contains no animator controller.");
+                    return;
+                }
+
+                if (!instance.TryGetComponent(out Animator animator))
+                    animator = Undo.AddComponent<Animator>(instance);
+
+                Undo.RecordObject(animator, $"Restore {animatorName} Controller");
+                animator.runtimeAnimatorController = controller;
+            }
+            catch (Exception ex)
+            {
+                Debug.LogWarning($"[Decompiler] Failed to restore animation '{animatorName}' on '{instance.name}': {ex.Message}");
+            }
         }
 
         private static GameObject LoadPartPrefab(string relativePath)
@@ -175,7 +250,7 @@ namespace Assets.Scripts
 
             GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(path);
             if (prefab == null)
-                Debug.LogWarning($"Decompiler: prefab not found at '{path}'.");
+                Debug.LogWarning($"[Decompiler] prefab not found at '{path}'.");
 
             _prefabCache[path] = prefab;
             return prefab;
@@ -202,6 +277,7 @@ namespace Assets.Scripts
                 ObjectType.GameObject => LoadPartPrefab("Empty GameObject.prefab"),
                 ObjectType.PlayerSpawnPoint => LoadPartPrefab("Player Spawn Point.prefab"),
                 ObjectType.RagdollSpawner => LoadPartPrefab("Ragdoll Spawner.prefab"),
+                ObjectType.CullingParent => LoadPartPrefab("CullableParent.prefab"),
                 _ => null
             };
         }

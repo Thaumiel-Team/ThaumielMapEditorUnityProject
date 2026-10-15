@@ -29,6 +29,7 @@ namespace Assets.Scripts.Networking.Blocky.Definitions
                 Category = "Actions",
                 Color = "#1565C0",
                 Tooltip = "Runs a method with reflection",
+                Explanation = "Calls METHOD by name and passes up to 4 args.\nUse it to reach methods with no dedicated block.",
                 Message = "Call Method: %1  arg1: %2  arg2: %3  arg3: %4  arg4: %5",
                 Connections = new List<BlockConnectionType> { BlockConnectionType.Previous, BlockConnectionType.Next },
                 Args = new List<Dictionary<string, object>>
@@ -47,6 +48,7 @@ namespace Assets.Scripts.Networking.Blocky.Definitions
                 Category = "Actions",
                 Color = "#1565C0",
                 Tooltip = "Runs an instance method with reflection",
+                Explanation = "Calls METHOD on the INSTANCE object with up to 4 args.\nUse it for per-object methods with no dedicated block.",
                 Message = "on: %1 Call Method: %2 arg1: %3  arg2: %4  arg3: %5  arg4: %6",
                 Connections = new List<BlockConnectionType> { BlockConnectionType.Previous, BlockConnectionType.Next },
                 Args = new List<Dictionary<string, object>>
@@ -69,6 +71,7 @@ namespace Assets.Scripts.Networking.Blocky.Definitions
                 Category = "Actions",
                 Color = "#1565C0",
                 Tooltip = "Play an Animator animation by name",
+                Explanation = "Starts the animationName clip on the object's Animator.\nThe name must match the state exactly.",
                 Message = "Play Animation → %1",
                 Connections = new List<BlockConnectionType> { BlockConnectionType.Previous, BlockConnectionType.Next },
                 Args = new List<Dictionary<string, object>>
@@ -86,6 +89,7 @@ namespace Assets.Scripts.Networking.Blocky.Definitions
                 Category = "Actions",
                 Color = "#1565C0",
                 Tooltip = "Play an audio clip",
+                Explanation = "Plays the file at path with volume 0-1. Distances shape 3D falloff, and isSpatial toggles 3D sound.\nUse spatial audio for world sounds, plain audio for UI.",
                 Message = "Play Audio  File: %1  Volume: %2  Min Dist: %3  Max Dist: %4  Spatial: %5",
                 Connections = new List<BlockConnectionType> { BlockConnectionType.Previous, BlockConnectionType.Next },
                 Args = new List<Dictionary<string, object>>
@@ -107,6 +111,7 @@ namespace Assets.Scripts.Networking.Blocky.Definitions
                 Category = "Actions",
                 Color = "#1565C0",
                 Tooltip = "Broadcast a CASSIE announcement",
+                Explanation = "Speaks message site-wide with optional subtitles, background chatter, priority, and glitch effects.\nHigher priority interrupts lower announcements.",
                 Message = "Send CASSIE  Message: %1  Subtitles: %2  Background: %3  Priority: %4  Glitch: %5",
                 Connections = new List<BlockConnectionType> { BlockConnectionType.Previous, BlockConnectionType.Next },
                 Args = new List<Dictionary<string, object>>
@@ -128,6 +133,7 @@ namespace Assets.Scripts.Networking.Blocky.Definitions
                 Category = "Actions",
                 Color = "#1565C0",
                 Tooltip = "Execute a server / client / console command",
+                Explanation = "Runs command as the commandType sender.\nUse it to trigger existing game commands from blocks.",
                 Message = "Run %1 Command → %2",
                 Connections = new List<BlockConnectionType> { BlockConnectionType.Previous, BlockConnectionType.Next },
                 Args = new List<Dictionary<string, object>>
@@ -146,6 +152,7 @@ namespace Assets.Scripts.Networking.Blocky.Definitions
                 Category = "Actions",
                 Color = "#1565C0",
                 Tooltip = "Apply a status effect to the player",
+                Explanation = "Gives effect at intensity for duration seconds.\nUse the player-specific version for finer control.",
                 Message = "Give Effect: %1  Intensity: %2  Duration: %3",
                 Connections = new List<BlockConnectionType> { BlockConnectionType.Previous, BlockConnectionType.Next },
                 Args = new List<Dictionary<string, object>>
@@ -165,6 +172,7 @@ namespace Assets.Scripts.Networking.Blocky.Definitions
                 Category = "Actions",
                 Color = "#1565C0",
                 Tooltip = "Remove a status effect from the player",
+                Explanation = "Clears effect at the given intensity, ending it early.",
                 Message = "Remove Effect: %1  Intensity: %2",
                 Connections = new List<BlockConnectionType> { BlockConnectionType.Previous, BlockConnectionType.Next },
                 Args = new List<Dictionary<string, object>>
@@ -183,6 +191,7 @@ namespace Assets.Scripts.Networking.Blocky.Definitions
                 Category = "Actions",
                 Color = "#1565C0",
                 Tooltip = "Give the player one or more items",
+                Explanation = "Adds count copies of item to the inventory.",
                 Message = "Give Item: %1  ×%2",
                 Connections = new List<BlockConnectionType> { BlockConnectionType.Previous, BlockConnectionType.Next },
                 Args = new List<Dictionary<string, object>>
@@ -201,6 +210,7 @@ namespace Assets.Scripts.Networking.Blocky.Definitions
                 Category = "Actions",
                 Color = "#1565C0",
                 Tooltip = "Remove one or more items from the player",
+                Explanation = "Takes count copies of item away, if held.",
                 Message = "Remove Item: %1  ×%2",
                 Connections = new List<BlockConnectionType> { BlockConnectionType.Previous, BlockConnectionType.Next },
                 Args = new List<Dictionary<string, object>>
@@ -219,6 +229,7 @@ namespace Assets.Scripts.Networking.Blocky.Definitions
                 Category = "Actions",
                 Color = "#1565C0",
                 Tooltip = "Control the Alpha Warhead",
+                Explanation = "Runs the chosen warhead action, like start or stop.\nSuppressSubtitles hides the automatic CASSIE lines.",
                 Message = "Warhead: %1  Suppress Subtitles: %2",
                 Connections = new List<BlockConnectionType> { BlockConnectionType.Previous, BlockConnectionType.Next },
                 Args = new List<Dictionary<string, object>>

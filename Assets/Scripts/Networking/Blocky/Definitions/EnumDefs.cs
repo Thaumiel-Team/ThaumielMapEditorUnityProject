@@ -76,6 +76,7 @@ namespace Assets.Scripts.Networking.Blocky.Definitions
                             Category = "Enums",
                             Color = "#1e9cc2",
                             Tooltip = "Combine two flags. You can plug this into itself to add more!",
+                            Explanation = "Combines two flags of " + humanName + " into one value. Plug the result into itself to combine more than two flags.",
                             Message = $"combine {humanName}: %1 + %2",
                             Connections = new List<BlockConnectionType> { BlockConnectionType.Output },
                             Args = new List<Dictionary<string, object>>
@@ -92,6 +93,7 @@ namespace Assets.Scripts.Networking.Blocky.Definitions
                         Category = "Enums",
                         Color = "#29d4ff",
                         Tooltip = "Enum value.",
+                        Explanation = "Picks one " + humanName + " value from the dropdown.",
                         Message = $"{type.HumanName()}: %1",
                         Connections = new List<BlockConnectionType> { BlockConnectionType.Output },
                         Args = new List<Dictionary<string, object>>

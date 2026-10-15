@@ -22,7 +22,7 @@ for _stream in (sys.stdout, sys.stderr):
         _stream.reconfigure(encoding="utf-8", errors="replace")
 
 
-def run(cmd, cwd, check=True):
+def run(cmd, cwd, check=True, input_text=None):
     result = subprocess.run(
         cmd,
         cwd=cwd,
@@ -30,6 +30,7 @@ def run(cmd, cwd, check=True):
         text=True,
         encoding="utf-8",
         errors="replace",
+        input=input_text,
     )
     if check and result.returncode != 0:
         print(f"Command failed: {' '.join(cmd)}", file=sys.stderr)
@@ -107,7 +108,12 @@ def main():
 
     for i, batch in enumerate(batches, 1):
         print(f"Adding batch {i}/{total} ({len(batch)} files)...")
-        run(["git", "add", "--"] + batch, cwd=repo_path)
+        pathspec = "\x00".join(batch) + "\x00"
+        run(
+            ["git", "add", "--pathspec-from-file=-", "--pathspec-file-nul", "--"],
+            cwd=repo_path,
+            input_text=pathspec,
+        )
 
         commit_msg = f"{args.message} (batch {i}/{total})"
         commit_result = run(["git", "commit", "-m", commit_msg], cwd=repo_path, check=False)

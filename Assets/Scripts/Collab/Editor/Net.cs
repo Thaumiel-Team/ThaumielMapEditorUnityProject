@@ -480,7 +480,7 @@ namespace Assets.Scripts.Collab.Editor
             _transport.Send(json, dest);
             lock (_pending)
             {
-                _pending[msgId] = new PendingMsg
+                _pending[msgId + "|" + dest.ToString()] = new PendingMsg
                 {
                     json = json,
                     dest = dest,
@@ -841,7 +841,18 @@ namespace Assets.Scripts.Collab.Editor
             {
                 lock (_pending)
                 {
-                    _pending.Remove(env.ackFor);
+                    List<string> done = null;
+                    foreach (string key in _pending.Keys)
+                    {
+                        if (key == env.ackFor || key.StartsWith(env.ackFor + "|", StringComparison.Ordinal))
+                            (done ??= new List<string>()).Add(key);
+                    }
+
+                    if (done != null)
+                    {
+                        foreach (string key in done)
+                            _pending.Remove(key);
+                    }
                 }
                 return;
             }
@@ -1000,7 +1011,7 @@ namespace Assets.Scripts.Collab.Editor
 
                             if (reliable)
                             {
-                                SendRawReliable(fwd, CollabJson.NewMsgId(), kv.Value.endpoint);
+                                SendRawReliable(fwd, env.msgId, kv.Value.endpoint);
                             }
                             else
                                 _transport.Send(fwd, kv.Value.endpoint);
