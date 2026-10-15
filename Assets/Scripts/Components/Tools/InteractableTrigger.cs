@@ -31,7 +31,7 @@ namespace Assets.Scripts.Components.Tools
 
         private void OnDrawGizmosSelected()
         {
-            Gizmos.color = Color.orange;
+            Gizmos.color = ColorHelper.GetColor(this);;
             Gizmos.matrix = Matrix4x4.TRS(transform.position, transform.rotation, transform.lossyScale);
 
             switch (Shape)

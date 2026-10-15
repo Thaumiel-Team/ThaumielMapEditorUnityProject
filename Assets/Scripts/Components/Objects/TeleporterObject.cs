@@ -162,5 +162,54 @@ namespace Assets.Scripts.Components.Objects
             CheckId();
             ParseIds();
         }
+
+        private void OnDrawGizmosSelected()
+        {
+            if (Targets == null || Targets.Count == 0)
+                return;
+
+            Gizmos.color = ColorHelper.GetColor(this);
+
+            foreach (TeleporterObject target in Targets)
+            {
+                if (target == null || target == this)
+                    continue;
+
+                Vector3 direction = target.transform.position - transform.position;
+                if (direction.magnitude < Mathf.Epsilon)
+                    continue;
+
+                Gizmos.DrawLine(transform.position, target.transform.position);
+                DrawArrowHead(transform.position, target.transform.position);
+            }
+        }
+
+        private static void DrawArrowHead(Vector3 start, Vector3 end, float headLength = 0.5f, float headRadius = 0.2f)
+        {
+            Vector3 direction = (end - start).normalized;
+            if (direction == Vector3.zero)
+                return;
+
+            float distance = Vector3.Distance(start, end);
+            headLength = Mathf.Min(headLength, distance * 0.33f);
+            headRadius = Mathf.Min(headRadius, headLength * 0.5f);
+
+            Vector3 up = Mathf.Abs(Vector3.Dot(direction, Vector3.up)) > 0.99f ? Vector3.right : Vector3.up;
+            Vector3 right = Vector3.Cross(direction, up).normalized;
+            up = Vector3.Cross(right, direction).normalized;
+
+            Vector3 baseCenter = end - direction * headLength;
+            Vector3[] basePoints = new Vector3[4];
+            basePoints[0] = baseCenter + right * headRadius;
+            basePoints[1] = baseCenter + up * headRadius;
+            basePoints[2] = baseCenter - right * headRadius;
+            basePoints[3] = baseCenter - up * headRadius;
+
+            for (int i = 0; i < 4; i++)
+            {
+                Gizmos.DrawLine(end, basePoints[i]);
+                Gizmos.DrawLine(basePoints[i], basePoints[(i + 1) % 4]);
+            }
+        }
     }
 }

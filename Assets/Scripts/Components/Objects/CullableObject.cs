@@ -18,7 +18,6 @@ namespace Assets.Scripts.Components.Objects
             Properties = new()
             {
                 ["BoundsSize"] = Bounds,
-                ["BoundsPosition"] = transform.position,
             };
         }
 
@@ -138,7 +137,7 @@ namespace Assets.Scripts.Components.Objects
 
             if (IsSelfOrChildSelected())
             {
-                Gizmos.color = new Color(1.000f, 0.902f, 0.000f, 1.000f);
+                Gizmos.color = ColorHelper.GetColor(this);
                 Gizmos.matrix = matrix;
                 Gizmos.DrawWireCube(Vector3.zero, Bounds);
 
@@ -152,7 +151,7 @@ namespace Assets.Scripts.Components.Objects
         private void DrawChildrenWireframe()
         {
             Gizmos.matrix = Matrix4x4.identity;
-            Gizmos.color = new Color(1.000f, 0.902f, 0.000f, 1.000f);
+            Gizmos.color = ColorHelper.GetColor(this);
 
             foreach (MeshFilter mf in GetComponentsInChildren<MeshFilter>(true))
             {
@@ -178,7 +177,7 @@ namespace Assets.Scripts.Components.Objects
             _labelStyle ??= new GUIStyle(GUI.skin.label)
             {
                 fontStyle = FontStyle.Bold,
-                normal = { textColor = new Color(1.000f, 0.902f, 0.000f, 1.000f) }
+                normal = { textColor = ColorHelper.GetColor(this) }
             };
 
             Vector3 half = Bounds * 0.5f;
