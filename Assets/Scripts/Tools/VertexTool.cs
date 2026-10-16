@@ -331,8 +331,7 @@ namespace Assets.Scripts.Tools
             return true;
         }
 
-        private static void DrawVertexHandles(GameObject obj, Vector3[] verts, int slot,
-            Session s, Color col, string prefix, SceneView sv, bool isHeadless)
+        private static void DrawVertexHandles(GameObject obj, Vector3[] verts, int slot, Session s, Color col, string prefix, SceneView sv, bool isHeadless)
         {
             if (obj == null || verts == null || verts.Length == 0)
                 return;
@@ -366,9 +365,7 @@ namespace Assets.Scripts.Tools
             }
         }
 
-        private static void DrawConnectionPreview(Vector3 vw1, Vector3 vw2,
-            Transform t1, Transform t2, Vector3 vl1, Vector3 vl2,
-            ConnectMode mode, bool lockY, bool yMid)
+        private static void DrawConnectionPreview(Vector3 vw1, Vector3 vw2, Transform t1, Transform t2, Vector3 vl1, Vector3 vl2, ConnectMode mode, bool lockY, bool yMid)
         {
             if (mode == ConnectMode.FullResize)
             {

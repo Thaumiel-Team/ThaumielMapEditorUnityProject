@@ -300,7 +300,9 @@ namespace Assets.Scripts.Converter
                     if (dict.TryGetValue("Color", out var lightcolor))
                     {
                         if (TryParseColor(lightcolor.ToString(), out Color unitylightColor))
+                        {
                             dict["LightColor"] = unitylightColor;
+                        }
                         else
                             Debug.LogWarning($"Failed to parse color value: {lightcolor}");
                     }

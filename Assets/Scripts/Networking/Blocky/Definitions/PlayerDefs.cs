@@ -587,7 +587,7 @@ namespace Assets.Scripts.Networking.Blocky.Definitions
                 Args = new List<Dictionary<string, object>>
                 {
                     BlockArg.Value("Player"),
-                    BlockArg.Dropdown("effect", EnumOptions<PlayerEffects>()),
+                    BlockArg.Dropdown("effect", EnumOptions<EffectType>()),
                     BlockArg.NumberField("intensity", 1, 1, 255),
                     BlockArg.NumberField("duration", 5, 0),
                     BlockArg.Checkbox("addDuration", false)
@@ -606,7 +606,7 @@ namespace Assets.Scripts.Networking.Blocky.Definitions
                 Args = new List<Dictionary<string, object>>
                 {
                     BlockArg.Value("Player"),
-                    BlockArg.Dropdown("effect", EnumOptions<PlayerEffects>())
+                    BlockArg.Dropdown("effect", EnumOptions<EffectType>())
                 }
             });
         }
