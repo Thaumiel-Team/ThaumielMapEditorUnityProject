@@ -101,6 +101,7 @@ namespace Assets.Scripts.Collab.Editor
                 ObjectType.PlayerSpawnPoint => "Assets/Parts/Player Spawn Point.prefab",
                 ObjectType.RagdollSpawner => "Assets/Parts/Ragdoll Spawner.prefab",
                 ObjectType.Speaker => string.Empty,
+                ObjectType.CullingParent => "Assets/Parts/CullableParent.prefab",
                 _ => string.Empty,
             };
         }
@@ -127,6 +128,7 @@ namespace Assets.Scripts.Collab.Editor
                 ObjectType.Speaker => typeof(SpeakerObject),
                 ObjectType.PlayerSpawnPoint => typeof(PlayerSpawnPointObject),
                 ObjectType.RagdollSpawner => typeof(RagdollSpawner),
+                ObjectType.CullingParent => typeof(CullableObject),
                 _ => typeof(EmptyGameObject),
             };
         }

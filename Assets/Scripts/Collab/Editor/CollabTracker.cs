@@ -190,7 +190,12 @@ namespace Assets.Scripts.Collab.Editor
             };
         }
 
-        private static string BuildPropsHash(GameObject go, ObjectBase block, string fh, string th) => $"{go.name}|{go.isStatic}|{block.MovementSmoothing}|{fh}|{th}";
+        private static string BuildPropsHash(GameObject go, ObjectBase block, string fh, string th)
+        {
+            ServerSide ss = go.GetComponentInParent<ServerSide>();
+            bool serverSide = ss != null && go.transform.IsChildOf(ss.transform);
+            return $"{go.name}|{go.isStatic}|{block.MovementSmoothing}|{block.AnimatorName}|{serverSide}|{fh}|{th}";
+        }
 
         private static void OnUpdate()
         {
@@ -552,10 +557,6 @@ namespace Assets.Scripts.Collab.Editor
             fields ??= CollabFieldCodec.Extract(block);
             tools ??= CollabToolFactory.Extract(go);
 
-            float[] culling = null;
-            if (block.CullingSettings != null)
-                culling = new float[] { block.CullingSettings.Bounds.x, block.CullingSettings.Bounds.y, block.CullingSettings.Bounds.z };
-                
             ServerSide ss = go.GetComponentInParent<ServerSide>();
             bool serverSide = ss != null && go.transform.IsChildOf(ss.transform);
             PropsData props = new()
@@ -564,7 +565,6 @@ namespace Assets.Scripts.Collab.Editor
                 name = go.name,
                 isStatic = go.isStatic,
                 movementSmoothing = block.MovementSmoothing,
-                culling = culling,
                 animatorName = block.AnimatorName ?? string.Empty,
                 serverSide = serverSide,
                 fields = fields,

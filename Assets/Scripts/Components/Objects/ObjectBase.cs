@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using Assets.Scripts.Enums;
-using Assets.Scripts.Yaml;
 using UnityEngine;
 using YamlDotNet.Serialization;
 
@@ -25,8 +24,6 @@ namespace Assets.Scripts.Components.Objects
 
         [field: SerializeField]
         public float MovementSmoothing { get; set; }
-
-        public YamlCullingSettings CullingSettings;
 
         public Dictionary<string, object> Properties { get; set; }
 
