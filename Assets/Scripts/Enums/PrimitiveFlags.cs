@@ -7,6 +7,6 @@ namespace Assets.Scripts.Enums
     {
         None = 0,
         Collidable = 1 << 0,
-        Visible = 2 << 1
+        Visible = 1 << 1
     }
 }
