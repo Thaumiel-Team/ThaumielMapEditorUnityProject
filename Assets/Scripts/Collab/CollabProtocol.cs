@@ -83,7 +83,6 @@ namespace Assets.Scripts.Collab
         public float[] scale = new float[] { 1, 1, 1 };
         public bool isStatic;
         public float movementSmoothing;
-        public float[] culling; // null or [x,y,z]
         public string animatorName = string.Empty;
         public bool serverSide;
         public int siblingIndex;
@@ -160,7 +159,6 @@ namespace Assets.Scripts.Collab
         public string name = string.Empty;
         public bool isStatic;
         public float movementSmoothing;
-        public float[] culling;
         public string animatorName = string.Empty;
         public bool serverSide;
         public List<SyncField> fields = new();

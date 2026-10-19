@@ -4,7 +4,6 @@ using Assets.Scripts.Components;
 using Assets.Scripts.Components.Objects;
 using Assets.Scripts.Editor.Tools;
 using Assets.Scripts.Enums;
-using Assets.Scripts.Yaml;
 using UnityEditor;
 using UnityEngine;
 
@@ -524,11 +523,6 @@ namespace Assets.Scripts.Collab.Editor
 
             block.MovementSmoothing = o.movementSmoothing;
             block.AnimatorName = o.animatorName ?? string.Empty;
-            if (o.culling != null && o.culling.Length == 3)
-            {
-                block.CullingSettings ??= new YamlCullingSettings();
-                block.CullingSettings.Bounds = new Vector3(o.culling[0], o.culling[1], o.culling[2]);
-            }
             CollabFieldCodec.Apply(block, o.fields);
             if (block is TeleporterObject tp)
             {
@@ -626,11 +620,6 @@ namespace Assets.Scripts.Collab.Editor
 
             block.MovementSmoothing = p.movementSmoothing;
             block.AnimatorName = p.animatorName ?? string.Empty;
-            if (p.culling != null && p.culling.Length == 3)
-            {
-                block.CullingSettings ??= new YamlCullingSettings();
-                block.CullingSettings.Bounds = new Vector3(p.culling[0], p.culling[1], p.culling[2]);
-            }
             CollabFieldCodec.Apply(block, p.fields);
             if (block is TeleporterObject tp2)
             {

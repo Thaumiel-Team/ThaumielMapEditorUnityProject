@@ -6,8 +6,8 @@ namespace Assets.Scripts.Enums
     public enum TeleporterFlags
     {
         None = 0,
-        AllowPickups = 1,
-        AllowPlayers = 2,
-        AllowProjectiles = 4
+        AllowPickups = 1 << 0,
+        AllowPlayers = 1 << 1,
+        AllowProjectiles = 1 << 2
     }
 }

@@ -48,15 +48,15 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::LightObject
   <Static>k__BackingField: 0
   <MovementSmoothing>k__BackingField: 0
-  <_intensity>k__BackingField: 10
-  <_range>k__BackingField: 15
-  <_color>k__BackingField: {r: 1, g: 1, b: 1, a: 0}
-  <_shadowType>k__BackingField: 1
-  <_shadowStrength>k__BackingField: 1.18
-  <_lightType>k__BackingField: 0
-  <_lightShape>k__BackingField: 0
-  <_spotAngle>k__BackingField: 51.59
-  <_innerSpotAngle>k__BackingField: 0.15
+  Intensity: 1
+  Range: 10
+  Color: {r: 1, g: 1, b: 1, a: 1}
+  ShadowType: 0
+  ShadowStrength: 1
+  LightType: 2
+  LightShape: 0
+  SpotAngle: 30
+  InnerSpotAngle: 20
 --- !u!108 &30915181703129952
 Light:
   m_ObjectHideFlags: 0
@@ -65,16 +65,16 @@ Light:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2384682681152602343}
   m_Enabled: 1
-  serializedVersion: 13
-  m_Type: 0
-  m_Color: {r: 1, g: 1, b: 1, a: 0}
-  m_Intensity: 10
-  m_Range: 15
+  serializedVersion: 12
+  m_Type: 2
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Intensity: 1
+  m_Range: 10
   m_SpotAngle: 51.59
   m_InnerSpotAngle: 0.15
   m_CookieSize2D: {x: 0.5, y: 0.5}
   m_Shadows:
-    m_Type: 1
+    m_Type: 0
     m_Resolution: -1
     m_CustomResolution: -1
     m_Strength: 1
@@ -117,7 +117,7 @@ Light:
   m_UseBoundingSphereOverride: 0
   m_UseViewFrustumForShadowCasterCull: 1
   m_ForceVisible: 0
-  m_ShapeRadius: 0
+  m_ShadowRadius: 0
   m_ShadowAngle: 0
   m_LightUnit: 1
   m_LuxAtDistance: 1

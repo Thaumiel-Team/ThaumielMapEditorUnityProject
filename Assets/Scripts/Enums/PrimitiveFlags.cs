@@ -6,7 +6,7 @@ namespace Assets.Scripts.Enums
     public enum PrimitiveFlags
     {
         None = 0,
-        Collidable = 1,
-        Visible = 2
+        Collidable = 1 << 0,
+        Visible = 1 << 1
     }
 }

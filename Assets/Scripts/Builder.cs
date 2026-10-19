@@ -36,8 +36,6 @@ namespace Assets.Scripts
             Color.white
         };
 
-        private static readonly Color CullingAreaColor = new(1f, 0.5f, 0f);
-
         [SerializeField]
         internal ServerSide server;
 
@@ -127,7 +125,6 @@ namespace Assets.Scripts
                 Scale = transform.localScale,
                 Objects = objects,
                 ServerSideObjects = serverObjects,
-                Areas = new(),
                 LOD = LODSettings
             };
 
@@ -191,7 +188,6 @@ namespace Assets.Scripts
                     ObjectType = block.ObjectType,
                     AnimatorName = block.AnimatorName ?? string.Empty,
                     Values = block.Properties,
-                    CullingSettings = block.CullingSettings,
                     Tools = CompileTools(block)
                 };
 

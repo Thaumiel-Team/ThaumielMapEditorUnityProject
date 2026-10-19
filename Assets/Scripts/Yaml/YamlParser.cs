@@ -18,6 +18,7 @@ namespace Assets.Scripts.Yaml
 
         public static IDeserializer Deserializer = new DeserializerBuilder()
             .WithNamingConvention(PascalCaseNamingConvention.Instance)
+            .IgnoreUnmatchedProperties()
             .WithTypeConverter(new Vector2Converter())
             .WithTypeConverter(new Vector3Converter())
             .WithTypeConverter(new Vector4Converter())
