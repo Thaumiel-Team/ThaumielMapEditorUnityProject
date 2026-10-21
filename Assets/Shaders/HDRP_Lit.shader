@@ -2,7 +2,6 @@ Shader "HDRP/Lit" {
 	Properties {
 		_BaseColor ("BaseColor", Vector) = (1,1,1,1)
 		_BaseColorMap ("BaseColorMap", 2D) = "white" {}
-		[HideInInspector] _BaseColorMap_MipInfo ("_BaseColorMap_MipInfo", Vector) = (0,0,0,0)
 		_Metallic ("_Metallic", Range(0, 1)) = 0
 		_Smoothness ("Smoothness", Range(0, 1)) = 0.5
 		_MaskMap ("MaskMap", 2D) = "white" {}
@@ -10,6 +9,8 @@ Shader "HDRP/Lit" {
 		_MetallicRemapMax ("MetallicRemapMax", Float) = 1
 		_SmoothnessRemapMin ("SmoothnessRemapMin", Float) = 0
 		_SmoothnessRemapMax ("SmoothnessRemapMax", Float) = 1
+		_AlphaRemapMin ("AlphaRemapMin", Float) = 0
+		_AlphaRemapMax ("AlphaRemapMax", Float) = 1
 		_AORemapMin ("AORemapMin", Float) = 0
 		_AORemapMax ("AORemapMax", Float) = 1
 		_NormalMap ("NormalMap", 2D) = "bump" {}
@@ -37,7 +38,9 @@ Shader "HDRP/Lit" {
 		_AnisotropyMap ("AnisotropyMap", 2D) = "white" {}
 		_SubsurfaceMask ("Subsurface Radius", Range(0, 1)) = 1
 		_SubsurfaceMaskMap ("Subsurface Radius Map", 2D) = "white" {}
-		_Thickness ("Thickness", Range(0, 1)) = 1
+		_TransmissionMask ("Transmission Mask", Range(0, 1)) = 1
+		_TransmissionMaskMap ("Transmission Mask Map", 2D) = "white" {}
+		_Thickness ("Thickness", Float) = 1
 		_ThicknessMap ("Thickness Map", 2D) = "white" {}
 		_ThicknessRemap ("Thickness Remap", Vector) = (0,1,0,0)
 		_IridescenceThickness ("Iridescence Thickness", Range(0, 1)) = 1
@@ -69,12 +72,13 @@ Shader "HDRP/Lit" {
 		[ToggleUI] _TransparentBackfaceEnable ("_TransparentBackfaceEnable", Float) = 0
 		[ToggleUI] _TransparentDepthPostpassEnable ("_TransparentDepthPostpassEnable", Float) = 0
 		_TransparentSortPriority ("_TransparentSortPriority", Float) = 0
-		[Enum(None, 0, Box, 1, Sphere, 2, Thin, 3)] _RefractionModel ("Refraction Model", Float) = 0
+		[Enum(None, 0, Planar, 1, Sphere, 2, Thin, 3)] _RefractionModel ("Refraction Model", Float) = 0
 		_Ior ("Index Of Refraction", Range(1, 2.5)) = 1.5
 		_TransmittanceColor ("Transmittance Color", Vector) = (1,1,1,1)
 		_TransmittanceColorMap ("TransmittanceColorMap", 2D) = "white" {}
 		_ATDistance ("Transmittance Absorption Distance", Float) = 1
 		[ToggleUI] _TransparentWritingMotionVec ("_TransparentWritingMotionVec", Float) = 0
+		[ToggleUI] _PerPixelSorting ("_PerPixelSorting", Float) = 0
 		[HideInInspector] _StencilRef ("_StencilRef", Float) = 0
 		[HideInInspector] _StencilWriteMask ("_StencilWriteMask", Float) = 3
 		[HideInInspector] _StencilRefGBuffer ("_StencilRefGBuffer", Float) = 2
@@ -87,16 +91,15 @@ Shader "HDRP/Lit" {
 		_BlendMode ("__blendmode", Float) = 0
 		[HideInInspector] _SrcBlend ("__src", Float) = 1
 		[HideInInspector] _DstBlend ("__dst", Float) = 0
+		[HideInInspector] _DstBlend2 ("__dst2", Float) = 0
 		[HideInInspector] _AlphaSrcBlend ("__alphaSrc", Float) = 1
 		[HideInInspector] _AlphaDstBlend ("__alphaDst", Float) = 0
-		[ToggleUI] [HideInInspector] _AlphaToMaskInspectorValue ("_AlphaToMaskInspectorValue", Float) = 0
-		[ToggleUI] [HideInInspector] _AlphaToMask ("__alphaToMask", Float) = 0
 		[ToggleUI] [HideInInspector] _ZWrite ("__zw", Float) = 1
 		[ToggleUI] [HideInInspector] _TransparentZWrite ("_TransparentZWrite", Float) = 0
 		[HideInInspector] _CullMode ("__cullmode", Float) = 2
 		[HideInInspector] _CullModeForward ("__cullmodeForward", Float) = 2
-		[Enum(UnityEditor.Rendering.HighDefinition.TransparentCullMode)] _TransparentCullMode ("_TransparentCullMode", Float) = 2
-		[Enum(UnityEditor.Rendering.HighDefinition.OpaqueCullMode)] _OpaqueCullMode ("_OpaqueCullMode", Float) = 2
+		[Enum(UnityEngine.Rendering.HighDefinition.TransparentCullMode)] _TransparentCullMode ("_TransparentCullMode", Float) = 2
+		[Enum(UnityEngine.Rendering.HighDefinition.OpaqueCullMode)] _OpaqueCullMode ("_OpaqueCullMode", Float) = 2
 		[HideInInspector] _ZTestDepthEqualForOpaque ("_ZTestDepthEqualForOpaque", Float) = 4
 		[HideInInspector] _ZTestGBuffer ("_ZTestGBuffer", Float) = 4
 		[Enum(UnityEngine.Rendering.CompareFunction)] _ZTestTransparent ("Transparent ZTest", Float) = 4
@@ -107,6 +110,7 @@ Shader "HDRP/Lit" {
 		[HideInInspector] _DoubleSidedConstants ("_DoubleSidedConstants", Vector) = (1,1,-1,0)
 		[Enum(Auto, 0, On, 1, Off, 2)] _DoubleSidedGIMode ("Double sided GI mode", Float) = 0
 		[Enum(UV0, 0, UV1, 1, UV2, 2, UV3, 3, Planar, 4, Triplanar, 5)] _UVBase ("UV Set for base", Float) = 0
+		[Enum(WorldSpace, 0, ObjectSpace, 1)] _ObjectSpaceUVMapping ("Mapping space", Float) = 0
 		_TexWorldScale ("Scale to apply on world coordinate", Float) = 1
 		[HideInInspector] _InvTilingScale ("Inverse tiling scale = 2 / (abs(_BaseColorMap_ST.x) + abs(_BaseColorMap_ST.y))", Float) = 1
 		[HideInInspector] _UVMappingMask ("_UVMappingMask", Vector) = (1,0,0,0)
@@ -131,6 +135,7 @@ Shader "HDRP/Lit" {
 		[ToggleUI] _LinkDetailsWithBase ("LinkDetailsWithBase", Float) = 1
 		[Enum(Use Emissive Color, 0, Use Emissive Mask, 1)] _EmissiveColorMode ("Emissive color mode", Float) = 1
 		[Enum(UV0, 0, UV1, 1, UV2, 2, UV3, 3, Planar, 4, Triplanar, 5, Same as Base, 6)] _UVEmissive ("UV Set for emissive", Float) = 0
+		[Enum(WorldSpace, 0, ObjectSpace, 1)] _ObjectSpaceUVMappingEmissive ("Mapping space", Float) = 0
 		_TexWorldScaleEmissive ("Scale to apply on world coordinate", Float) = 1
 		[HideInInspector] _UVMappingMaskEmissive ("_UVMappingMaskEmissive", Vector) = (1,0,0,0)
 		_EmissionColor ("Color", Vector) = (1,1,1,1)
@@ -153,24 +158,53 @@ Shader "HDRP/Lit" {
 	SubShader{
 		Tags { "RenderType"="Opaque" }
 		LOD 200
-		CGPROGRAM
-#pragma surface surf Standard
-#pragma target 3.0
 
-		sampler2D _MainTex;
-		fixed4 _Color;
-		struct Input
+		Pass
 		{
-			float2 uv_MainTex;
-		};
-		
-		void surf(Input IN, inout SurfaceOutputStandard o)
-		{
-			fixed4 c = tex2D(_MainTex, IN.uv_MainTex) * _Color;
-			o.Albedo = c.rgb;
-			o.Alpha = c.a;
+			HLSLPROGRAM
+			#pragma vertex vert
+			#pragma fragment frag
+
+			float4x4 unity_ObjectToWorld;
+			float4x4 unity_MatrixVP;
+			float4 _MainTex_ST;
+
+			struct Vertex_Stage_Input
+			{
+				float4 pos : POSITION;
+				float2 uv : TEXCOORD0;
+			};
+
+			struct Vertex_Stage_Output
+			{
+				float2 uv : TEXCOORD0;
+				float4 pos : SV_POSITION;
+			};
+
+			Vertex_Stage_Output vert(Vertex_Stage_Input input)
+			{
+				Vertex_Stage_Output output;
+				output.uv = (input.uv.xy * _MainTex_ST.xy) + _MainTex_ST.zw;
+				output.pos = mul(unity_MatrixVP, mul(unity_ObjectToWorld, input.pos));
+				return output;
+			}
+
+			Texture2D<float4> _MainTex;
+			SamplerState sampler_MainTex;
+			float4 _Color;
+
+			struct Fragment_Stage_Input
+			{
+				float2 uv : TEXCOORD0;
+			};
+
+			float4 frag(Fragment_Stage_Input input) : SV_TARGET
+			{
+				return _MainTex.Sample(sampler_MainTex, input.uv.xy) * _Color;
+			}
+
+			ENDHLSL
 		}
-		ENDCG
 	}
 	Fallback "Hidden/HDRP/FallbackError"
 	//CustomEditor "Rendering.HighDefinition.LitGUI"

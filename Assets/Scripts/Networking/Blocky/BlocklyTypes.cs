@@ -20,7 +20,7 @@ namespace Assets.Scripts.Networking.Blocky
         public string Message { get; set; }
 
         /// <summary>
-        /// Category name. Auto-created if it doesn't exist yet.
+        /// Category name. Auto created if it doesn't exist yet.
         /// </summary>
         public string Category { get; set; }
 
@@ -34,7 +34,10 @@ namespace Assets.Scripts.Networking.Blocky
         /// </summary>
         public List<Dictionary<string, object>> Args { get; set; }
 
-        public List<BlockConnectionType> Connections { get; set; } = new();
+        /// <summary>
+        /// Connections the block exposes.
+        /// </summary>
+        public BlockConnectionType Connections { get; set; } = BlockConnectionType.None;
 
         /// <summary>
         /// JavaScript generator body string.

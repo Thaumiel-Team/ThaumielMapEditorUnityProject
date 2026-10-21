@@ -76,7 +76,7 @@ namespace Assets.Scripts.Collab.Editor
                 {
                     "pedestal" => "Assets/Parts/Lockers/SCP Pedestal.prefab",
                     "largegun" => "Assets/Parts/Lockers/Large Locker.prefab",
-                    "riflerack" or "misc" => "Assets/Parts/Lockers/Locker.prefab",
+                    "riflerack" or "misc" => "Assets/Parts/Lockers/Rifle Rack.prefab",
                     "medkit" => "Assets/Parts/Lockers/MedKit.prefab",
                     "adrenaline" => "Assets/Parts/Lockers/Adrenaline Medkit Locker.prefab",
                     "experimentalweapon" => "Assets/Parts/Lockers/Experimental Weapon Locker.prefab",

@@ -10,6 +10,8 @@ namespace Assets.Scripts.Networking.Blocky
         private static readonly List<DefBase> _defs = new()
         {
             new ObjectDefs(),
+            new SchematicDefs(),
+            new AnimationDefs(),
             new DoorDefs(),
             new PrimitiveDefs(),
             new WaypointDefs(),

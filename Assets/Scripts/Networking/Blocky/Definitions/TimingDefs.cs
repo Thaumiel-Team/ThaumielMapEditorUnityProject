@@ -21,7 +21,7 @@ namespace Assets.Scripts.Networking.Blocky.Definitions
                 Tooltip = "Waits for the specified number of frames, then runs the body.",
                 Explanation = "Counts rendered frames, so the delay varies with frame rate.\nUse seconds for real-time delays.",
                 Message = "Wait → %1 frames { %2 %3 }",
-                Connections = new List<BlockConnectionType> { BlockConnectionType.Next, BlockConnectionType.Previous },
+                Connections = BlockConnectionType.Next | BlockConnectionType.Previous,
                 Args = new List<Dictionary<string, object>>
                 {
                     BlockArg.NumberField("FRAMES", 5),
@@ -38,7 +38,7 @@ namespace Assets.Scripts.Networking.Blocky.Definitions
                 Tooltip = "Waits for the specified number of seconds, then runs the body.",
                 Explanation = "Real-time delay that ignores frame rate.\nThe rest of the stack pauses while other stacks continue.",
                 Message = "Wait → %1 seconds { %2 %3 }",
-                Connections = new List<BlockConnectionType> { BlockConnectionType.Next, BlockConnectionType.Previous },
+                Connections = BlockConnectionType.Next | BlockConnectionType.Previous,
                 Args = new List<Dictionary<string, object>>
                 {
                     BlockArg.NumberField("SECONDS", 5),
@@ -55,7 +55,7 @@ namespace Assets.Scripts.Networking.Blocky.Definitions
                 Tooltip = "Waits until the input is true, then runs the body.",
                 Explanation = "Checks WaitingInput every frame and continues on the first true.\nMake sure something can actually flip it, or the stack stalls.",
                 Message = "Wait Until → %1 { %2 %3 }",
-                Connections = new List<BlockConnectionType> { BlockConnectionType.Next, BlockConnectionType.Previous },
+                Connections = BlockConnectionType.Next | BlockConnectionType.Previous,
                 Args = new List<Dictionary<string, object>>
                 {
                     BlockArg.Value("WaitingInput"),

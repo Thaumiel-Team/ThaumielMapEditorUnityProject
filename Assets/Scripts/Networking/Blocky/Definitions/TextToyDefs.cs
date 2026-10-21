@@ -41,7 +41,7 @@ namespace Assets.Scripts.Networking.Blocky.Definitions
                 Tooltip = "Gets a property of the text toy.",
                 Explanation = "Reads one Property (text, size, color, and more) from the TextToy object.",
                 Message = "Get %2 of TextToy: %1",
-                Connections = new List<BlockConnectionType> { BlockConnectionType.Output },
+                Connections = BlockConnectionType.Output,
                 Args = new List<Dictionary<string, object>>
                 {
                     BlockArg.Value("TextToy"),
@@ -61,7 +61,7 @@ namespace Assets.Scripts.Networking.Blocky.Definitions
                 Tooltip = "Create a new TextToyObject with a given name.",
                 Explanation = "Spawns floating text and outputs it. Set text and size next.",
                 Message = "Create TextToy  Name: %1",
-                Connections = new List<BlockConnectionType> { BlockConnectionType.Output },
+                Connections = BlockConnectionType.Output,
                 Args = new List<Dictionary<string, object>>
                 {
                     BlockArg.TextField("name", "MyTextToy")
@@ -79,7 +79,7 @@ namespace Assets.Scripts.Networking.Blocky.Definitions
                 Tooltip = "Set the text format string displayed by the TextToy.",
                 Explanation = "Replaces the displayed message. Combine with string Format for live values.",
                 Message = "Set Text of TextToy: %1 → %2",
-                Connections = new List<BlockConnectionType> { BlockConnectionType.Previous, BlockConnectionType.Next },
+                Connections = BlockConnectionType.Previous | BlockConnectionType.Next,
                 Args = new List<Dictionary<string, object>>
                 {
                     BlockArg.Value("TextToy"),
@@ -98,7 +98,7 @@ namespace Assets.Scripts.Networking.Blocky.Definitions
                 Tooltip = "Set the display size (width and height) of the TextToy.",
                 Explanation = "Scales the text panel. Bigger values stay readable from far away.",
                 Message = "Set Display Size of TextToy: %1 →  w: %2  h: %3",
-                Connections = new List<BlockConnectionType> { BlockConnectionType.Previous, BlockConnectionType.Next },
+                Connections = BlockConnectionType.Previous | BlockConnectionType.Next,
                 Args = new List<Dictionary<string, object>>
                 {
                     BlockArg.Value("TextToy"),

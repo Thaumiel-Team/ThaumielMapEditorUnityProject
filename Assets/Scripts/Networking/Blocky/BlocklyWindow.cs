@@ -197,8 +197,7 @@ namespace Assets.Scripts.Networking.Blocky
 
                     Color prev = GUI.color;
                     GUI.color = c;
-                    EditorGUILayout.LabelField($"{time}  {prefix}  {msg}",
-                        EditorStyles.miniLabel, GUILayout.Height(lineH));
+                    EditorGUILayout.LabelField($"{time}  {prefix}  {msg}", EditorStyles.miniLabel, GUILayout.Height(lineH));
                     GUI.color = prev;
                 }
             }

@@ -277,8 +277,7 @@ namespace Assets.Scripts.Networking.Blocky
             if (block.Args != null)
                 dict["args"] = block.Args;
 
-            if (block.Connections != null) 
-                dict["connections"] = block.Connections;
+            dict["connections"] = block.Connections.ToList();
 
             if (block.Generator != null)
                 dict["generator"] = block.Generator;
@@ -308,7 +307,7 @@ namespace Assets.Scripts.Networking.Blocky
         /// list, counters, and block badges. Replaces the previous set, so send
         /// the full current list each time. Blocks are matched by type via
         /// <see cref="BlockIssue.BlockTypes"/>; issues without types are shown
-        /// workspace-wide.
+        /// workspace wide.
         ///
         /// Example:
         ///   BlocklyServer.ReportIssues(new[]
@@ -346,15 +345,15 @@ namespace Assets.Scripts.Networking.Blocky
         }
 
         /// <summary>
-        /// Clear all server-reported issues in the browser.
+        /// Clear all server reported issues in the browser.
         /// </summary>
         public static void ClearIssues() => ReportIssues(null);
 
         /// <summary>
         /// Register a conditional validation rule in the browser. The browser
         /// evaluates it live against every block and shows an issue wherever
-        /// the condition matches (with badges and click-to-locate). Registering
-        /// again with the same id replaces the rule.
+        /// the condition matches. 
+        /// Registering again with the same id replaces the rule.
         ///
         /// Example (boolean compared to anything else):
         ///   BlocklyServer.RegisterCheck(new BlockCheck
@@ -397,7 +396,7 @@ namespace Assets.Scripts.Networking.Blocky
         }
 
         /// <summary>
-        /// Clear all server-registered validation rules in the browser.
+        /// Clear all server registered validation rules in the browser.
         /// </summary>
         public static void ClearChecks() =>
             Send(new Dictionary<string, object> { ["type"] = "clear_checks" });
@@ -437,7 +436,7 @@ namespace Assets.Scripts.Networking.Blocky
         /// <summary>
         /// Register a custom event block in the browser Events toolbox.
         /// Each param becomes a variable dropdown on the block and a
-        /// same-position parameter in the generated C# method.
+        /// same position parameter in the generated C# method.
         /// Sent immediately (never batched); call after the client connects.
         ///
         /// Example:
@@ -530,6 +529,7 @@ namespace Assets.Scripts.Networking.Blocky
                 Debug.LogWarning("[BlocklyServer] No client connected message dropped.");
                 return;
             }
+            
             _client.SendText(_ser.Serialize(data));
         }
 

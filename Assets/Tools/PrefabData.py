@@ -234,7 +234,6 @@ def process_input(input_path: Path, guid_index: dict, dest_dir: Path, dry_run: b
 
 def build_index(src_dir: Path):
     print(f"Indexing ALL assets in: {src_dir}")
-    print("  (this only happens once -- every GUID across every subfolder is loaded into memory)")
     guid_index = index_all_assets_by_guid(src_dir)
     print(f"  -> {len(guid_index)} total asset(s) indexed\n")
     return guid_index

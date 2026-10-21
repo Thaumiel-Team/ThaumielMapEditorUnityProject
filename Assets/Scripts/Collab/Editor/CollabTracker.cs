@@ -134,7 +134,7 @@ namespace Assets.Scripts.Collab.Editor
         private static List<Tracked> EnumerateScene()
         {
             List<Tracked> list = new();
-            Builder[] builders = UnityEngine.Object.FindObjectsByType<Builder>(FindObjectsSortMode.None);
+            Builder[] builders = Object.FindObjectsByType<Builder>(FindObjectsSortMode.None);
             foreach (Builder b in builders)
             {
                 if (b == null)

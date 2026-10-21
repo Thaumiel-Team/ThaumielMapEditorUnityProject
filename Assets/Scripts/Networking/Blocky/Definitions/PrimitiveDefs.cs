@@ -52,14 +52,14 @@ namespace Assets.Scripts.Networking.Blocky.Definitions
                     ["NetId"] = "Number",
                     ["IsStatic"] = "Boolean",
                     ["MovementSmoothing"] = "Number",
-                    ["ServerCollider"] = "Boolean",
+                    ["ServerCollider"] = "Collider",
                 },
                 Category = "Primitive",
                 Color = "#6A1B9A",
                 Tooltip = "Gets a property of the primitive.",
                 Explanation = "Reads one Property (position, color, shape, and more) from the Primitive object.",
                 Message = "Get %2 of Primitive: %1",
-                Connections = new List<BlockConnectionType> { BlockConnectionType.Output },
+                Connections = BlockConnectionType.Output,
                 Args = new List<Dictionary<string, object>>
                 {
                     BlockArg.Value("Primitive"),
@@ -79,7 +79,7 @@ namespace Assets.Scripts.Networking.Blocky.Definitions
                 Tooltip = "Create a new PrimitiveObject with a given name. If IsServerSide is true this is spawned on the server instead of only the client.",
                 Explanation = "Spawns a primitive shape into the schematic and outputs it for other blocks.\nUse server side when gameplay depends on it, client side for visuals only.",
                 Message = "Create Primitive  Name: %1  Server Side: %2",
-                Connections = new List<BlockConnectionType> { BlockConnectionType.Output },
+                Connections = BlockConnectionType.Output,
                 Args = new List<Dictionary<string, object>>
                 {
                     BlockArg.TextField("name", "MyPrimitive"),
@@ -98,7 +98,7 @@ namespace Assets.Scripts.Networking.Blocky.Definitions
                 Tooltip = "Set the world position of the PrimitiveObject. Syncs to all spawned players.",
                 Explanation = "Moves the primitive to x, y, z world coordinates.\nThe change replicates to everyone automatically.",
                 Message = "Set Position of Primitive: %1 →  x: %2  y: %3  z: %4",
-                Connections = new List<BlockConnectionType> { BlockConnectionType.Previous, BlockConnectionType.Next },
+                Connections = BlockConnectionType.Previous | BlockConnectionType.Next,
                 Args = new List<Dictionary<string, object>>
                 {
                     BlockArg.Value("Primitive"),
@@ -119,7 +119,7 @@ namespace Assets.Scripts.Networking.Blocky.Definitions
                 Tooltip = "Set the rotation (Euler angles) of the PrimitiveObject. Syncs to all spawned players.",
                 Explanation = "Rotates using x, y, z degrees. Values wrap past 360.",
                 Message = "Set Rotation of Primitive: %1 →  x: %2  y: %3  z: %4",
-                Connections = new List<BlockConnectionType> { BlockConnectionType.Previous, BlockConnectionType.Next },
+                Connections = BlockConnectionType.Previous | BlockConnectionType.Next,
                 Args = new List<Dictionary<string, object>>
                 {
                     BlockArg.Value("Primitive"),
@@ -140,7 +140,7 @@ namespace Assets.Scripts.Networking.Blocky.Definitions
                 Tooltip = "Set the scale of the PrimitiveObject. Syncs to all spawned players.",
                 Explanation = "Resizes along x, y, z. (1, 1, 1) keeps the default size.",
                 Message = "Set Scale of Primitive: %1 →  x: %2  y: %3  z: %4",
-                Connections = new List<BlockConnectionType> { BlockConnectionType.Previous, BlockConnectionType.Next },
+                Connections = BlockConnectionType.Previous | BlockConnectionType.Next,
                 Args = new List<Dictionary<string, object>>
                 {
                     BlockArg.Value("Primitive"),
@@ -161,7 +161,7 @@ namespace Assets.Scripts.Networking.Blocky.Definitions
                 Tooltip = "Set the RGBA color of the PrimitiveObject. Values are 0.0-1.0. Syncs to all spawned players.",
                 Explanation = "Mix r, g, b channels from 0 to 1, with a as transparency.\n0 alpha is invisible, 1 is fully solid.",
                 Message = "Set Color of Primitive: %1 →  r: %2  g: %3  b: %4  a: %5",
-                Connections = new List<BlockConnectionType> { BlockConnectionType.Previous, BlockConnectionType.Next },
+                Connections = BlockConnectionType.Previous | BlockConnectionType.Next,
                 Args = new List<Dictionary<string, object>>
                 {
                     BlockArg.Value("Primitive"),
@@ -183,7 +183,7 @@ namespace Assets.Scripts.Networking.Blocky.Definitions
                 Tooltip = "Set the mesh shape of the PrimitiveObject. Syncs to all spawned players.",
                 Explanation = "Swaps the mesh, like cube, sphere, or capsule, via primitiveType.",
                 Message = "Set Shape of Primitive: %1 → %2",
-                Connections = new List<BlockConnectionType> { BlockConnectionType.Previous, BlockConnectionType.Next },
+                Connections = BlockConnectionType.Previous | BlockConnectionType.Next,
                 Args = new List<Dictionary<string, object>>
                 {
                     BlockArg.Value("Primitive"),
@@ -202,7 +202,7 @@ namespace Assets.Scripts.Networking.Blocky.Definitions
                 Tooltip = "Set the PrimitiveFlags on the PrimitiveObject. Controls visibility and collision behaviour.",
                 Explanation = "Toggles see-through, collidable, and similar flags.\nCombine flag values for multiple behaviours.",
                 Message = "Set Flags of Primitive: %1 → %2",
-                Connections = new List<BlockConnectionType> { BlockConnectionType.Previous, BlockConnectionType.Next },
+                Connections = BlockConnectionType.Previous | BlockConnectionType.Next,
                 Args = new List<Dictionary<string, object>>
                 {
                     BlockArg.Value("Primitive"),
@@ -221,7 +221,7 @@ namespace Assets.Scripts.Networking.Blocky.Definitions
                 Tooltip = "Toggle whether the PrimitiveObject is treated as a static (non-moving) object. Syncs to all spawned players.",
                 Explanation = "Static objects skip movement updates, which saves performance.\nTurn off before animating position.",
                 Message = "Set Static of Primitive: %1 → %2",
-                Connections = new List<BlockConnectionType> { BlockConnectionType.Previous, BlockConnectionType.Next },
+                Connections = BlockConnectionType.Previous | BlockConnectionType.Next,
                 Args = new List<Dictionary<string, object>>
                 {
                     BlockArg.Value("Primitive"),
@@ -240,7 +240,7 @@ namespace Assets.Scripts.Networking.Blocky.Definitions
                 Tooltip = "Set the movement smoothing byte (0-255) for interpolation on clients.",
                 Explanation = "Higher values smooth motion more but add lag. 0 snaps to exact positions.",
                 Message = "Set Movement Smoothing of Primitive: %1 → %2",
-                Connections = new List<BlockConnectionType> { BlockConnectionType.Previous, BlockConnectionType.Next },
+                Connections = BlockConnectionType.Previous | BlockConnectionType.Next,
                 Args = new List<Dictionary<string, object>>
                 {
                     BlockArg.Value("Primitive"),
