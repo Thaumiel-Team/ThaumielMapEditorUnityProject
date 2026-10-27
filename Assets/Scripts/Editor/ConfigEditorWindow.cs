@@ -67,7 +67,10 @@ namespace Assets.Scripts
 
             GUIContent openExportLabel = new("Open Export", "Automatically open the directory in File Explorer after compiling.");
             current.OpenExportAfterCompiling = EditorGUILayout.Toggle(openExportLabel, current.OpenExportAfterCompiling);
-            
+
+            GUIContent binaryLabel = new("Export Using Binary", "Write compiled schematics as .bin files instead of YAML (.yml).");
+            current.ExportUsingBinary = EditorGUILayout.Toggle(binaryLabel, current.ExportUsingBinary);
+
             EditorGUILayout.EndVertical();
             GUILayout.Space(10);
             DrawPluginConfigs();

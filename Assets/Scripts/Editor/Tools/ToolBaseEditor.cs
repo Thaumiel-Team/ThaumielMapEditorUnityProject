@@ -1,20 +1,28 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Reflection;
 using UnityEditor;
 using UnityEngine;
+
+#if TME_BLOCKY
+using System.IO;
+using Assets.Scripts.Networking.Blocky;
+#endif
+
+#if TME_COLLAB
 using Assets.Scripts.Collab;
 using Assets.Scripts.Collab.Editor;
+#endif
+
 using Assets.Scripts.Components.Tools;
 using Assets.Scripts.Components.Tools.Helpers;
-using Assets.Scripts.Networking.Blocky;
 
 namespace Assets.Scripts.Editor.Tools
 {
     [CustomEditor(typeof(ToolBase), true)]
     public class ToolBaseEditor : UnityEditor.Editor
     {
+#if TME_BLOCKY
         private static ToolBase _activeTool;
         private static string _activeTargetEvent;
         private static string _activeEventBlockType;
@@ -32,11 +40,13 @@ namespace Assets.Scripts.Editor.Tools
         };
 
         private readonly Dictionary<string, int> _selectedBlockyIndex = new();
+#endif
 
         public override void OnInspectorGUI()
         {
             DrawDefaultInspector();
 
+#if TME_BLOCKY
             GUILayout.Space(15);
             GUIStyle btnStyle = new(GUI.skin.button)
             {
@@ -109,8 +119,10 @@ namespace Assets.Scripts.Editor.Tools
 
                 GUILayout.Space(5);
             }
+#endif
         }
 
+#if TME_BLOCKY
         private static string[] BuildEntryLabels(List<CodeExportPayload> entries)
         {
             string[] labels = new string[entries.Count];
@@ -208,6 +220,7 @@ namespace Assets.Scripts.Editor.Tools
                     BlocklyServer.OnClientConnected -= OnConnected;
                     Debug.Log($"[Blocky] Sent workspace setup for {fieldName} after reconnect.");
                 }
+
                 BlocklyServer.OnClientConnected += OnConnected;
             }
         }
@@ -220,16 +233,20 @@ namespace Assets.Scripts.Editor.Tools
                     return;
 
                 _activeTool.OnBlocklyExportReceived(payload, _activeTargetEvent);
+#if TME_COLLAB
                 CollabBlockySync.TryBroadcastLocalExport(_activeTool, _activeTargetEvent, payload);
+#endif
             }
             else
             {
                 Debug.LogWarning("[Blocky] Received export from browser, but no tool/event is actively waiting for it. Please click an 'Open Blocky Editor' button on a tool first.");
             }
         }
+#endif
 
         public static void NotifyRemoteBlockyChanged(string guid, int toolType, string field, string xml)
         {
+#if TME_BLOCKY && TME_COLLAB
             if (string.IsNullOrEmpty(xml) || _activeTool == null || string.IsNullOrEmpty(_activeTargetEvent))
                 return;
 
@@ -257,6 +274,7 @@ namespace Assets.Scripts.Editor.Tools
             }
 
             Debug.Log($"[Blocky] Workspace refreshed from collab peer for {_activeTool.gameObject.name}.{_activeTargetEvent}.");
+#endif
         }
     }
 }

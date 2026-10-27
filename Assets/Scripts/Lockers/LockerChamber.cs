@@ -1,13 +1,18 @@
 using System;
 using System.Collections.Generic;
+using Assets.Scripts.Binary;
 using Assets.Scripts.Enums;
 using UnityEngine;
+using YamlDotNet.Serialization;
 
 namespace Assets.Scripts.Lockers
 {
     [Serializable]
     public class LockerChamber
     {
+        [HideInInspector, BinaryIgnore, YamlIgnore]
+        public string Name;
+
         [HideInInspector]
         public uint Index;
         public DoorPermissionFlags Permissions;
