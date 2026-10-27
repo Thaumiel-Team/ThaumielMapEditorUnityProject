@@ -13,6 +13,9 @@ namespace Assets.Scripts.Yaml
     {
         public static T ParseObject<T>(object value) where T : new()
         {
+            if (value is T typed)
+                return typed;
+
             if (value is not Dictionary<string, object> dict)
             {
                 Debug.LogWarning($"[YamlHelpers] ParseObject<{typeof(T).Name}>: expected Dictionary<string, object>, got {value?.GetType().Name ?? "null"}");
@@ -170,21 +173,26 @@ namespace Assets.Scripts.Yaml
 
         public static LockerChamber ParseChamber(object value)
         {
+            if (value is LockerChamber chamber)
+                return chamber;
+
             if (value is not Dictionary<string, object> dict)
                 return new LockerChamber();
 
-            LockerChamber chamber = new()
+            return new LockerChamber()
             {
+                Name = dict.TryGetValue("Name", out object name) ? Convert.ToString(name) : string.Empty,
                 Index = (uint)(dict.TryGetValue("Index", out object index) ? Convert.ToInt32(index) : default),
                 Permissions = dict.TryGetValue("Permissions", out object permissions) ? (DoorPermissionFlags)Enum.Parse(typeof(DoorPermissionFlags), permissions.ToString()) : default,
                 Data = dict.TryGetValue("Data", out object data) && data is List<object> dataList ? dataList.Select(d => ParseLockerData(d)).ToList() : new List<ChamberData>()
             };
-
-            return chamber;
         }
 
         public static ChamberData ParseLockerData(object value)
         {
+            if (value is ChamberData chamberData)
+                return chamberData;
+
             if (value is not Dictionary<string, object> dict)
                 return new ChamberData();
 
@@ -198,18 +206,50 @@ namespace Assets.Scripts.Yaml
 
         public static List<T> ParseList<T>(object value, Func<object, T> parser)
         {
-            if (value is not List<object> list)
-                return new List<T>();
+            List<T> result = new();
+            if (value is null || value is string)
+                return result;
 
-            return list.Select(parser).ToList();
+            if (value is IEnumerable enumerable)
+            {
+                foreach (object item in enumerable)
+                    result.Add(parser(item));
+            }
+
+            return result;
         }
 
         public static List<T> ParseList<T>(object value)
         {
-            if (value is not List<object> list)
-                return new List<T>();
+            List<T> result = new();
+            if (value is null || value is string)
+                return result;
 
-            return list.OfType<T>().ToList();
+            if (value is IEnumerable enumerable)
+            {
+                foreach (object item in enumerable)
+                {
+                    if (item is T typed)
+                    {
+                        result.Add(typed);
+                    }
+                    else if (item is not null)
+                    {
+                        if (typeof(T) == typeof(string))
+                        {
+                            result.Add((T)(object)Convert.ToString(item));
+                        }
+                        else if (typeof(T).IsEnum)
+                        {
+                            result.Add((T)Enum.Parse(typeof(T), Convert.ToString(item), true));
+                        }
+                        else
+                            result.Add((T)Convert.ChangeType(item, typeof(T)));
+                    }
+                }
+            }
+
+            return result;
         }
 
         public static T ParseEnum<T>(object value) where T : struct, Enum

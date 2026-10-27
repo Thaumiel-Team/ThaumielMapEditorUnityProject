@@ -1,10 +1,13 @@
 using System;
 using System.Collections.Generic;
-using Assets.Scripts.Collab;
 using Assets.Scripts.Components;
 using Assets.Scripts.Components.Objects;
 using UnityEditor;
 using UnityEngine;
+
+#if TME_COLLAB
+using Assets.Scripts.Collab;
+#endif
 
 namespace Assets.Scripts.Tools
 {
@@ -317,13 +320,15 @@ namespace Assets.Scripts.Tools
                 GameObject copy = Instantiate(src);
                 copy.transform.SetParent(src.transform.parent, false);
                 copy.name = src.name + " (Mirrored)";
-
+                
+#if TME_COLLAB
                 if (copy.TryGetComponent<CollabId>(out var cid))
                 {
                     cid.Regenerate();
                 }
                 else
                     copy.AddComponent<CollabId>();
+#endif
 
                 if (copy.TryGetComponent<TeleporterObject>(out var copyTp))
                 {
