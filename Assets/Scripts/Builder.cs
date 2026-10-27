@@ -12,6 +12,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using CompressionLevel = System.IO.Compression.CompressionLevel;
 using Assets.Scripts.Components.Objects;
+using Assets.Scripts.Binary;
 using Debug = UnityEngine.Debug;
 
 namespace Assets.Scripts
@@ -128,7 +129,13 @@ namespace Assets.Scripts
                 LOD = LODSettings
             };
 
-            File.WriteAllText(Path.Combine(directoryPath, $"{name}.yml"), YamlParser.Serializer.Serialize(schematic));
+            if (config.ExportUsingBinary)
+            {
+                BinarySerializer.SerializeToFile(Path.Combine(directoryPath, $"{name}.bin"), schematic);
+            }
+            else
+                File.WriteAllText(Path.Combine(directoryPath, $"{name}.yml"), YamlParser.Serializer.Serialize(schematic));
+
             OnSchematicCompiled?.Invoke(this, schematic);
 
             if (config.OpenExportAfterCompiling)

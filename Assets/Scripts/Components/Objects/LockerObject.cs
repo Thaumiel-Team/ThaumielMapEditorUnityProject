@@ -1,34 +1,144 @@
-using System.Collections.Generic;
 using System.Linq;
 using Assets.Scripts.Enums;
 using Assets.Scripts.Lockers;
 using Assets.Scripts.Yaml;
+using UnityEditor;
 using UnityEngine;
 
 namespace Assets.Scripts.Components.Objects
 {
-    public class LockerObject : ObjectBase
+    [CustomEditor(typeof(LockerObject), true)]
+    public class LockerObjectEditor : Editor
+    {
+        public override void OnInspectorGUI()
+        {
+            serializedObject.Update();
+
+            DrawPropertiesExcluding(serializedObject, "m_Script", "chambers");
+
+            SerializedProperty chambers = serializedObject.FindProperty("chambers");
+
+            EditorGUILayout.Space();
+            EditorGUILayout.LabelField(new GUIContent("Chambers", "The set of chambers contained within this locker."), EditorStyles.boldLabel);
+
+            if (chambers == null || chambers.arraySize == 0)
+            {
+                EditorGUILayout.HelpBox("No chambers have been configured.", MessageType.Info);
+            }
+            else
+            {
+                for (int i = 0; i < chambers.arraySize; i++)
+                    DrawChamber(chambers.GetArrayElementAtIndex(i), i);
+            }
+
+            serializedObject.ApplyModifiedProperties();
+        }
+
+        private static void DrawChamber(SerializedProperty chamber, int index)
+        {
+            string name = chamber.FindPropertyRelative("Name")?.stringValue;
+            string label = string.IsNullOrWhiteSpace(name) ? $"Chamber {index}" : $"{name}";
+
+            chamber.isExpanded = EditorGUILayout.Foldout(chamber.isExpanded, label, true);
+            if (!chamber.isExpanded)
+                return;
+
+            EditorGUI.indentLevel++;
+
+            EditorGUILayout.PropertyField(chamber.FindPropertyRelative("Permissions"));
+            DrawData(chamber.FindPropertyRelative("Data"));
+
+            EditorGUI.indentLevel--;
+        }
+
+        private static void DrawData(SerializedProperty data)
+        {
+            data.isExpanded = EditorGUILayout.Foldout(data.isExpanded, $"Data ({data.arraySize})", true);
+            if (!data.isExpanded)
+                return;
+
+            EditorGUI.indentLevel++;
+
+            int removeAt = -1;
+            for (int i = 0; i < data.arraySize; i++)
+            {
+                SerializedProperty item = data.GetArrayElementAtIndex(i);
+
+                EditorGUILayout.BeginHorizontal();
+                EditorGUILayout.BeginVertical();
+                EditorGUILayout.PropertyField(item.FindPropertyRelative("ItemType"));
+                EditorGUILayout.PropertyField(item.FindPropertyRelative("SpawnPercent"));
+                EditorGUILayout.PropertyField(item.FindPropertyRelative("AmountToSpawn"));
+                EditorGUILayout.EndVertical();
+
+                if (GUILayout.Button("-", GUILayout.Width(22)))
+                    removeAt = i;
+
+                EditorGUILayout.EndHorizontal();
+                EditorGUILayout.Space(4);
+            }
+
+            if (removeAt >= 0)
+                data.DeleteArrayElementAtIndex(removeAt);
+
+            if (GUILayout.Button("Add Item"))
+                data.arraySize++;
+
+            EditorGUI.indentLevel--;
+        }
+    }
+
+    public abstract class LockerObject : ObjectBase
     {
         [Header("Locker Settings")]
         [HideInInspector]
-        public LockerType LockerType;
+        public virtual LockerType LockerType { get; set; }
 
-        [Tooltip("The list of chambers contained within this locker.")]
-        public List<LockerChamber> Chambers = new();
+        [Tooltip("The chambers contained within this locker.")]
+        [SerializeField, HideInInspector]
+        private LockerChamber[] chambers;
+
+        public LockerChamber[] Chambers
+        {
+            get
+            {
+                if (chambers == null || chambers.Length == 0)
+                    chambers = CreateDefaultChambers();
+
+                return chambers;
+            }
+            set => chambers = value;
+        }
 
         public override ObjectType ObjectType => ObjectType.Locker;
 
-        private void OnValidate()
+        protected abstract LockerChamber[] CreateDefaultChambers();
+
+        protected virtual void Reset()
         {
-            if (Chambers == null)
+            chambers = CreateDefaultChambers();
+            RefreshChamberIndices();
+        }
+
+        protected virtual void OnValidate()
+        {
+            if (chambers == null || chambers.Length == 0)
+                chambers = CreateDefaultChambers();
+
+            RefreshChamberIndices();
+        }
+
+        private void RefreshChamberIndices()
+        {
+            if (chambers == null)
                 return;
 
-            for (int i = 0; i < Chambers.Count; i++)
+            for (int i = 0; i < chambers.Length; i++)
             {
-                if (Chambers[i] == null)
+                if (chambers[i] == null)
                     continue;
 
-                Chambers[i].Index = (uint)i;
+                chambers[i].Index = (uint)i;
             }
         }
 
@@ -48,7 +158,7 @@ namespace Assets.Scripts.Components.Objects
             base.Decompile(root);
 
             LockerType = Properties.TryGetValue("LockerType", out object lockerType) ? YamlHelpers.ParseEnum<LockerType>(lockerType) : default;
-            Chambers = Properties.TryGetValue("Chambers", out object chambers) && chambers is List<object> chamberList ? chamberList.Select(c => YamlHelpers.ParseChamber(c)).ToList() : new List<LockerChamber>();
+            Chambers = Properties.TryGetValue("Chambers", out object chambers) && chambers is object[] chamberList ? chamberList.Select(c => YamlHelpers.ParseChamber(c)).ToArray() : new LockerChamber[9];
         }
     }
 }

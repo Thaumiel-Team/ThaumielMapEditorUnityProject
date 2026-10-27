@@ -642,7 +642,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4432883529779264}
-  - component: {fileID: 7054356322909710394}
+  - component: {fileID: 1761760227085153143}
   m_Layer: 0
   m_Name: SCP Pedestal
   m_TagString: Untagged
@@ -666,7 +666,7 @@ Transform:
   - {fileID: 4974841943663144}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: -0, z: -0}
---- !u!114 &7054356322909710394
+--- !u!114 &1761760227085153143
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -675,16 +675,34 @@ MonoBehaviour:
   m_GameObject: {fileID: 1459683897277595}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f57963ff3b7ca084ab7305e5e762e8b3, type: 3}
+  m_Script: {fileID: 11500000, guid: 582a84cad13115345848f30622f488f7, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Assets.Scripts.Components.Objects.LockerObject
+  m_EditorClassIdentifier: Assembly-CSharp::Assets.Scripts.Components.Objects.Lockers.PedestalLocker
   <Static>k__BackingField: 0
   <MovementSmoothing>k__BackingField: 0
-  LockerType: 1
-  Chambers:
-  - Index: 0
-    Permissions: 0
-    Data: []
+  chambers:
+  - Name: Chamber
+    Index: 0
+    Permissions: 32
+    Data:
+    - ItemType: 68
+      SpawnPercent: 16.6
+      AmountToSpawn: 1
+    - ItemType: 18
+      SpawnPercent: 16.6
+      AmountToSpawn: 1
+    - ItemType: 31
+      SpawnPercent: 16.6
+      AmountToSpawn: 1
+    - ItemType: 49
+      SpawnPercent: 16.6
+      AmountToSpawn: 1
+    - ItemType: 45
+      SpawnPercent: 16.6
+      AmountToSpawn: 1
+    - ItemType: 17
+      SpawnPercent: 16.6
+      AmountToSpawn: 1
 --- !u!1 &1500380580102744
 GameObject:
   m_ObjectHideFlags: 0

@@ -93,7 +93,7 @@ namespace Assets.Scripts.Components.Objects
             if (_meshFilter == null || _meshFilter.sharedMesh == null)
                 return;
 
-            Gizmos.color = new Color(Color.r, Color.g, Color.b, 1f);
+            Gizmos.color = Color;
             Gizmos.DrawWireMesh(_meshFilter.sharedMesh, 0, transform.position, transform.rotation, transform.localScale);
         }
     }

@@ -9,6 +9,7 @@ namespace Assets.Scripts.Components.Objects
 {
     public class PickupObject : ObjectBase
     {
+#if TME_ITEMREF
         private const string ItemPreviewName = "ItemPreview";
         private const string ItemReferenceFolder = "Assets/Parts/References/Items";
 
@@ -59,6 +60,7 @@ namespace Assets.Scripts.Components.Objects
             [ItemType.Lantern] = "LanternPickup",
             [ItemType.Snowball] = "SnowballProjectile",
         };
+#endif
 
         [Header("Pickup Settings")]
         [Tooltip("The item that will be spawned.")]
@@ -75,6 +77,7 @@ namespace Assets.Scripts.Components.Objects
 
         public override ObjectType ObjectType => ObjectType.Pickup;
 
+#if TME_ITEMREF
         private bool _previewRefreshScheduled;
 
         private void OnValidate()
@@ -123,6 +126,7 @@ namespace Assets.Scripts.Components.Objects
             preview.transform.SetLocalPositionAndRotation(Vector3.zero, Quaternion.identity);
             preview.hideFlags = HideFlags.NotEditable;
         }
+#endif
 
         public override void Compile(Transform root)
         {
@@ -146,7 +150,9 @@ namespace Assets.Scripts.Components.Objects
             MaxAmount = Properties.TryGetValue("MaxAmount", out object maxAmount) ? Convert.ToUInt32(maxAmount) : default;
             IsInfinite = Properties.TryGetValue("IsInfinite", out object isInfinite) && Convert.ToBoolean(isInfinite);
 
+#if TME_ITEMREF
             RefreshItemPreview();
+#endif
         }
     }
 }

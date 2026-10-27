@@ -847,7 +847,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4564716981299602}
-  - component: {fileID: 6042758853530710632}
+  - component: {fileID: 6170766134975296816}
   m_Layer: 0
   m_Name: Experimental Weapon Locker
   m_TagString: Untagged
@@ -871,7 +871,7 @@ Transform:
   - {fileID: 4253175569553349}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: -0, z: -0}
---- !u!114 &6042758853530710632
+--- !u!114 &6170766134975296816
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -880,16 +880,22 @@ MonoBehaviour:
   m_GameObject: {fileID: 1436330647533283}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f57963ff3b7ca084ab7305e5e762e8b3, type: 3}
+  m_Script: {fileID: 11500000, guid: d89dc26c80860fd41a5090affb7b2a3a, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Assets.Scripts.Components.Objects.LockerObject
+  m_EditorClassIdentifier: Assembly-CSharp::Assets.Scripts.Components.Objects.Lockers.ExperimentalWeaponLocker
   <Static>k__BackingField: 0
   <MovementSmoothing>k__BackingField: 0
-  LockerType: 7
-  Chambers:
-  - Index: 0
-    Permissions: 0
-    Data: []
+  chambers:
+  - Name: Chamber
+    Index: 0
+    Permissions: 512
+    Data:
+    - ItemType: 50
+      SpawnPercent: 50
+      AmountToSpawn: 1
+    - ItemType: 47
+      SpawnPercent: 50
+      AmountToSpawn: 1
 --- !u!1 &1639055201330976
 GameObject:
   m_ObjectHideFlags: 0

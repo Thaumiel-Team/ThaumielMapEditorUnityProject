@@ -1,7 +1,10 @@
 using UnityEngine;
 using Assets.Scripts.Enums;
 using System.Collections.Generic;
+
+#if TME_BLOCKY
 using Assets.Scripts.Networking.Blocky;
+#endif
 
 namespace Assets.Scripts.Components.Tools
 {
@@ -21,9 +24,11 @@ namespace Assets.Scripts.Components.Tools
             
         }
 
+#if TME_BLOCKY
         public virtual void OnBlocklyExportReceived(CodeExportPayload payload, string targetEvent)
         {
             Debug.LogWarning($"[{gameObject.name}] Received Blockly Export, but this tool doesn't override OnBlocklyExportReceived.");
         }
+#endif
     }
 }

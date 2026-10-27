@@ -1,13 +1,17 @@
 using Assets.Scripts.Enums;
-using Assets.Scripts.Networking.Blocky;
 using Assets.Scripts.Yaml;
 using UnityEditor;
 using UnityEngine;
+
+#if TME_BLOCKY
+using Assets.Scripts.Networking.Blocky;
+#endif
 
 namespace Assets.Scripts.Components.Tools
 {
     public class BlockyRuntime : ToolBase
     {
+#if TME_BLOCKY
         public CodeExportPayload Blocky;
 
         public override ToolType ToolType => ToolType.BlockyRuntime;
@@ -36,5 +40,6 @@ namespace Assets.Scripts.Components.Tools
 
             EditorUtility.SetDirty(this);
         }
+#endif
     }
 }

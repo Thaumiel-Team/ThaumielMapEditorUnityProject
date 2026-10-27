@@ -3632,7 +3632,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4662528499689991}
-  - component: {fileID: -2121057541787742323}
+  - component: {fileID: 6659473066334627447}
   m_Layer: 0
   m_Name: Large Locker
   m_TagString: Untagged
@@ -3656,7 +3656,7 @@ Transform:
   - {fileID: 4614142748080234}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: -0, z: -0}
---- !u!114 &-2121057541787742323
+--- !u!114 &6659473066334627447
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -3665,43 +3665,82 @@ MonoBehaviour:
   m_GameObject: {fileID: 1582739527694409}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f57963ff3b7ca084ab7305e5e762e8b3, type: 3}
+  m_Script: {fileID: 11500000, guid: b0fb5b835f264f04bbd408694b2852a0, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Assets.Scripts.Components.Objects.LockerObject
+  m_EditorClassIdentifier: Assembly-CSharp::Assets.Scripts.Components.Objects.Lockers.LargeLocker
   <Static>k__BackingField: 0
   <MovementSmoothing>k__BackingField: 0
-  LockerType: 2
-  Chambers:
-  - Index: 0
+  chambers:
+  - Name: Top Left
+    Index: 0
+    Permissions: 256
+    Data:
+    - ItemType: 21
+      SpawnPercent: 100
+      AmountToSpawn: 1
+  - Name: Top Middle
+    Index: 1
+    Permissions: 256
+    Data:
+    - ItemType: 21
+      SpawnPercent: 100
+      AmountToSpawn: 1
+  - Name: Top Right
+    Index: 2
+    Permissions: 256
+    Data:
+    - ItemType: 21
+      SpawnPercent: 100
+      AmountToSpawn: 1
+  - Name: Bottom Left
+    Index: 3
+    Permissions: 256
+    Data:
+    - ItemType: 21
+      SpawnPercent: 100
+      AmountToSpawn: 1
+  - Name: Bottom Right
+    Index: 4
+    Permissions: 256
+    Data:
+    - ItemType: 21
+      SpawnPercent: 100
+      AmountToSpawn: 1
+  - Name: Middle Left
+    Index: 5
+    Permissions: 128
+    Data:
+    - ItemType: 29
+      SpawnPercent: 100
+      AmountToSpawn: 1
+  - Name: Center
+    Index: 6
+    Permissions: 128
+    Data:
+    - ItemType: 29
+      SpawnPercent: 100
+      AmountToSpawn: 1
+  - Name: Middle Right
+    Index: 7
+    Permissions: 128
+    Data:
+    - ItemType: 29
+      SpawnPercent: 100
+      AmountToSpawn: 1
+  - Name: Bottom Middle
+    Index: 8
+    Permissions: 128
+    Data:
+    - ItemType: 29
+      SpawnPercent: 100
+      AmountToSpawn: 1
+  - Name: Drawer
+    Index: 9
     Permissions: 0
-    Data: []
-  - Index: 1
-    Permissions: 0
-    Data: []
-  - Index: 2
-    Permissions: 0
-    Data: []
-  - Index: 3
-    Permissions: 0
-    Data: []
-  - Index: 4
-    Permissions: 0
-    Data: []
-  - Index: 5
-    Permissions: 0
-    Data: []
-  - Index: 6
-    Permissions: 0
-    Data: []
-  - Index: 7
-    Permissions: 0
-    Data: []
-  - Index: 8
-    Permissions: 0
-    Data: []
-  - Index: 9
-    Permissions: 0
-    Data: []
+    Data:
+    - ItemType: 35
+      SpawnPercent: 100
+      AmountToSpawn: 1
 --- !u!1 &1591362195838394
 GameObject:
   m_ObjectHideFlags: 0

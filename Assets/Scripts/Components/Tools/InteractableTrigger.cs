@@ -2,10 +2,14 @@ using System;
 using System.Collections.Generic;
 using Assets.Scripts.Components.Tools.Helpers;
 using Assets.Scripts.Enums;
-using Assets.Scripts.Networking.Blocky;
 using Assets.Scripts.Yaml;
 using UnityEditor;
 using UnityEngine;
+
+#if TME_BLOCKY
+using Assets.Scripts.Networking.Blocky;
+#endif
+
 
 namespace Assets.Scripts.Components.Tools
 {
@@ -105,6 +109,7 @@ namespace Assets.Scripts.Components.Tools
                 Permissions = YamlHelpers.ParseObject<Permission>(permission);
         }
 
+#if TME_BLOCKY
         public override void OnBlocklyExportReceived(CodeExportPayload payload, string targetEvent)
         {
             if (targetEvent == nameof(OnInteracted))
@@ -138,5 +143,6 @@ namespace Assets.Scripts.Components.Tools
 
             EditorUtility.SetDirty(this);
         }
+#endif
     }
 }

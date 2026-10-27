@@ -1,6 +1,9 @@
 using System;
 using System.Collections.Generic;
+
+#if TME_BLOCKY
 using Assets.Scripts.Networking.Blocky;
+#endif
 
 namespace Assets.Scripts.Components.Tools.Helpers
 {
@@ -16,6 +19,9 @@ namespace Assets.Scripts.Components.Tools.Helpers
         public List<RemoveItem> RemoveItem;
         public List<Warhead> Warhead;
         public List<SendCassieMessage> SendCassieMessage;
+
+#if TME_BLOCKY
         public List<CodeExportPayload> Blocky;
+#endif
     }
 }

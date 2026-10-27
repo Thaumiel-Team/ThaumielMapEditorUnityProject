@@ -38,6 +38,8 @@ namespace Assets.Scripts
         
         public bool CompressExport { get; set; }
 
+        public bool ExportUsingBinary { get; set; } = true;
+
         /// <summary>
         /// Custom config sections owned by plugins.
         /// </summary>

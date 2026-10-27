@@ -9,8 +9,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4099440169704769}
-  - component: {fileID: 95827004157043877}
-  - component: {fileID: -7140741059648333694}
+  - component: {fileID: 563617420936199345}
   m_Layer: 0
   m_Name: MedKit
   m_TagString: Untagged
@@ -35,29 +34,7 @@ Transform:
   - {fileID: 4036377399058226}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: -0, z: -0}
---- !u!95 &95827004157043877
-Animator:
-  serializedVersion: 7
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1010547754239976}
-  m_Enabled: 1
-  m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 9100000, guid: a5720b6b8a0a8e540b88aa17755ac07b, type: 2}
-  m_CullingMode: 0
-  m_UpdateMode: 0
-  m_ApplyRootMotion: 0
-  m_LinearVelocityBlending: 0
-  m_StabilizeFeet: 0
-  m_AnimatePhysics: 0
-  m_WarningMessage: 
-  m_HasTransformHierarchy: 1
-  m_AllowConstantClipSamplingOptimization: 1
-  m_KeepAnimatorStateOnDisable: 0
-  m_WriteDefaultValuesOnDisable: 0
---- !u!114 &-7140741059648333694
+--- !u!114 &563617420936199345
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -66,22 +43,33 @@ MonoBehaviour:
   m_GameObject: {fileID: 1010547754239976}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f57963ff3b7ca084ab7305e5e762e8b3, type: 3}
+  m_Script: {fileID: 11500000, guid: fbd36352155a08840af2fe872199ad19, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Assets.Scripts.Components.Objects.LockerObject
+  m_EditorClassIdentifier: Assembly-CSharp::Assets.Scripts.Components.Objects.Lockers.CabinetLocker
   <Static>k__BackingField: 0
   <MovementSmoothing>k__BackingField: 0
-  LockerType: 5
-  Chambers:
-  - Index: 0
+  chambers:
+  - Name: Main Chamber
+    Index: 0
     Permissions: 0
-    Data: []
-  - Index: 1
+    Data:
+    - ItemType: 14
+      SpawnPercent: 100
+      AmountToSpawn: 1
+  - Name: Lower Shelf
+    Index: 1
     Permissions: 0
-    Data: []
-  - Index: 2
+    Data:
+    - ItemType: 34
+      SpawnPercent: 100
+      AmountToSpawn: 1
+  - Name: Upper Shelf
+    Index: 2
     Permissions: 0
-    Data: []
+    Data:
+    - ItemType: 34
+      SpawnPercent: 100
+      AmountToSpawn: 1
 --- !u!1 &1145610564636904
 GameObject:
   m_ObjectHideFlags: 0

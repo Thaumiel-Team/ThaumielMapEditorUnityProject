@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using Assets.Scripts.Components.Objects;
 using Assets.Scripts.Components.Tools;
+using Assets.Scripts.Binary;
 using Assets.Scripts.Enums;
 using Assets.Scripts.Yaml;
 using Unity.VisualScripting;
@@ -26,14 +27,13 @@ namespace Assets.Scripts
         {
             _instanceMap.Clear();
 
-            string yamlPath = EditorUtility.OpenFilePanel("Select Schematic", "", "yml");
-            if (string.IsNullOrEmpty(yamlPath))
+            string schematicPath = EditorUtility.OpenFilePanel("Select Schematic", "", "yml,yaml,bin");
+            if (string.IsNullOrEmpty(schematicPath))
                 return;
 
-            string yaml = File.ReadAllText(yamlPath);
-            YamlSchematic schematic = YamlParser.Deserializer.Deserialize<YamlSchematic>(yaml);
+            YamlSchematic schematic = LoadSchematic(schematicPath);
 
-            string bundleDir = Path.GetDirectoryName(yamlPath);
+            string bundleDir = Path.GetDirectoryName(schematicPath);
             Dictionary<string, AssetBundle> bundleCache = new();
 
             GameObject root = new(schematic.FileName);
@@ -177,6 +177,15 @@ namespace Assets.Scripts
             Selection.activeGameObject = root;
             Debug.Log($"[Decompiler] Decompiled schematic '{schematic.FileName}' with {schematic.Objects.Count} objects.");
             OnSchematicDecompiled?.Invoke(schematic);
+        }
+
+        private static YamlSchematic LoadSchematic(string path)
+        {
+            if (string.Equals(Path.GetExtension(path), ".bin", StringComparison.OrdinalIgnoreCase))
+                return BinarySerializer.DeserializeFromFile<YamlSchematic>(path) ?? throw new InvalidDataException($"Binary schematic '{path}' is empty.");
+
+            string yaml = File.ReadAllText(path);
+            return YamlParser.Deserializer.Deserialize<YamlSchematic>(yaml);
         }
 
         private static void RestoreAnimator(GameObject instance, ObjectBase block, string animatorName, string bundleDir, Dictionary<string, AssetBundle> bundleCache)

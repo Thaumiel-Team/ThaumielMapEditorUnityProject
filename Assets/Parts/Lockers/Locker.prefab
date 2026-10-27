@@ -1099,7 +1099,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4591363253735515}
-  - component: {fileID: -6672254348697281068}
+  - component: {fileID: 539674307430017944}
   m_Layer: 0
   m_Name: Locker
   m_TagString: Untagged
@@ -1130,7 +1130,7 @@ Transform:
   - {fileID: 4524591376015753}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: -0, z: -0}
---- !u!114 &-6672254348697281068
+--- !u!114 &539674307430017944
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -1139,31 +1139,54 @@ MonoBehaviour:
   m_GameObject: {fileID: 1386410339501503}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f57963ff3b7ca084ab7305e5e762e8b3, type: 3}
+  m_Script: {fileID: 11500000, guid: dbedc0325a73651408b8e5160af0f61d, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Assets.Scripts.Components.Objects.LockerObject
+  m_EditorClassIdentifier: Assembly-CSharp::Assets.Scripts.Components.Objects.Lockers.StandardLocker
   <Static>k__BackingField: 0
   <MovementSmoothing>k__BackingField: 0
-  LockerType: 4
-  Chambers:
-  - Index: 0
+  chambers:
+  - Name: Top Left
+    Index: 0
     Permissions: 0
-    Data: []
-  - Index: 1
+    Data:
+    - ItemType: 0
+      SpawnPercent: 100
+      AmountToSpawn: 1
+  - Name: Top Middle
+    Index: 1
     Permissions: 0
-    Data: []
-  - Index: 2
+    Data:
+    - ItemType: 0
+      SpawnPercent: 100
+      AmountToSpawn: 1
+  - Name: Top Right
+    Index: 2
     Permissions: 0
-    Data: []
-  - Index: 3
+    Data:
+    - ItemType: 0
+      SpawnPercent: 100
+      AmountToSpawn: 1
+  - Name: Bottom Left
+    Index: 3
     Permissions: 0
-    Data: []
-  - Index: 4
+    Data:
+    - ItemType: 0
+      SpawnPercent: 100
+      AmountToSpawn: 1
+  - Name: Bottom Middle
+    Index: 4
     Permissions: 0
-    Data: []
-  - Index: 5
+    Data:
+    - ItemType: 0
+      SpawnPercent: 100
+      AmountToSpawn: 1
+  - Name: Bottom Right
+    Index: 5
     Permissions: 0
-    Data: []
+    Data:
+    - ItemType: 0
+      SpawnPercent: 100
+      AmountToSpawn: 1
 --- !u!1 &1389572083437996
 GameObject:
   m_ObjectHideFlags: 0

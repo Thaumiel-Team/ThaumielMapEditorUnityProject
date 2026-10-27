@@ -50,5 +50,14 @@ namespace Assets.Scripts.Components.Objects
             Loop = Properties.TryGetValue("Loop", out object loop) && Convert.ToBoolean(loop);
             Path = Properties.TryGetValue("Path", out object path) ? Convert.ToString(path) : string.Empty;
         }
+
+        private void OnDrawGizmosSelected()
+        {
+            Gizmos.color = ColorHelper.GetColor(this);
+            if (IsSpatial)
+                Gizmos.DrawWireSphere(transform.position, MinDistance);
+                
+            Gizmos.DrawWireSphere(transform.position, MaxDistance);
+        }
     }
 }
