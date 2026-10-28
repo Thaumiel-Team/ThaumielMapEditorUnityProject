@@ -47,9 +47,7 @@ namespace Assets.Scripts.Tools
             [JsonConverter(typeof(VersionConverter))]
             public Version Version { get; set; }
 
-            [JsonConverter(typeof(VersionConverter))]
-            public Version MinUnityVersion { get; set; }
-
+            public DateTime MinUnityVersion { get; set; }
             public uint DownloadCount { get; set; }
             public DateTime LastUpdated { get; set; }
             public float SizeBytes { get; set; }
@@ -158,6 +156,8 @@ namespace Assets.Scripts.Tools
             string key = package.PackageName;
             bool installed = IsInstalled(package);
             bool selected = IsSelected(package);
+            Version installedVersion = null;
+            bool updateAvailable = installed && TryGetUpdate(package, out installedVersion, out _);
 
             using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
             {
@@ -174,9 +174,21 @@ namespace Assets.Scripts.Tools
                 GUILayout.Label(name, EditorStyles.boldLabel, GUILayout.ExpandWidth(true));
 
                 Color previous = GUI.contentColor;
-                GUI.contentColor = installed ? new Color(0.45f, 0.9f, 0.45f) : new Color(0.65f, 0.65f, 0.65f);
-                GUILayout.Label(installed ? "Installed" : "Not installed", EditorStyles.miniLabel);
+                GUI.contentColor = updateAvailable ? new Color(1f, 0.8f, 0.35f) : installed ? new Color(0.45f, 0.9f, 0.45f) : new Color(0.65f, 0.65f, 0.65f);
+                GUILayout.Label(updateAvailable ? "Update available" : installed ? "Installed" : "Not installed", EditorStyles.miniLabel);
                 GUI.contentColor = previous;
+
+                if (updateAvailable)
+                {
+                    using (new EditorGUI.DisabledScope(_busy || _loading))
+                    {
+                        GUI.backgroundColor = new Color(0.35f, 0.7f, 1f);
+                        if (GUILayout.Button("Update", GUILayout.Width(76f)))
+                            UpdatePackageAsync(package);
+
+                        GUI.backgroundColor = Color.white;
+                    }
+                }
 
                 EditorGUILayout.EndHorizontal();
 
@@ -186,6 +198,9 @@ namespace Assets.Scripts.Tools
                     $"{package.DownloadCount:N0} downloads";
 
                 GUILayout.Label(details, EditorStyles.miniLabel);
+                if (updateAvailable && installedVersion != null)
+                    GUILayout.Label($"Installed {FormatVersion(installedVersion)}", EditorStyles.miniLabel);
+
                 GUILayout.Label($"Updated {FormatDate(package.LastUpdated)}", EditorStyles.miniLabel);
             }
         }
@@ -358,6 +373,19 @@ namespace Assets.Scripts.Tools
                 }
             }
 
+            await RunChangesAsync(changes);
+        }
+
+        private async void UpdatePackageAsync(PackageData package)
+        {
+            if (_busy || _loading || package == null)
+                return;
+
+            await RunChangesAsync(new List<(PackageData Package, bool Install)> { (package, true) }, $"{DisplayName(package)} updated.", false);
+        }
+
+        private async Task RunChangesAsync(List<(PackageData Package, bool Install)> changes, string successStatus = "All changes applied.", bool syncSelection = true)
+        {
             _busy = true;
             _error = null;
             _progress = 0f;
@@ -388,7 +416,11 @@ namespace Assets.Scripts.Tools
                             ReportProgress(start);
 
                             string file = await DownloadPackageAsync(package, url, fraction => ReportProgress(start + span * 0.65f * fraction));
-                            string[] assets = ReadUnityPackageAssets(file, out string info, out int pathnameCount);
+                            _status = $"Preparing {DisplayName(package)}...";
+                            ReportProgress(start + span * 0.68f);
+                            string normalizedPath = GetNormalizedPackagePath(package);
+                            file = await Task.Run(() => PreparePackageForImport(package, file, normalizedPath));
+                            string[] assets = ReadUnityPackageAssets(file, package.PackageName, out string info, out int pathnameCount);
                             if (pathnameCount == 0)
                             {
                                 TryDelete(file);
@@ -447,20 +479,23 @@ namespace Assets.Scripts.Tools
                     ReportProgress(end);
                 }
 
-                if (delayedImports)
+                if (syncSelection)
                 {
-                    foreach (PackageData package in _packages)
+                    if (delayedImports)
                     {
-                        if (!string.IsNullOrEmpty(package.PackageName))
-                            _selected[package.PackageName] = _state.Packages.ContainsKey(package.PackageName);
+                        foreach (PackageData package in _packages)
+                        {
+                            if (!string.IsNullOrEmpty(package.PackageName))
+                                _selected[package.PackageName] = _state.Packages.ContainsKey(package.PackageName);
+                        }
                     }
+                    else
+                        SyncSelectionWithInstalled();
                 }
-                else
-                    SyncSelectionWithInstalled();
 
                 if (errors.Count == 0)
                 {
-                    _status = "All changes applied.";
+                    _status = successStatus;
                 }
                 else
                 {
@@ -620,7 +655,262 @@ namespace Assets.Scripts.Tools
             }
         }
 
-        private static string[] ReadUnityPackageAssets(string path, out string info, out int pathnameCount)
+        private static string GetNormalizedPackagePath(PackageData package)
+        {
+            string folder = GetCacheFolder();
+            string version = package.Version?.ToString() ?? "latest";
+            return Path.Combine(folder, $"{SanitizeFileName(package.PackageName)}-{version}-normalized.unitypackage");
+        }
+
+        private static string PreparePackageForImport(PackageData package, string sourcePath, string destination)
+        {
+            string folder = Path.GetDirectoryName(destination);
+            if (!string.IsNullOrEmpty(folder))
+                Directory.CreateDirectory(folder);
+
+            if (File.Exists(destination))
+            {
+                try
+                {
+                    ValidateGzipArchive(destination);
+                    return destination;
+                }
+                catch (Exception)
+                {
+                    TryDelete(destination);
+                }
+            }
+
+            bool changed = false;
+
+            try
+            {
+                using FileStream source = File.OpenRead(sourcePath);
+                using GZipStream input = new(source, CompressionMode.Decompress);
+                using FileStream target = File.Create(destination);
+                using GZipStream output = new(target, System.IO.Compression.CompressionLevel.Fastest);
+
+                byte[] header = new byte[512];
+                string longName = null;
+
+                while (ReadExactly(input, header, header.Length))
+                {
+                    if (IsEmptyBlock(header))
+                    {
+                        output.Write(header, 0, header.Length);
+                        CopyBytes(input, output, long.MaxValue);
+                        break;
+                    }
+
+                    string name = longName ?? ReadNullTerminated(header, 0, 100);
+                    longName = null;
+
+                    bool ustar = Encoding.ASCII.GetString(header, 257, 5) == "ustar";
+                    if (ustar)
+                    {
+                        string prefix = ReadNullTerminated(header, 345, 155);
+                        if (!string.IsNullOrEmpty(prefix))
+                            name = prefix + "/" + name;
+                    }
+
+                    long size = ReadSize(header);
+                    if (size < 0)
+                        throw new Exception("the package contains an invalid tar entry.");
+
+                    char type = header[156] == 0 ? '0' : (char)header[156];
+                    long padding = Padding(size);
+
+                    if (type == 'L' || type == 'x' || type == 'g')
+                    {
+                        if (size > 65536 || !TryReadEntry(input, size, padding, out byte[] meta))
+                            throw new Exception("the package contains an invalid long-name entry.");
+
+                        output.Write(header, 0, header.Length);
+                        output.Write(meta, 0, meta.Length);
+                        WriteZeros(output, padding);
+
+                        if (type == 'L')
+                        {
+                            longName = Encoding.UTF8.GetString(meta).Trim('\0', '\r', '\n', ' ');
+                        }
+                        else if (type == 'x')
+                            longName = ReadPaxPath(meta) ?? longName;
+
+                        continue;
+                    }
+
+                    name = name.Replace('\\', '/');
+                    while (name.StartsWith("./", StringComparison.Ordinal))
+                        name = name.Substring(2);
+
+                    bool isPathname = type == '0' && (name == "pathname" || name.EndsWith("/pathname", StringComparison.Ordinal));
+                    if (isPathname)
+                    {
+                        if (size <= 0 || size > 65536 || !TryReadEntry(input, size, padding, out byte[] data))
+                            throw new Exception("the package contains an invalid pathname entry.");
+
+                        string original = NormalizePathnameText(data);
+                        string normalized = NormalizePackagePath(original, package.PackageName) ?? throw new Exception($"the package contains an unsafe asset path: '{original}'.");
+
+                        if (string.Equals(original, normalized, StringComparison.Ordinal))
+                        {
+                            output.Write(header, 0, header.Length);
+                            output.Write(data, 0, data.Length);
+                            WriteZeros(output, padding);
+                        }
+                        else
+                        {
+                            WriteEntry(output, header, Encoding.UTF8.GetBytes(normalized));
+                            changed = true;
+                        }
+
+                        continue;
+                    }
+
+                    output.Write(header, 0, header.Length);
+                    if (!CopyBytes(input, output, size) || !CopyBytes(input, output, padding))
+                        throw new Exception("the package ended unexpectedly.");
+                }
+            }
+            catch (Exception)
+            {
+                TryDelete(destination);
+                throw;
+            }
+
+            if (!changed)
+            {
+                TryDelete(destination);
+                return sourcePath;
+            }
+
+            ValidateGzipArchive(destination);
+            return destination;
+        }
+
+        private static void WriteEntry(Stream output, byte[] header, byte[] data)
+        {
+            byte[] copy = (byte[])header.Clone();
+            WriteOctal(copy, 124, 12, data.Length);
+            WriteChecksum(copy);
+
+            output.Write(copy, 0, copy.Length);
+            output.Write(data, 0, data.Length);
+            WriteZeros(output, Padding(data.Length));
+        }
+
+        private static void WriteOctal(byte[] header, int offset, int length, long value)
+        {
+            string text = Convert.ToString(value, 8).PadLeft(length - 1, '0');
+            if (text.Length > length - 1)
+                text = text.Substring(text.Length - (length - 1));
+
+            for (int index = 0; index < length - 1; index++)
+                header[offset + index] = (byte)text[index];
+
+            header[offset + length - 1] = 0;
+        }
+
+        private static void WriteChecksum(byte[] header)
+        {
+            for (int index = 148; index < 156; index++)
+                header[index] = (byte)' ';
+
+            int sum = 0;
+            foreach (byte value in header)
+                sum += value;
+
+            string text = Convert.ToString(sum, 8).PadLeft(6, '0');
+            for (int index = 0; index < 6; index++)
+                header[148 + index] = (byte)text[index];
+
+            header[154] = 0;
+            header[155] = (byte)' ';
+        }
+
+        private static bool CopyBytes(Stream input, Stream output, long count)
+        {
+            byte[] buffer = new byte[81920];
+            while (count > 0)
+            {
+                int read = input.Read(buffer, 0, (int)Math.Min(buffer.Length, count));
+                if (read <= 0)
+                    return false;
+
+                output.Write(buffer, 0, read);
+                count -= read;
+            }
+
+            return true;
+        }
+
+        private static void WriteZeros(Stream output, long count)
+        {
+            byte[] buffer = new byte[512];
+            while (count > 0)
+            {
+                int chunk = (int)Math.Min(buffer.Length, count);
+                output.Write(buffer, 0, chunk);
+                count -= chunk;
+            }
+        }
+
+        private static string NormalizePathnameText(byte[] data)
+        {
+            string text = Encoding.UTF8.GetString(data).Replace("\uFEFF", string.Empty);
+            int end = text.IndexOfAny(new[] { '\n', '\r', '\0' });
+            if (end >= 0)
+                text = text.Substring(0, end);
+
+            return text.Trim().Replace('\\', '/');
+        }
+
+        private static string NormalizePackagePath(string path, string packageName)
+        {
+            if (string.IsNullOrWhiteSpace(path))
+                return null;
+
+            path = path.Trim().Replace('\\', '/');
+            while (path.StartsWith("./", StringComparison.Ordinal))
+                path = path.Substring(2);
+
+            path = path.TrimStart('/');
+            string[] parts = path.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
+            if (parts.Length == 0)
+                return null;
+
+            foreach (string part in parts)
+            {
+                if (part == "." || part == ".." || part.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0)
+                    return null;
+            }
+
+            int assetsIndex = Array.FindIndex(parts, part => string.Equals(part, "Assets", StringComparison.OrdinalIgnoreCase));
+            if (assetsIndex >= 0)
+            {
+                string rest = string.Join("/", parts.Skip(assetsIndex + 1));
+                return string.IsNullOrEmpty(rest) ? "Assets" : "Assets/" + rest;
+            }
+
+            if (parts.Length > 1 && !string.IsNullOrEmpty(packageName) && string.Equals(parts[0], packageName, StringComparison.OrdinalIgnoreCase))
+                parts = parts.Skip(1).ToArray();
+
+            return "Assets/" + string.Join("/", parts);
+        }
+
+        private static string ReadPaxPath(byte[] meta)
+        {
+            foreach (string line in Encoding.UTF8.GetString(meta).Split('\n'))
+            {
+                int space = line.IndexOf(' ');
+                if (space >= 0 && line.Substring(space + 1).StartsWith("path=", StringComparison.Ordinal))
+                    return line.Substring(space + 6).Trim('\0', '\r');
+            }
+
+            return null;
+        }
+
+        private static string[] ReadUnityPackageAssets(string path, string packageName, out string info, out int pathnameCount)
         {
             List<string> assets = new();
             int entries = 0, outside = 0;
@@ -692,12 +982,7 @@ namespace Assets.Scripts.Tools
 
                     pathnameCount++;
 
-                    string assetPath = Encoding.UTF8.GetString(data).Replace("\uFEFF", "");
-                    int end = assetPath.IndexOfAny(new[] { '\n', '\r', '\0' });
-                    if (end >= 0)
-                        assetPath = assetPath.Substring(0, end);
-
-                    assetPath = assetPath.Trim().Replace('\\', '/');
+                    string assetPath = NormalizePackagePath(NormalizePathnameText(data), packageName);
 
                     if (IsSafeAssetPath(assetPath))
                     {
@@ -795,7 +1080,7 @@ namespace Assets.Scripts.Tools
                 string cached = FindCachedPackage(package, entry);
                 if (cached != null)
                 {
-                    tracked = ReadUnityPackageAssets(cached, out _, out _).ToList();
+                    tracked = ReadUnityPackageAssets(cached, package.PackageName, out _, out _).ToList();
                     Debug.Log($"[Package Manager] Recovered {tracked.Count} file paths for {DisplayName(package)} from cache.");
                 }
                 else
@@ -929,7 +1214,29 @@ namespace Assets.Scripts.Tools
             return entry.Assets.Any(TrackedAssetExists);
         }
 
-        private bool IsSelected(PackageData package) => !string.IsNullOrEmpty(package.PackageName) && _selected.TryGetValue(package.PackageName, out bool selected) && selected;
+        private bool IsSelected(PackageData package) =>
+            !string.IsNullOrEmpty(package.PackageName) && _selected.TryGetValue(package.PackageName, out bool selected) && selected;
+
+        private bool TryGetUpdate(PackageData package, out Version installedVersion, out Version availableVersion)
+        {
+            installedVersion = null;
+            availableVersion = package?.Version;
+
+            if (package == null || availableVersion == null || string.IsNullOrEmpty(package.PackageName))
+                return false;
+
+            if (!_state.Packages.TryGetValue(package.PackageName, out InstalledPackageState entry))
+                return false;
+
+            if (entry.Assets == null || entry.Assets.Count == 0)
+                return true;
+
+            if (!Version.TryParse(entry.Version, out Version parsed))
+                return true;
+
+            installedVersion = parsed;
+            return parsed.CompareTo(availableVersion) < 0;
+        }
 
         private void LoadState()
         {
