@@ -1,3 +1,4 @@
+#if UNITY_EDITOR
 namespace Assets.Scripts.Enums
 {
     public enum ToolType
@@ -9,5 +10,8 @@ namespace Assets.Scripts.Enums
         ColliderTrigger = 4,
         InteractableTrigger = 5,
         BlockyRuntime = 6,
+        DoorRuntime = 7,
+        AnimationRuntime = 8,
     }
 }
+#endif

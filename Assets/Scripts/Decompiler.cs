@@ -1,3 +1,4 @@
+#if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -34,6 +35,7 @@ namespace Assets.Scripts
             YamlSchematic schematic = LoadSchematic(schematicPath);
 
             string bundleDir = Path.GetDirectoryName(schematicPath);
+            string schematicFileName = Path.GetFileNameWithoutExtension(schematicPath);
             Dictionary<string, AssetBundle> bundleCache = new();
 
             GameObject root = new(schematic.FileName);
@@ -67,7 +69,7 @@ namespace Assets.Scripts
                     block.Properties = obj.Values;
 
                     block.Decompile(root.transform);
-                    RestoreAnimator(instance, block, obj.AnimatorName, bundleDir, bundleCache);
+                    RestoreAnimator(instance, block, obj.AnimatorName, schematicFileName, bundleDir, bundleCache);
                 }
 
                 instance.transform.SetLocalPositionAndRotation(obj.Position, Quaternion.Euler(obj.Rotation));
@@ -109,7 +111,7 @@ namespace Assets.Scripts
                     block.Properties = obj.Values;
 
                     block.Decompile(root.transform);
-                    RestoreAnimator(instance, block, obj.AnimatorName, bundleDir, bundleCache);
+                    RestoreAnimator(instance, block, obj.AnimatorName, schematicFileName, bundleDir, bundleCache);
                 }
 
                 instance.transform.SetLocalPositionAndRotation(obj.Position, Quaternion.Euler(obj.Rotation));
@@ -128,40 +130,53 @@ namespace Assets.Scripts
                         switch (result)
                         {
                             case ToolType.Health:
-                                Health health = block.AddComponent<Health>();
+                                Health health = block.gameObject.AddComponent<Health>();
                                 health.Properties = tool.Properties;
                                 health.Decompile();
                                 break;
 
                             case ToolType.Physics:
-                                PhysicsTool physics = block.AddComponent<PhysicsTool>();
+                                PhysicsTool physics = block.gameObject.AddComponent<PhysicsTool>();
                                 physics.Properties = tool.Properties;
                                 physics.Decompile();
                                 break;
 
                             case ToolType.Doorlink:
-                                DoorLink doorlink = block.AddComponent<DoorLink>();
+                                DoorLink doorlink = block.gameObject.AddComponent<DoorLink>();
                                 doorlink.Properties = tool.Properties;
                                 doorlink.Decompile();
                                 break;
 
                             case ToolType.ColliderTrigger:
-                                ColliderTrigger collider = block.AddComponent<ColliderTrigger>();
+                                ColliderTrigger collider = block.gameObject.AddComponent<ColliderTrigger>();
                                 collider.Properties = tool.Properties;
                                 collider.Decompile();
                                 break;
 
                             case ToolType.InteractableTrigger:
-                                InteractableTrigger interactable = block.AddComponent<InteractableTrigger>();
+                                InteractableTrigger interactable = block.gameObject.AddComponent<InteractableTrigger>();
                                 interactable.Properties = tool.Properties;
                                 interactable.Decompile();
                                 break;
 
                             case ToolType.BlockyRuntime:
-                                BlockyRuntime blocky = block.AddComponent<BlockyRuntime>();
+                                BlockyRuntime blocky = block.gameObject.AddComponent<BlockyRuntime>();
                                 blocky.Properties = tool.Properties;
                                 blocky.Decompile();
                                 break;
+#if TME_BLOCKY
+                            case ToolType.DoorRuntime:
+                                DoorRuntime doorBlocky = block.gameObject.AddComponent<DoorRuntime>();
+                                doorBlocky.Properties = tool.Properties;
+                                doorBlocky.Decompile();
+                                break;
+
+                            case ToolType.AnimationRuntime:
+                                AnimationRuntime animationBlocky = block.gameObject.AddComponent<AnimationRuntime>();
+                                animationBlocky.Properties = tool.Properties;
+                                animationBlocky.Decompile();
+                                break;
+#endif
                         }
                     }
                 }
@@ -172,6 +187,7 @@ namespace Assets.Scripts
                 if (bundle != null)
                     bundle.Unload(false);
             }
+
             bundleCache.Clear();
 
             Selection.activeGameObject = root;
@@ -188,7 +204,7 @@ namespace Assets.Scripts
             return YamlParser.Deserializer.Deserialize<YamlSchematic>(yaml);
         }
 
-        private static void RestoreAnimator(GameObject instance, ObjectBase block, string animatorName, string bundleDir, Dictionary<string, AssetBundle> bundleCache)
+        private static void RestoreAnimator(GameObject instance, ObjectBase block, string animatorName, string schematicFileName, string bundleDir, Dictionary<string, AssetBundle> bundleCache)
         {
             if (block == null || string.IsNullOrEmpty(animatorName))
                 return;
@@ -200,12 +216,29 @@ namespace Assets.Scripts
 
             try
             {
-                if (!bundleCache.TryGetValue(animatorName, out AssetBundle bundle) || bundle == null)
+                string bundleFileName = $"{schematicFileName}-{animatorName}";
+
+                if (!bundleCache.TryGetValue(bundleFileName, out AssetBundle bundle) || bundle == null)
                 {
-                    string path = Path.Combine(bundleDir, animatorName);
+                    string path = Path.Combine(bundleDir, bundleFileName);
+
                     if (!File.Exists(path))
                     {
-                        Debug.LogWarning($"[Decompiler] Animation bundle '{animatorName}' not found next to the schematic. Animator left unassigned on '{instance.name}'.");
+                        string lowerPath = Path.Combine(bundleDir, bundleFileName.ToLowerInvariant());
+                        if (File.Exists(lowerPath))
+                            path = lowerPath;
+                    }
+
+                    if (!File.Exists(path))
+                    {
+                        string legacyPath = Path.Combine(bundleDir, animatorName);
+                        if (File.Exists(legacyPath))
+                            path = legacyPath;
+                    }
+
+                    if (!File.Exists(path))
+                    {
+                        Debug.LogWarning($"[Decompiler] Animation bundle '{bundleFileName}' not found next to the schematic. Animator left unassigned on '{instance.name}'.");
                         return;
                     }
 
@@ -216,7 +249,7 @@ namespace Assets.Scripts
                         return;
                     }
 
-                    bundleCache[animatorName] = bundle;
+                    bundleCache[bundleFileName] = bundle;
                 }
 
                 RuntimeAnimatorController controller = null;
@@ -392,3 +425,4 @@ namespace Assets.Scripts
         }
     }
 }
+#endif
