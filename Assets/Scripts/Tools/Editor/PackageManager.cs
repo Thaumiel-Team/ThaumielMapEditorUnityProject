@@ -14,7 +14,7 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.Networking;
 
-namespace Assets.Scripts.Tools
+namespace Assets.Scripts.Tools.Editor
 {
     public class PackageManagerWindow : EditorWindow
     {

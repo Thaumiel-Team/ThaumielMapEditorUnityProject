@@ -9,7 +9,7 @@ using UnityEngine;
 using Assets.Scripts.Collab;
 #endif
 
-namespace Assets.Scripts.Tools
+namespace Assets.Scripts.Tools.Editor
 {
     public enum MirrorAxis
     {

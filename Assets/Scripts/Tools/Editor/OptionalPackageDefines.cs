@@ -4,7 +4,7 @@ using System.Linq;
 using UnityEditor;
 using UnityEditor.Build;
 
-namespace Assets.Scripts.Tools
+namespace Assets.Scripts.Tools.Editor
 {
     internal static class OptionalPackageDefines
     {

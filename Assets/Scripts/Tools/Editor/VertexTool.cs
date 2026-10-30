@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
-namespace Assets.Scripts.Tools
+namespace Assets.Scripts.Tools.Editor
 {
     public class VertexToolWindow : EditorWindow
     {
@@ -470,7 +470,7 @@ namespace Assets.Scripts.Tools
             DrawQuickStartRow();
 
             EditorGUILayout.Space(8);
-            DrawColoredLabel("Object 1 — Resize This  (Blue dots)", ColObj1);
+            DrawColoredLabel("Object 1 - Resize This  (Blue dots)", ColObj1);
             DrawObjectField(_session, slot: 0);
             if (_session.Verts1.Length > 0)
                 DrawVertexGrid(_session.Verts1, _session.Obj1, isFirst: true, ColObj1);
@@ -487,7 +487,7 @@ namespace Assets.Scripts.Tools
             EditorGUILayout.EndHorizontal();
             EditorGUILayout.Space(4);
 
-            DrawColoredLabel("Object 2 — Snap Target  (Orange dots)", ColObj2);
+            DrawColoredLabel("Object 2 - Snap Target  (Orange dots)", ColObj2);
             DrawObjectField(_session, slot: 1);
             if (_session.Verts2.Length > 0)
                 DrawVertexGrid(_session.Verts2, _session.Obj2, isFirst: false, ColObj2);
@@ -665,10 +665,10 @@ namespace Assets.Scripts.Tools
             GUI.backgroundColor = Color.white;
             EditorGUILayout.EndHorizontal();
             EditorGUILayout.HelpBox(LockY
-                ? "Y locked — connects at the same height."
+                ? "Y locked - connects at the same height."
                 : YMidpoint
-                    ? "Y free — both objects meet at the midpoint height."
-                    : "Y free — both objects extend to Object 2's vertex height.", MessageType.None);
+                    ? "Y free - both objects meet at the midpoint height."
+                    : "Y free - both objects extend to Object 2's vertex height.", MessageType.None);
         }
 
         private void DrawModeControls()
