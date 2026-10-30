@@ -1,3 +1,4 @@
+#if UNITY_EDITOR
 using System;
 
 namespace Assets.Scripts.Enums
@@ -10,3 +11,4 @@ namespace Assets.Scripts.Enums
         Visible = 1 << 1
     }
 }
+#endif

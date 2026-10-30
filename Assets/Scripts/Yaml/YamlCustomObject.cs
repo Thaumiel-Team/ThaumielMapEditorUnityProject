@@ -1,3 +1,4 @@
+#if UNITY_EDITOR
 using System.Collections.Generic;
 using Assets.Scripts.Enums;
 using UnityEngine;
@@ -20,3 +21,4 @@ namespace Assets.Scripts.Yaml
         public string AnimatorName { get; set; }
     }
 }
+#endif

@@ -1,3 +1,4 @@
+#if UNITY_EDITOR
 using System.Diagnostics;
 using System.IO;
 using Assets.Scripts;
@@ -45,3 +46,4 @@ public class SchematicManager : EditorWindow
         Decompiler.DecompileData();
     }
 }
+#endif

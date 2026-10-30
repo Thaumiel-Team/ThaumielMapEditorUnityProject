@@ -1,3 +1,4 @@
+#if UNITY_EDITOR
 using System;
 using UnityEngine;
 using YamlDotNet.Serialization;
@@ -18,3 +19,4 @@ namespace Assets.Scripts.Components.Tools.Helpers
         public string ResolvedAnimationName => !string.IsNullOrEmpty(AnimationName) ? AnimationName : Animator != null ? Animator.runtimeAnimatorController != null ? Animator.runtimeAnimatorController.name : null : null;
     }
 }
+#endif

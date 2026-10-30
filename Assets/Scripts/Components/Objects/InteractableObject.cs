@@ -1,3 +1,4 @@
+#if UNITY_EDITOR
 using UnityEngine;
 using Assets.Scripts.Enums;
 using System;
@@ -65,3 +66,4 @@ namespace Assets.Scripts.Components.Objects
         }
     }
 }
+#endif

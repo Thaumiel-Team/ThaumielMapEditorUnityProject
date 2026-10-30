@@ -1,3 +1,4 @@
+#if UNITY_EDITOR
 namespace Assets.Scripts.Enums
 {
     public enum RoleTypeId
@@ -35,3 +36,4 @@ namespace Assets.Scripts.Enums
         ChaosFlamingo
     }
 }
+#endif

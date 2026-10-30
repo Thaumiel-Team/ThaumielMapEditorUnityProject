@@ -1,3 +1,4 @@
+#if UNITY_EDITOR
 using System;
 
 namespace Assets.Scripts.Binary
@@ -10,3 +11,4 @@ namespace Assets.Scripts.Binary
         public bool Required { get; set; }
     }
 }
+#endif

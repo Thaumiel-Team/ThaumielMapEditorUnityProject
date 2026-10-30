@@ -1,3 +1,4 @@
+#if UNITY_EDITOR
 namespace Assets.Scripts.Enums
 {
     public enum DoorType
@@ -9,3 +10,4 @@ namespace Assets.Scripts.Enums
         BulkHead = 5
     }
 }
+#endif

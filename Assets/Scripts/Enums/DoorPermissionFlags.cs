@@ -1,3 +1,4 @@
+#if UNITY_EDITOR
 using System;
 
 namespace Assets.Scripts.Enums
@@ -19,3 +20,4 @@ namespace Assets.Scripts.Enums
         ScpOverride = 0x400
     }
 }
+#endif

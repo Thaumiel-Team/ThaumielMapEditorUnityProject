@@ -1,3 +1,4 @@
+#if UNITY_EDITOR
 using YamlDotNet.Serialization;
 using Assets.Scripts.Yaml.CustomConverters;
 using YamlDotNet.Serialization.NamingConventions;
@@ -29,3 +30,4 @@ namespace Assets.Scripts.Yaml
             .Build();
     }
 }
+#endif

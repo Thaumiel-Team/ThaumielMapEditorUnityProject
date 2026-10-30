@@ -1,3 +1,4 @@
+#if UNITY_EDITOR
 namespace Assets.Scripts.Enums
 {
     public enum ItemType
@@ -75,3 +76,4 @@ namespace Assets.Scripts.Enums
         Scp021J
     }
 }
+#endif

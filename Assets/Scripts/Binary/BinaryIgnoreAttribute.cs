@@ -1,3 +1,4 @@
+#if UNITY_EDITOR
 using System;
 
 namespace Assets.Scripts.Binary
@@ -7,3 +8,4 @@ namespace Assets.Scripts.Binary
     {
     }
 }
+#endif

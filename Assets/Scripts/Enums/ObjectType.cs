@@ -1,3 +1,4 @@
+#if UNITY_EDITOR
 namespace Assets.Scripts.Enums
 {
     public enum ObjectType
@@ -25,3 +26,4 @@ namespace Assets.Scripts.Enums
         CullingParent = 20
     }
 }
+#endif

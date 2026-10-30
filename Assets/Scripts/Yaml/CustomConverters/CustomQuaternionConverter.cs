@@ -1,3 +1,4 @@
+#if UNITY_EDITOR
 using System;
 using YamlDotNet.Core;
 using YamlDotNet.Core.Events;
@@ -51,3 +52,4 @@ namespace Assets.Scripts.Yaml.CustomConverters
         }
     }
 }
+#endif

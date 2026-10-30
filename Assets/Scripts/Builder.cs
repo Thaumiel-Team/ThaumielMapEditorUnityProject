@@ -1,3 +1,4 @@
+#if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -113,6 +114,7 @@ namespace Assets.Scripts
                 EditorSceneManager.SaveScene(SceneManager.GetActiveScene());
             }
 
+            AssetDatabase.SaveAssets();
             config = ConfigBuilder.LoadConfig();
             SetupOutput(out string directoryPath);
 
@@ -156,6 +158,7 @@ namespace Assets.Scripts
             List<YamlCustomObject> serverObjects = new();
 
             ServerSide serverSide = GetComponentInChildren<ServerSide>();
+            Dictionary<string, string> animationBundles = BuildAnimationBundles(directoryPath);
 
             foreach (ObjectBase block in GetComponentsInChildren<ObjectBase>())
             {
@@ -165,19 +168,12 @@ namespace Assets.Scripts
                 if (hasAnimator)
                 {
                     RuntimeAnimatorController runtimeAnimatorController = animator.runtimeAnimatorController;
-                    string animatorName = runtimeAnimatorController.name;
-                    block.AnimatorName = animatorName;
-                    AssetBundleBuild bundleBuild = new()
-                    {
-                        assetBundleName = animatorName,
-                        assetNames = new[]
-                        {
-                            AssetDatabase.GetAssetPath(runtimeAnimatorController)
-                        }
-                    };
+                    string controllerPath = AssetDatabase.GetAssetPath(runtimeAnimatorController);
 
-                    BuildPipeline.BuildAssetBundles(directoryPath, new[] { bundleBuild }, BuildAssetBundleOptions.ChunkBasedCompression | BuildAssetBundleOptions.ForceRebuildAssetBundle | BuildAssetBundleOptions.StrictMode, EditorUserBuildSettings.activeBuildTarget);
+                    block.AnimatorName = animationBundles.TryGetValue(controllerPath, out string animatorName) ? animatorName : runtimeAnimatorController.name;
                 }
+                else
+                    block.AnimatorName = string.Empty;
 
                 block.ServerSide = isServerSide || hasAnimator;
                 block.Compile(transform);
@@ -209,6 +205,126 @@ namespace Assets.Scripts
             return (objects, serverObjects);
         }
 
+        private Dictionary<string, string> BuildAnimationBundles(string directoryPath)
+        {
+            if (!Directory.Exists(directoryPath))
+                Directory.CreateDirectory(directoryPath);
+
+            Dictionary<string, string> animatorNamesByAssetPath = new(StringComparer.Ordinal);
+            Dictionary<string, string> assetPathsByAnimatorName = new(StringComparer.OrdinalIgnoreCase);
+            List<AssetBundleBuild> builds = new();
+
+            foreach (ObjectBase block in GetComponentsInChildren<ObjectBase>())
+            {
+                if (!block.TryGetComponent(out Animator animator) || animator.runtimeAnimatorController == null)
+                    continue;
+
+                RuntimeAnimatorController controller = animator.runtimeAnimatorController;
+                string controllerPath = AssetDatabase.GetAssetPath(controller);
+
+                if (string.IsNullOrEmpty(controllerPath))
+                {
+                    Debug.LogWarning($"[Builder] Skipping animation '{controller.name}' on '{block.name}': the animator controller is not saved as an asset and cannot be exported in an asset bundle.");
+                    continue;
+                }
+
+                if (animatorNamesByAssetPath.ContainsKey(controllerPath))
+                    continue;
+
+                string animatorName = GetUniqueAnimatorName(controller.name, controllerPath, assetPathsByAnimatorName);
+                animatorNamesByAssetPath[controllerPath] = animatorName;
+
+                builds.Add(new AssetBundleBuild
+                {
+                    assetBundleName = $"{name}-{animatorName}",
+                    assetNames = new[] { controllerPath }
+                });
+            }
+
+            if (builds.Count == 0)
+                return animatorNamesByAssetPath;
+
+            AssetBundleManifest manifest = BuildPipeline.BuildAssetBundles(
+                directoryPath,
+                builds.ToArray(),
+                BuildAssetBundleOptions.ChunkBasedCompression | BuildAssetBundleOptions.ForceRebuildAssetBundle | BuildAssetBundleOptions.StrictMode,
+                EditorUserBuildSettings.activeBuildTarget);
+
+            if (manifest == null)
+            {
+                Debug.LogError($"[Builder] Failed to build animation bundles for '{name}'.");
+                animatorNamesByAssetPath.Clear();
+                return animatorNamesByAssetPath;
+            }
+
+            Dictionary<string, string> builtNamesByBundleName = new(StringComparer.OrdinalIgnoreCase);
+            foreach (string builtName in manifest.GetAllAssetBundles())
+                builtNamesByBundleName[builtName] = builtName;
+
+            foreach (string animatorName in animatorNamesByAssetPath.Values)
+            {
+                string bundleName = $"{name}-{animatorName}";
+
+                if (!builtNamesByBundleName.TryGetValue(bundleName, out string builtName))
+                {
+                    Debug.LogError($"[Builder] Animation bundle '{bundleName}' was not produced.");
+                    continue;
+                }
+
+                RestoreBundleFileCase(directoryPath, builtName, bundleName);
+
+                if (!File.Exists(Path.Combine(directoryPath, bundleName)))
+                {
+                    Debug.LogWarning($"[Builder] Built animation bundle '{builtName}' but could not rename it to '{bundleName}'.");
+                    continue;
+                }
+
+                Debug.Log($"[Builder] Built animation bundle '{bundleName}'.");
+            }
+
+            return animatorNamesByAssetPath;
+        }
+
+        private static string GetUniqueAnimatorName(string controllerName, string controllerPath, Dictionary<string, string> assetPathsByAnimatorName)
+        {
+            string baseName = string.IsNullOrWhiteSpace(controllerName) ? "Animation" : controllerName.Trim();
+            string animatorName = baseName;
+
+            for (int suffix = 2; assetPathsByAnimatorName.TryGetValue(animatorName, out string existingPath) && existingPath != controllerPath; suffix++)
+                animatorName = $"{baseName}_{suffix}";
+
+            assetPathsByAnimatorName[animatorName] = controllerPath;
+            return animatorName;
+        }
+
+        private static void RestoreBundleFileCase(string directoryPath, string builtName, string expectedName)
+        {
+            if (string.Equals(builtName, expectedName, StringComparison.Ordinal))
+                return;
+
+            RenameFile(directoryPath, builtName, expectedName);
+        }
+
+        private static void RenameFile(string directoryPath, string builtName, string expectedName)
+        {
+            string builtPath = Path.Combine(directoryPath, builtName);
+            if (!File.Exists(builtPath))
+                return;
+
+            string expectedPath = Path.Combine(directoryPath, expectedName);
+            string tempPath = $"{builtPath}.tme-tmp";
+
+            if (File.Exists(tempPath))
+                File.Delete(tempPath);
+
+            File.Move(builtPath, tempPath);
+
+            if (File.Exists(expectedPath))
+                File.Delete(expectedPath);
+
+            File.Move(tempPath, expectedPath);
+        }
+
         public List<YamlTool> CompileTools(ObjectBase block)
         {
             List<YamlTool> tools = new();
@@ -228,12 +344,18 @@ namespace Assets.Scripts
             return tools;
         }
 
-        private void SetupOutput(out string directoryPath)
+        private string GetOutputDirectory()
         {
             string parentDirectoryPath = Directory.Exists(config.ExportPath) ? config.ExportPath : Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "ThaumielMapEditor");
-            directoryPath = Path.Combine(parentDirectoryPath, name);
+            return Path.Combine(parentDirectoryPath, name);
+        }
 
-            if (!Directory.Exists(parentDirectoryPath))
+        private void SetupOutput(out string directoryPath)
+        {
+            directoryPath = GetOutputDirectory();
+
+            string parentDirectoryPath = Path.GetDirectoryName(directoryPath);
+            if (!string.IsNullOrEmpty(parentDirectoryPath) && !Directory.Exists(parentDirectoryPath))
                 Directory.CreateDirectory(parentDirectoryPath);
 
             if (Directory.Exists(directoryPath))
@@ -263,3 +385,4 @@ namespace Assets.Scripts
         }
     }
 }
+#endif

@@ -1,3 +1,4 @@
+#if UNITY_EDITOR
 using System;
 
 namespace Assets.Scripts.Enums
@@ -11,3 +12,4 @@ namespace Assets.Scripts.Enums
         AllowProjectiles = 1 << 2
     }
 }
+#endif

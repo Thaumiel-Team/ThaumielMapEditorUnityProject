@@ -1,3 +1,4 @@
+#if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -46,3 +47,4 @@ namespace Assets.Scripts
         public List<PluginConfig> PluginConfigs { get; set; } = new();
     }
 }
+#endif

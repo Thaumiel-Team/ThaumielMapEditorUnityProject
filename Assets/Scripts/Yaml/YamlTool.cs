@@ -1,3 +1,4 @@
+#if UNITY_EDITOR
 using System.Collections.Generic;
 
 namespace Assets.Scripts.Yaml
@@ -9,3 +10,4 @@ namespace Assets.Scripts.Yaml
         public Dictionary<string, object> Properties { get; set; } = new();
     }
 }
+#endif

@@ -1,3 +1,4 @@
+#if UNITY_EDITOR
 namespace Assets.Scripts.Enums
 {
     public enum DamageType
@@ -20,3 +21,4 @@ namespace Assets.Scripts.Enums
         Scp1507
     }
 }
+#endif

@@ -1,3 +1,4 @@
+#if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
 using Assets.Scripts.Components.Tools.Helpers;
@@ -9,7 +10,6 @@ using UnityEngine;
 #if TME_BLOCKY
 using Assets.Scripts.Networking.Blocky;
 #endif
-
 
 namespace Assets.Scripts.Components.Tools
 {
@@ -146,3 +146,4 @@ namespace Assets.Scripts.Components.Tools
 #endif
     }
 }
+#endif

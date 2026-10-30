@@ -1,3 +1,4 @@
+#if UNITY_EDITOR
 namespace Assets.Scripts.Enums
 {
     public enum EffectType
@@ -62,3 +63,4 @@ namespace Assets.Scripts.Enums
         AnomalousTarget,
     }
 }
+#endif

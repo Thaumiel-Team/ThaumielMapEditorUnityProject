@@ -1,3 +1,4 @@
+#if UNITY_EDITOR
 namespace Assets.Scripts.Enums
 {
     public enum WarheadAction
@@ -11,3 +12,4 @@ namespace Assets.Scripts.Enums
         Enable
     }
 }
+#endif

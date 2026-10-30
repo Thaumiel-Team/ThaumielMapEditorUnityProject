@@ -103,7 +103,7 @@ def main():
                 print(f"    {f}")
             if len(batch) > 5:
                 print(f"    ... and {len(batch) - 5} more")
-        print("\nDry run only — no changes were made.")
+        print("\nDry run only - no changes were made.")
         return
 
     for i, batch in enumerate(batches, 1):

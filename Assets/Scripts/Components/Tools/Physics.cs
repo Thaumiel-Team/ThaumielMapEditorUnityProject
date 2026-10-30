@@ -1,3 +1,4 @@
+#if UNITY_EDITOR
 using Assets.Scripts.Enums;
 using Assets.Scripts.Yaml;
 using System;
@@ -48,3 +49,4 @@ namespace Assets.Scripts.Components.Tools
         }
     }
 }
+#endif

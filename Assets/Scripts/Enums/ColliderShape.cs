@@ -1,3 +1,4 @@
+#if UNITY_EDITOR
 namespace Assets.Scripts.Enums
 {
     public enum ColliderShape
@@ -7,3 +8,4 @@ namespace Assets.Scripts.Enums
         Capsule
     }
 }
+#endif

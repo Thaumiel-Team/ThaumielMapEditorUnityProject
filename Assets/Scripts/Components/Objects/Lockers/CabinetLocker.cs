@@ -1,3 +1,4 @@
+#if UNITY_EDITOR
 using Assets.Scripts.Enums;
 using Assets.Scripts.Lockers;
 using UnityEditor;
@@ -64,3 +65,4 @@ namespace Assets.Scripts.Components.Objects.Lockers
         }
     }
 }
+#endif

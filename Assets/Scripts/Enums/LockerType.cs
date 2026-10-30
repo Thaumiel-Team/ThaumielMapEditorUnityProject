@@ -1,3 +1,4 @@
+#if UNITY_EDITOR
 namespace Assets.Scripts.Enums
 {
     public enum LockerType
@@ -12,3 +13,4 @@ namespace Assets.Scripts.Enums
         ExperimentalWeapon = 7,
     }
 }
+#endif

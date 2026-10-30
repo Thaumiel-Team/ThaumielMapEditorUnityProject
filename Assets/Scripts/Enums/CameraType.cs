@@ -1,3 +1,4 @@
+#if UNITY_EDITOR
 namespace Assets.Scripts.Enums
 {
     public enum CameraType
@@ -9,3 +10,4 @@ namespace Assets.Scripts.Enums
         Sz = 4
     }
 }
+#endif

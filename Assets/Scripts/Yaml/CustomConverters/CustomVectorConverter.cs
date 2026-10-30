@@ -1,3 +1,4 @@
+#if UNITY_EDITOR
 using System;
 using System.Globalization;
 using UnityEngine;
@@ -133,3 +134,4 @@ namespace Assets.Scripts.Yaml.CustomConverters
         }
     }
 }
+#endif

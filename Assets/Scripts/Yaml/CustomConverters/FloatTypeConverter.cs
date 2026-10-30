@@ -1,3 +1,4 @@
+#if UNITY_EDITOR
 using System;
 using System.Globalization;
 using YamlDotNet.Core;
@@ -32,3 +33,4 @@ namespace Assets.Scripts.Yaml.CustomConverters
             => WriteYaml(emitter, value, type);
     }
 }
+#endif

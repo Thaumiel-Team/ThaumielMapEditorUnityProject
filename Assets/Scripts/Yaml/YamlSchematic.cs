@@ -1,3 +1,4 @@
+#if UNITY_EDITOR
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -14,3 +15,4 @@ namespace Assets.Scripts.Yaml
         public List<YamlLOD> LOD { get; set; } = new();
     }
 }
+#endif

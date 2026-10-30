@@ -1,3 +1,4 @@
+#if UNITY_EDITOR
 namespace Assets.Scripts.Enums
 {
     public enum ClutterType
@@ -12,3 +13,4 @@ namespace Assets.Scripts.Enums
         BrokenElectricalBox
     }
 }
+#endif

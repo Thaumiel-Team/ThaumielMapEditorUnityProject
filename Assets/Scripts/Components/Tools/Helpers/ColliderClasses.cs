@@ -1,3 +1,4 @@
+#if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
 
@@ -25,3 +26,4 @@ namespace Assets.Scripts.Components.Tools.Helpers
 #endif
     }
 }
+#endif

@@ -1,3 +1,4 @@
+#if UNITY_EDITOR
 namespace Assets.Scripts.Binary
 {
     public enum BinKind : byte
@@ -29,3 +30,4 @@ namespace Assets.Scripts.Binary
         RuntimeTyped = 24,
     }
 }
+#endif

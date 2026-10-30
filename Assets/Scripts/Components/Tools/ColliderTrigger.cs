@@ -1,3 +1,4 @@
+#if UNITY_EDITOR
 using System.Collections.Generic;
 using Assets.Scripts.Components.Tools.Helpers;
 using Assets.Scripts.Enums;
@@ -105,3 +106,4 @@ namespace Assets.Scripts.Components.Tools
 #endif
     }
 }
+#endif

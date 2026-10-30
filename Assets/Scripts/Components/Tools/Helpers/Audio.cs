@@ -1,3 +1,4 @@
+#if UNITY_EDITOR
 using System;
 
 namespace Assets.Scripts.Components.Tools.Helpers
@@ -12,3 +13,4 @@ namespace Assets.Scripts.Components.Tools.Helpers
         public bool IsSpatial;
     }
 }
+#endif

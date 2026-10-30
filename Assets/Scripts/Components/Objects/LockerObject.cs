@@ -1,3 +1,4 @@
+#if UNITY_EDITOR
 using System.Linq;
 using Assets.Scripts.Enums;
 using Assets.Scripts.Lockers;
@@ -162,3 +163,4 @@ namespace Assets.Scripts.Components.Objects
         }
     }
 }
+#endif

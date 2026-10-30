@@ -1,3 +1,4 @@
+#if UNITY_EDITOR
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -16,9 +17,9 @@ namespace Assets.Scripts.Yaml
             if (value is T typed)
                 return typed;
 
-            if (value is not Dictionary<string, object> dict)
+            if (value is not IDictionary dict)
             {
-                Debug.LogWarning($"[YamlHelpers] ParseObject<{typeof(T).Name}>: expected Dictionary<string, object>, got {value?.GetType().Name ?? "null"}");
+                Debug.LogWarning($"[YamlHelpers] ParseObject<{typeof(T).Name}>: expected a dictionary, got {value?.GetType().Name ?? "null"}");
                 return new T();
             }
 
@@ -30,8 +31,10 @@ namespace Assets.Scripts.Yaml
                 if (!property.CanWrite)
                     continue;
 
-                if (!dict.TryGetValue(property.Name, out object rawValue))
+                if (!dict.Contains(property.Name))
                     continue;
+
+                object rawValue = dict[property.Name];
 
                 try
                 {
@@ -41,6 +44,29 @@ namespace Assets.Scripts.Yaml
                 catch (Exception ex)
                 {
                     Debug.LogError($"[YamlHelpers] Failed to parse property '{property.Name}' on {typeof(T).Name}: {ex.Message}");
+                }
+            }
+
+            FieldInfo[] fields = typeof(T).GetFields(BindingFlags.Public | BindingFlags.Instance);
+
+            foreach (FieldInfo field in fields)
+            {
+                if (field.IsInitOnly || field.IsLiteral)
+                    continue;
+
+                if (!dict.Contains(field.Name))
+                    continue;
+
+                object rawValue = dict[field.Name];
+
+                try
+                {
+                    object parsed = ParseValueForType(field.FieldType, rawValue);
+                    field.SetValue(instance, parsed);
+                }
+                catch (Exception ex)
+                {
+                    Debug.LogError($"[YamlHelpers] Failed to parse field '{field.Name}' on {typeof(T).Name}: {ex.Message}");
                 }
             }
 
@@ -267,3 +293,4 @@ namespace Assets.Scripts.Yaml
             => ParseList(value, ParseEnum<T>);
     }
 }
+#endif

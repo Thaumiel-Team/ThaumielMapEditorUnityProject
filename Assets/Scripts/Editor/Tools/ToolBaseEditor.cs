@@ -86,7 +86,7 @@ namespace Assets.Scripts.Editor.Tools
 
                 if (validEntries == null || validEntries.Count == 0)
                 {
-                    EditorGUILayout.HelpBox("No saved workspace yet — export from Blocky at least once to enable reopen.", MessageType.None);
+                    EditorGUILayout.HelpBox("No saved workspace yet - export from Blocky at least once to enable reopen.", MessageType.None);
                     GUILayout.Space(5);
                     continue;
                 }

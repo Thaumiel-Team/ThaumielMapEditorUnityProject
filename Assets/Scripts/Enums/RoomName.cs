@@ -1,3 +1,4 @@
+#if UNITY_EDITOR
 namespace Assets.Scripts.Enums
 {
     public enum RoomName
@@ -46,3 +47,4 @@ namespace Assets.Scripts.Enums
         HczRampTunnel
     }
 }
+#endif

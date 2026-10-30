@@ -1,3 +1,4 @@
+#if UNITY_EDITOR
 namespace Assets.Scripts.Enums
 {
     public enum TargetType
@@ -7,3 +8,4 @@ namespace Assets.Scripts.Enums
         Sport
     }
 }
+#endif
