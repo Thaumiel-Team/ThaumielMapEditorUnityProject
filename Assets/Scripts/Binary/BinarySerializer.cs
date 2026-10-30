@@ -1,3 +1,4 @@
+#if UNITY_EDITOR
 #nullable enable
 
 using System.Text;
@@ -457,7 +458,7 @@ namespace Assets.Scripts.Binary
             if (kind == BinKind.RuntimeTyped)
             {
                 string aqn = reader.ReadString();
-                Type runtime = Type.GetType(aqn, throwOnError: false) ?? throw new InvalidDataException($"Unknown runtime type '{aqn}'.");
+                Type runtime = BinaryTypeNames.Resolve(aqn) ?? throw new InvalidDataException($"Unknown runtime type '{aqn}'.");
                 object? inner = ReadValue(reader, runtime);
                 if (inner is null)
                     return null;
@@ -965,7 +966,7 @@ namespace Assets.Scripts.Binary
             if (kind == BinKind.RuntimeTyped)
             {
                 string aqn = reader.ReadString();
-                Type? rt = Type.GetType(aqn, throwOnError: false) ?? throw new InvalidDataException($"Unknown runtime type '{aqn}'.");
+                Type? rt = BinaryTypeNames.Resolve(aqn) ?? throw new InvalidDataException($"Unknown runtime type '{aqn}'.");
                 if (!target.IsAssignableFrom(rt))
                     throw new InvalidDataException($"Runtime type '{rt.FullName}' is not '{target.FullName}'.");
 
@@ -1536,3 +1537,4 @@ namespace Assets.Scripts.Binary
         }
     }
 }
+#endif
