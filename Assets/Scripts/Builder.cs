@@ -162,20 +162,20 @@ namespace Assets.Scripts
 
             foreach (ObjectBase block in GetComponentsInChildren<ObjectBase>())
             {
-                bool isServerSide = serverSide != null && block.transform.IsChildOf(serverSide.transform);
+                bool isServerSide = block.TryGetComponent(out ServerSide _) || (serverSide != null && block.transform.IsChildOf(serverSide.transform));
                 bool hasAnimator = block.TryGetComponent(out Animator animator) && animator.runtimeAnimatorController != null;
+                bool hasTool = block.TryGetComponent(out ToolBase _);
 
                 if (hasAnimator)
                 {
                     RuntimeAnimatorController runtimeAnimatorController = animator.runtimeAnimatorController;
                     string controllerPath = AssetDatabase.GetAssetPath(runtimeAnimatorController);
-
                     block.AnimatorName = animationBundles.TryGetValue(controllerPath, out string animatorName) ? animatorName : runtimeAnimatorController.name;
                 }
                 else
                     block.AnimatorName = string.Empty;
 
-                block.ServerSide = isServerSide || hasAnimator;
+                block.ServerSide = isServerSide || hasAnimator || hasTool;
                 block.Compile(transform);
 
                 YamlCustomObject customObject = new()
@@ -194,7 +194,7 @@ namespace Assets.Scripts
                     Tools = CompileTools(block)
                 };
 
-                if (isServerSide || hasAnimator)
+                if (isServerSide || hasAnimator || hasTool)
                 {
                     serverObjects.Add(customObject);
                 }
